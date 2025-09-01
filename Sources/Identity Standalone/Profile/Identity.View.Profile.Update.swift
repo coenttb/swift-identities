@@ -7,8 +7,8 @@
 
 import Foundation
 import IdentitiesTypes
-import CoenttbHTML
-import Coenttb_Web
+import HTML
+import ServerFoundationVapor
 import Identity_Views
 
 extension Identity.View {
@@ -104,7 +104,7 @@ extension Identity.View.Profile {
                                 .padding(.rem(0.75))
                                 .marginBottom(.rem(0.5))
                                 
-                                CoenttbHTML.Paragraph {
+                                HTMLComponents.Paragraph {
                                     TranslatedString(
                                         dutch: "Dit is hoe uw naam wordt weergegeven in de applicatie.",
                                         english: "This is how your name will appear throughout the application."

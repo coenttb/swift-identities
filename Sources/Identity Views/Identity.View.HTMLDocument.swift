@@ -6,10 +6,11 @@
 //
 
 import IdentitiesTypes
-import Boiler
 import Identity_Shared
-import CoenttbHTML
-import Coenttb_Web
+import ServerFoundation
+import HTML
+import HTMLTheme
+import HTMLWebsite
 import Language
 
 extension Identity.View {
@@ -20,8 +21,6 @@ extension Identity.View {
         let title: (Identity.View) -> String
         let description: (Identity.View) -> String
         let _body: Body
-        
-        // Configuration properties (no longer using @Dependency)
         let favicons: Favicons
         let canonicalHref: (Identity.View) -> URL?
         let hreflang: (Identity.View, Language) -> URL
@@ -29,6 +28,9 @@ extension Identity.View {
         @Dependency(\.language) var language
         @Dependency(\.languages) var languages
 
+        @Dependency(\.theme.branding.primary) var themeColor
+        
+        
         package init(
             view: Identity.View,
             title: @escaping (Identity.View) -> String,
@@ -50,18 +52,39 @@ extension Identity.View {
         }
 
         public var head: some HTML {
-            CoenttbWebHTMLDocumentHeader(
-                title: title(view),
-                description: description(view),
-                canonicalHref: canonicalHref(view),
-                rssXml: nil,
-                themeColor: .branding.accent,
-                language: language,
-                hreflang: { language in hreflang(view, language) },
-                styles: { HTMLEmpty() },
-                scripts: { fontAwesomeScript },
-                favicons: { favicons }
-            )
+            meta(charset: .utf8)()
+            
+            if let canonicalHref = canonicalHref(view) {
+                link(
+                    href: .init(canonicalHref.absoluteString),
+                    rel: .canonical
+                )()
+            }
+            
+            HTMLForEach(self.languages.filter { $0 != language }) { lx in
+                link(
+                    href: .init(hreflang(view, lx).absoluteString),
+                    hreflang: .init(value: lx.rawValue),
+                    rel: .alternate,
+                )()
+            }
+            
+            meta(
+                name: .themeColor,
+                content: .init(themeColor.light.description),
+                media: "(prefers-color-scheme: light)"
+            )()
+            
+            meta(
+                name: .themeColor,
+                content: .init(themeColor.dark.description),
+                media: "(prefers-color-scheme: dark)"
+            )()
+            
+            meta(
+                name: .viewport,
+                content: "width=device-width, initial-scale=1.0, viewport-fit=cover"
+            )()
         }
 
         public var body: some HTML {

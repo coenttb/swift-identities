@@ -7,8 +7,10 @@
 
 import Foundation
 import IdentitiesTypes
-import CoenttbHTML
-import Coenttb_Web
+import HTML
+import HTMLWebsite
+import PointFreeHTMLTranslating
+import ServerFoundationVapor
 
 extension Identity.Email.Change.Request {
     package struct View: HTML {
@@ -33,7 +35,7 @@ extension Identity.Email.Change.Request {
             PageModule(theme: .authenticationFlow) {
                 VStack {
                     div {
-                        CoenttbHTML.Paragraph {
+                        HTMLComponents.Paragraph {
                             TranslatedString(
                                 dutch: "Voer uw nieuwe e-mailadres in. We sturen een email naar beide e-mailadressen.",
                                 english: "Enter your new email address. We'll send an email to both email addresses."
@@ -206,7 +208,7 @@ extension Identity.Email.Change.Request.View {
         package var body: some HTML {
             PageModule(theme: .authenticationFlow) {
                 VStack {
-                    CoenttbHTML.Paragraph {
+                    HTMLComponents.Paragraph {
                         TranslatedString(
                             dutch: "We hebben een bevestigingsmail gestuurd naar beide e-mailadressen.",
                             english: "We've sent a confirmation email to both email addresses."
@@ -215,7 +217,7 @@ extension Identity.Email.Change.Request.View {
                     .textAlign(.center)
                     .margin(bottom: .rem(1))
 
-                    CoenttbHTML.Paragraph {
+                    HTMLComponents.Paragraph {
                         TranslatedString(
                             dutch: "Volg de instructies in de e-mails om de wijziging te voltooien.",
                             english: "Follow the instructions in the emails to complete the change."

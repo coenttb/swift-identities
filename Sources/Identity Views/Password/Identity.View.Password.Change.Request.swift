@@ -7,8 +7,9 @@
 
 import Foundation
 import IdentitiesTypes
-import CoenttbHTML
-import Coenttb_Web
+import HTML
+import HTMLWebsite
+import ServerFoundationVapor
 
 extension Identity.Password.Change.Request {
     package struct View: HTML {
@@ -29,7 +30,7 @@ extension Identity.Password.Change.Request {
             PageModule(theme: .authenticationFlow) {
                 div {
                 VStack {
-                    CoenttbHTML.Paragraph {
+                    HTMLComponents.Paragraph {
                         TranslatedString(
                             dutch: "Voer uw huidige wachtwoord en uw nieuwe wachtwoord in.",
                             english: "Enter your current password and your new password."
@@ -165,7 +166,7 @@ extension Identity.Password.Change.Request.View {
         package  var body: some HTML {
             PageModule(theme: .authenticationFlow) {
                 VStack {
-                    CoenttbHTML.Paragraph {
+                    HTMLComponents.Paragraph {
                         TranslatedString(
                             dutch: "Uw wachtwoord is succesvol gewijzigd.",
                             english: "Your password has been successfully changed."
@@ -174,7 +175,7 @@ extension Identity.Password.Change.Request.View {
                     .textAlign(.center)
                     .margin(bottom: .rem(1))
 
-                    CoenttbHTML.Paragraph {
+                    HTMLComponents.Paragraph {
                         TranslatedString(
                             dutch: "U kunt nu inloggen met uw nieuwe wachtwoord.",
                             english: "You can now log in with your new password."

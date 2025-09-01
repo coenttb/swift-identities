@@ -11,8 +11,8 @@ import Identity_Frontend
 import Identity_Backend
 import Identity_Views
 import Dependencies
-import CoenttbHTML
-import Coenttb_Web
+import HTML
+import ServerFoundationVapor
 
 extension Identity.View {
     /// Handles view rendering for standalone identity management.

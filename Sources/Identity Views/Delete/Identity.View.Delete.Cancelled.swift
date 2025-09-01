@@ -7,8 +7,9 @@
 
 import Foundation
 import IdentitiesTypes
-import CoenttbHTML
-import Coenttb_Web
+import HTML
+import HTMLWebsite
+import ServerFoundationVapor
 
 extension Identity.Deletion {
     package enum Cancelled {}
@@ -40,7 +41,7 @@ extension Identity.Deletion.Cancelled {
                     .textAlign(.center)
                     .margin(bottom: .rem(1))
                     
-                    CoenttbHTML.Paragraph {
+                    HTMLComponents.Paragraph {
                         TranslatedString(
                             dutch: "Uw verzoek om uw account te verwijderen is succesvol geannuleerd.",
                             english: "Your request to delete your account has been successfully cancelled."
@@ -50,7 +51,7 @@ extension Identity.Deletion.Cancelled {
                     .textAlign(.center)
                     .margin(bottom: .rem(1))
                     
-                    CoenttbHTML.Paragraph {
+                    HTMLComponents.Paragraph {
                         TranslatedString(
                             dutch: "Uw account blijft actief en al uw gegevens zijn behouden.",
                             english: "Your account remains active and all your data has been preserved."

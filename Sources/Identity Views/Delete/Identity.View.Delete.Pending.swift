@@ -7,8 +7,9 @@
 
 import Foundation
 import IdentitiesTypes
-import CoenttbHTML
-import Coenttb_Web
+import HTML
+import HTMLWebsite
+import ServerFoundationVapor
 
 extension Identity.Deletion {
     package enum Pending {}
@@ -59,7 +60,7 @@ extension Identity.Deletion.Pending {
                     .textAlign(.center)
                     .margin(bottom: .rem(1))
                     
-                    CoenttbHTML.Paragraph {
+                    HTMLComponents.Paragraph {
                         if daysRemaining > 0 {
                             TranslatedString(
                                 dutch: "Uw account wordt over \(daysRemaining) dagen verwijderd.",
@@ -92,7 +93,7 @@ extension Identity.Deletion.Pending {
                         }
                         .margin(bottom: .rem(0.5))
                         
-                        CoenttbHTML.Paragraph {
+                        HTMLComponents.Paragraph {
                             if daysRemaining > 0 {
                                 TranslatedString(
                                     dutch: "U kunt de verwijdering nog annuleren.",

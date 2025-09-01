@@ -7,8 +7,10 @@
 
 import Foundation
 import IdentitiesTypes
-import CoenttbHTML
-import Coenttb_Web
+import HTML
+import HTMLWebsite
+import HTMLMarkdown
+import ServerFoundationVapor
 
 extension Identity.Reauthorization {
     package struct View<CodingKey: RawRepresentable>: HTML where CodingKey.RawValue == String {

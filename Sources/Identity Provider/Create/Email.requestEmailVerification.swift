@@ -7,8 +7,8 @@
 
 import IdentitiesTypes
 //import Mailgun
-import CoenttbEmail
-import CoenttbHTML
+import HTMLEmail
+import HTML
 
 //extension Mailgun.Email {
 //    public static func requestEmailVerification(
@@ -45,7 +45,7 @@ import CoenttbHTML
 //                                )
 //                            }
 //
-//                            CoenttbHTML.Paragraph {
+//                            HTMLComponents.Paragraph {
 //                                TranslatedString(
 //                                    dutch: "Om de setup van je \(businessName) account te voltooien, bevestig alsjeblieft dat dit je e-mailadres is.",
 //                                    english: "To continue setting up your \(businessName) account, please verify that this is your email address."
@@ -63,7 +63,7 @@ import CoenttbHTML
 //                            .color(.text.primary.reverse())
 //                            .padding(bottom: .medium)
 //
-//                            CoenttbHTML.Paragraph(.small) {
+//                            Paragraph(.small) {
 //                                TranslatedString(
 //                                    dutch: "Om veiligheidsredenen verloopt deze verificatielink binnen 24 uur.",
 //                                    english: "This verification link will expire in 24 hours for security reasons."
@@ -72,7 +72,7 @@ import CoenttbHTML
 //                            .font(.footnote)
 //                            .color(.text.secondary)
 //
-//                            CoenttbHTML.Paragraph(.small) {
+//                            Paragraph(.small) {
 //                                TranslatedString(
 //                                    dutch: "Als je deze aanvraag niet hebt gedaan, kun je deze e-mail negeren.",
 //                                    english: "If you did not make this request, please disregard this email."
@@ -81,7 +81,7 @@ import CoenttbHTML
 //                            .font(.footnote)
 //                            .color(.text.secondary)
 //
-//                            CoenttbHTML.Paragraph(.small) {
+//                            Paragraph(.small) {
 //                                TranslatedString(
 //                                    dutch: "Voor hulp, neem contact op met ons op via \(supportEmail).",
 //                                    english: "For help, contact us at \(supportEmail)."

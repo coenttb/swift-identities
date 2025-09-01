@@ -14,8 +14,8 @@ import IdentitiesTypes
 import URLRouting
 import Vapor
 import ServerFoundation
-import CoenttbHTML
-import Coenttb_Web
+import HTML
+import ServerFoundationVapor
 
 extension Identity.Consumer {
     public struct Configuration: Sendable {

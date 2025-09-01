@@ -7,27 +7,9 @@
 
 import Foundation
 import IdentitiesTypes
-import CoenttbHTML
-import Coenttb_Web
-
-//extension Identity.Creation.View {
-//    package enum Main: HTML {
-//        case request(Identity.Creation.Request.View)
-//        case requestConfirmReceipt(Identity.Creation.Request.View.ConfirmReceipt)
-//        case verify(Identity.Creation.Verification.View)
-//
-//        package var body: some HTML {
-//            switch self {
-//            case .request(let request):
-//                request
-//            case .requestConfirmReceipt(let requestReceivedConfirmation):
-//                requestReceivedConfirmation
-//            case .verify(let verify):
-//                verify
-//            }
-//        }
-//    }
-//}
+import HTML
+import HTMLWebsite
+import ServerFoundationVapor
 
 extension Identity.Creation.Request {
     package struct View: HTML {
@@ -179,7 +161,7 @@ extension Identity.Creation.Request.View {
         package var body: some HTML {
             PageModule(theme: .authenticationFlow) {
                 VStack {
-                    CoenttbHTML.Paragraph {
+                    HTMLComponents.Paragraph {
                         [
                             String.your_account_creation_request_has_been_received,
                             String.please_check_your_email_to_complete_the_process
@@ -330,7 +312,7 @@ extension Identity.Creation.Verification.View {
         package var body: some HTML {
             PageModule(theme: .authenticationFlow) {
                 VStack(alignment: .center) {
-                    CoenttbHTML.Paragraph {
+                    HTMLComponents.Paragraph {
                         TranslatedString(
                             dutch: "Uw account is succesvol geverifieerd!",
                             english: "Your account has been successfully verified!"
@@ -339,7 +321,7 @@ extension Identity.Creation.Verification.View {
                     .textAlign(.center)
                     .margin(bottom: .rem(1))
 
-                    CoenttbHTML.Paragraph {
+                    HTMLComponents.Paragraph {
                         TranslatedString(
                             dutch: "U wordt over 5 seconden doorgestuurd naar de inlogpagina.",
                             english: "You will be redirected to the login page in 5 seconds."

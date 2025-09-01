@@ -9,8 +9,8 @@ import Foundation
 import IdentitiesTypes
 import URLRouting
 import ServerFoundation
-import CoenttbHTML
-import Coenttb_Web
+import HTML
+import ServerFoundationVapor
 import Language
 import Identity_Shared
 import ServerFoundationVapor

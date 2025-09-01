@@ -9,8 +9,8 @@
 
 import ServerFoundationVapor
 import IdentitiesTypes
-import CoenttbHTML
-import Coenttb_Web
+import HTML
+import ServerFoundationVapor
 import Identity_Views
 import Dependencies
 import Language

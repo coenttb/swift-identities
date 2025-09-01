@@ -25,9 +25,11 @@ extension Target.Dependency {
 
 extension Target.Dependency {
     static var identitiesTypes: Self { .product(name: "IdentitiesTypes", package: "swift-identities-types") }
-    static var boiler: Self { .product(name: "Boiler", package: "boiler") }
-    static var coenttbWeb: Self { .product(name: "Coenttb Web", package: "coenttb-web") }
-    static var coenttbEmail: Self { .product(name: "CoenttbEmail", package: "coenttb-html") }
+    static var serverFoundationVapor: Self { .product(name: "ServerFoundationVapor", package: "swift-server-foundation-vapor") }
+    static var html: Self { .product(name: "HTML", package: "swift-html") }
+    static var htmlEmail: Self { .product(name: "HTMLEmail", package: "swift-html") }
+    static var htmlMarkdown: Self { .product(name: "HTMLMarkdown", package: "swift-html") }
+    static var htmlWebsite: Self { .product(name: "HTMLWebsite", package: "swift-html") }
     static var records: Self { .product(name: "Records", package: "swift-records") }
     static var totp: Self { .product(name: "TOTP", package: "swift-one-time-password") }
     static var dependenciesTestSupport: Self { .product(name: "DependenciesTestSupport", package: "swift-dependencies") }
@@ -49,20 +51,19 @@ let package = Package(
         .library(name: .identityFrontend, targets: [.identityFrontend])
     ],
     dependencies: [
-        .package(url: "https://github.com/coenttb/boiler", from: "0.0.1"),
+        .package(url: "https://github.com/coenttb/swift-server-foundation-vapor", from: "0.0.1"),
         .package(url: "https://github.com/coenttb/swift-records", from: "0.0.1"),
         .package(url: "https://github.com/coenttb/swift-identities-types", from: "0.0.1"),
         .package(url: "https://github.com/coenttb/swift-one-time-password", from: "0.0.1"),
         .package(url: "https://github.com/pointfreeco/swift-dependencies", from: "1.9.2"),
-        .package(url: "https://github.com/coenttb/coenttb-html", branch: "main"),
-        .package(url: "https://github.com/coenttb/coenttb-web", branch: "main")
+        .package(url: "https://github.com/coenttb/swift-html", from: "0.7.0"),
     ],
     targets: [
         .target(
             name: .identityShared,
             dependencies: [
                 .identitiesTypes,
-                .boiler,
+                .serverFoundationVapor,
                 .totp
             ]
         ),
@@ -70,17 +71,20 @@ let package = Package(
             name: .identityViews,
             dependencies: [
                 .identityShared,
-                .coenttbEmail,
-                .coenttbWeb
+                .html,
+                .htmlEmail,
+                .htmlWebsite,
+                .htmlMarkdown,
+                .serverFoundationVapor
             ]
         ),
         .target(
             name: .identityBackend,
             dependencies: [
                 .identityShared,
-                .boiler,
+                .serverFoundationVapor,
                 .records,
-                .coenttbEmail
+                .htmlEmail
             ]
         ),
         .target(
@@ -89,7 +93,7 @@ let package = Package(
                 .identitiesTypes,
                 .identityShared,
                 .identityViews,
-                .boiler
+                .serverFoundationVapor
             ]
         ),
         .target(
@@ -99,7 +103,7 @@ let package = Package(
                 .identityShared,
                 .identityViews,
                 .identityFrontend,
-                .boiler
+                .serverFoundationVapor
             ]
         ),
         .target(
@@ -108,7 +112,7 @@ let package = Package(
                 .identitiesTypes,
                 .identityShared,
                 .identityBackend,
-                .boiler
+                .serverFoundationVapor
             ]
         ),
         .target(
@@ -119,7 +123,7 @@ let package = Package(
                 .identityBackend,
                 .identityViews,
                 .identityFrontend,
-                .boiler
+                .serverFoundationVapor
             ]
         ),
         .testTarget(

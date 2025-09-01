@@ -6,7 +6,8 @@
 //
 
 import Foundation
-import CoenttbHTML
+import HTML
+import HTMLWebsite
 
 extension Identity.View {
     public struct Footer: HTML {

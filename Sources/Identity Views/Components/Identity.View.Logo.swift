@@ -7,7 +7,8 @@
 
 import Foundation
 import IdentitiesTypes
-import CoenttbHTML
+import HTML
+import HTMLWebsite
 
 extension Identity.View {
     public struct Logo: HTML, Sendable {

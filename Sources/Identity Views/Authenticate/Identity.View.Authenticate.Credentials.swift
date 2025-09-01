@@ -7,8 +7,8 @@
 
 import Foundation
 import IdentitiesTypes
-import CoenttbHTML
-import Coenttb_Web
+import HTMLWebsite
+import ServerFoundationVapor
 
 extension Identity.Authentication.Credentials {
     package struct View: HTML {

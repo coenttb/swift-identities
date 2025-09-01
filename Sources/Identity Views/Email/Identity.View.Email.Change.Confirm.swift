@@ -7,8 +7,9 @@
 
 import Foundation
 import IdentitiesTypes
-import CoenttbHTML
-import Coenttb_Web
+import HTML
+import HTMLWebsite
+import ServerFoundationVapor
 
 extension Identity.Email.Change.Confirmation {
     package struct View: HTML {
@@ -25,7 +26,7 @@ extension Identity.Email.Change.Confirmation {
         package var body: some HTML {
             PageModule(theme: .authenticationFlow) {
                 VStack {
-                    CoenttbHTML.Paragraph {
+                    HTMLComponents.Paragraph {
                         TranslatedString(
                             dutch: "Je e-mailadres is succesvol gewijzigd.",
                             english: "Your email address has been successfully changed."
@@ -36,7 +37,7 @@ extension Identity.Email.Change.Confirmation {
                     .color(.text.primary.reverse())
                     .margin(bottom: .medium)
 
-                    CoenttbHTML.Paragraph {
+                    HTMLComponents.Paragraph {
                         TranslatedString(
                             dutch: "Je wordt nu doorgestuurd naar je account pagina.",
                             english: "You will now be redirected to your account page."

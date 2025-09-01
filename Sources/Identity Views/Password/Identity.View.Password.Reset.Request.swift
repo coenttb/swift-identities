@@ -7,8 +7,9 @@
 
 import Foundation
 import IdentitiesTypes
-import CoenttbHTML
-import Coenttb_Web
+import HTML
+import HTMLWebsite
+import ServerFoundationVapor
 
 extension Identity.Password.Reset.Request {
     package struct View: HTML {
@@ -29,7 +30,7 @@ extension Identity.Password.Reset.Request {
             PageModule(theme: .authenticationFlow) {
 
                 VStack {
-                    CoenttbHTML.Paragraph {
+                    HTMLComponents.Paragraph {
                         TranslatedString(
                             dutch: "Voer uw e-mailadres in en we sturen u een link om uw wachtwoord opnieuw in te stellen.",
                             english: "Enter your email address and we will send you a link to reset your password."
@@ -156,7 +157,7 @@ extension Identity.Password.Reset.Request.View {
         package var body: some HTML {
             PageModule(theme: .authenticationFlow) {
                 VStack {
-                    CoenttbHTML.Paragraph {
+                    HTMLComponents.Paragraph {
                         TranslatedString(
                             dutch: "We hebben een e-mail verstuurd met instructies om uw wachtwoord opnieuw in te stellen.",
                             english: "We've sent an email with instructions to reset your password."
@@ -165,7 +166,7 @@ extension Identity.Password.Reset.Request.View {
                     .textAlign(.center)
                     .margin(bottom: .rem(1))
 
-                    CoenttbHTML.Paragraph {
+                    HTMLComponents.Paragraph {
                         TranslatedString(
                             dutch: "Als u de e-mail niet binnen enkele minuten ontvangt, controleer dan uw spam-folder.",
                             english: "If you don't receive the email within a few minutes, please check your spam folder."
@@ -228,7 +229,7 @@ extension Identity.Password.Reset.Confirm {
             PageModule(theme: .authenticationFlow) {
 
                 VStack {
-                    CoenttbHTML.Paragraph {
+                    HTMLComponents.Paragraph {
                         TranslatedString(
                             dutch: "Vul je nieuwe wachtwoord in.",
                             english: "Enter your new password."
@@ -363,7 +364,7 @@ extension Identity.Password.Reset.Confirm.View {
         package var body: some HTML {
             PageModule(theme: .authenticationFlow) {
                 VStack {
-                    CoenttbHTML.Paragraph {
+                    HTMLComponents.Paragraph {
                         TranslatedString(
                             dutch: "Je wachtwoord is succesvol gewijzigd.",
                             english: "Your password has been successfully changed."
@@ -374,7 +375,7 @@ extension Identity.Password.Reset.Confirm.View {
                     .color(.text.primary.reverse())
                     .margin(bottom: .medium)
 
-                    CoenttbHTML.Paragraph {
+                    HTMLComponents.Paragraph {
                         TranslatedString(
                             dutch: "Je wordt nu doorgestuurd naar de inlogpagina.",
                             english: "You will now be redirected to the login page."

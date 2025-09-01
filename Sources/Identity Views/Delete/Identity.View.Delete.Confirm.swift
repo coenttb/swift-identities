@@ -7,8 +7,9 @@
 
 import Foundation
 import IdentitiesTypes
-import CoenttbHTML
-import Coenttb_Web
+import HTML
+import HTMLWebsite
+import ServerFoundationVapor
 
 extension Identity.Deletion {
     package enum Confirm {}
@@ -40,7 +41,7 @@ extension Identity.Deletion.Confirm {
                     .textAlign(.center)
                     .margin(bottom: .rem(1))
                     
-                    CoenttbHTML.Paragraph {
+                    HTMLComponents.Paragraph {
                         TranslatedString(
                             dutch: "Uw account en alle bijbehorende gegevens zijn permanent verwijderd.",
                             english: "Your account and all associated data have been permanently deleted."
@@ -50,7 +51,7 @@ extension Identity.Deletion.Confirm {
                     .textAlign(.center)
                     .margin(bottom: .rem(1))
                     
-                    CoenttbHTML.Paragraph {
+                    HTMLComponents.Paragraph {
                         TranslatedString(
                             dutch: "Bedankt voor het gebruik van onze diensten.",
                             english: "Thank you for using our services."
@@ -61,7 +62,7 @@ extension Identity.Deletion.Confirm {
                     .color(.text.secondary)
                     .margin(bottom: .rem(2))
                     
-                    CoenttbHTML.Paragraph {
+                    HTMLComponents.Paragraph {
                         TranslatedString(
                             dutch: "U wordt over 5 seconden doorgestuurd naar de hoofdpagina.",
                             english: "You will be redirected to the main page in 5 seconds."

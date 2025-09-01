@@ -7,8 +7,9 @@
 
 import Foundation
 import IdentitiesTypes
-import CoenttbHTML
-import Coenttb_Web
+import HTML
+import HTMLWebsite
+import ServerFoundationVapor
 
 extension Identity.Deletion.Request {
     package struct View: HTML {
@@ -47,7 +48,7 @@ extension Identity.Deletion.Request {
                             .color(.text.error)
                             .margin(bottom: .rem(0.5))
                             
-                            CoenttbHTML.Paragraph {
+                            HTMLComponents.Paragraph {
                                 TranslatedString(
                                     dutch: "Dit zal permanent uw account en alle bijbehorende gegevens verwijderen. Deze actie kan niet ongedaan worden gemaakt.",
                                     english: "This will permanently delete your account and all associated data. This action cannot be undone."
@@ -61,7 +62,7 @@ extension Identity.Deletion.Request {
                         .borderRadius(.medium)
                         .margin(bottom: .rem(1.5))
                         
-                        CoenttbHTML.Paragraph {
+                        HTMLComponents.Paragraph {
                             TranslatedString(
                                 dutch: "Voer uw wachtwoord in om door te gaan met het verwijderen van uw account.",
                                 english: "Enter your password to proceed with deleting your account."
@@ -275,7 +276,7 @@ extension Identity.Deletion.Request.View {
                     .textAlign(.center)
                     .margin(bottom: .rem(1))
                     
-                    CoenttbHTML.Paragraph {
+                    HTMLComponents.Paragraph {
                         TranslatedString(
                             dutch: "Uw account is gepland voor verwijdering. U heeft een bedenktijd van \(daysRemaining) dagen.",
                             english: "Your account is scheduled for deletion. You have a grace period of \(daysRemaining) days."
@@ -293,7 +294,7 @@ extension Identity.Deletion.Request.View {
                         }
                         .margin(bottom: .rem(0.5))
                         
-                        CoenttbHTML.Paragraph {
+                        HTMLComponents.Paragraph {
                             TranslatedString(
                                 dutch: "U kunt de verwijdering op elk moment tijdens deze periode annuleren.",
                                 english: "You can cancel the deletion at any time during this period."
