@@ -25,11 +25,10 @@ extension Identity.View {
         let canonicalHref: (Identity.View) -> URL?
         let hreflang: (Identity.View, Language) -> URL
         let footer_links: [(TranslatedString, URL)]
+        
         @Dependency(\.language) var language
         @Dependency(\.languages) var languages
-
         @Dependency(\.theme.branding.primary) var themeColor
-        
         
         package init(
             view: Identity.View,
@@ -53,6 +52,8 @@ extension Identity.View {
 
         public var head: some HTML {
             meta(charset: .utf8)()
+            
+            BaseStyles()
             
             if let canonicalHref = canonicalHref(view) {
                 link(
