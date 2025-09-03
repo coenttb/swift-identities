@@ -17,7 +17,7 @@ extension Vapor.Request {
     }
     
     /// Context object providing access to identity information for a request
-    public struct IdentityContext {
+    public struct IdentityContext: Sendable {
         public let token: Identity.Token.Access
 
         
