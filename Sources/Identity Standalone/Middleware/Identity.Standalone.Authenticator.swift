@@ -13,12 +13,14 @@ import Identity_Backend
 import Identity_Frontend
 
 extension Identity.Standalone {
-    /// Unified authenticator that combines all authentication methods for standalone deployments.
+    /// Unified authenticator that combines authentication methods for standalone deployments.
     ///
     /// This authenticator provides a single middleware that handles:
     /// - Cookie-based authentication (for web sessions)
     /// - Bearer token authentication (for API calls)
-    /// - Credentials authentication (for login endpoints)
+    ///
+    /// Note: Credentials authentication is handled directly by the authentication
+    /// endpoint rather than middleware to avoid duplicate authentication attempts.
     ///
     /// Usage:
     /// ```swift
@@ -28,17 +30,14 @@ extension Identity.Standalone {
     /// This replaces the need to individually add:
     /// - `Identity.Standalone.CookieAuthenticator()`
     /// - `Identity.Standalone.TokenAuthenticator()`
-    /// - `Identity.Standalone.CredentialsAuthenticator()`
     public struct Authenticator: AsyncMiddleware {
         // Internal authenticators
         private let cookieAuthenticator: CookieAuthenticator
         private let tokenAuthenticator: TokenAuthenticator
-        private let credentialsAuthenticator: CredentialsAuthenticator
         
         public init() {
             self.cookieAuthenticator = CookieAuthenticator()
             self.tokenAuthenticator = TokenAuthenticator()
-            self.credentialsAuthenticator = CredentialsAuthenticator()
         }
         
         public func respond(
@@ -80,27 +79,9 @@ extension Identity.Standalone {
                 }
             }
             
-            // 3. Check for credentials (login endpoints)
-            // Only process credentials if this is a login-like request
-            if request.method == .POST,
-               let contentType = request.headers.contentType,
-               (contentType == .json || contentType == .urlEncodedForm) {
-                
-                // Try to decode credentials from the request body
-                if let credentials = try? request.content.decode(Identity.Authentication.Credentials.self) {
-                    try await credentialsAuthenticator.authenticate(
-                        credentials: credentials,
-                        for: request
-                    )
-                    
-                    if request.auth.has(Identity.Token.Access.self) {
-                        logger.trace("Authenticated via credentials", metadata: [
-                            "component": "UnifiedAuth",
-                            "method": "credentials"
-                        ])
-                    }
-                }
-            }
+            // Note: Credentials authentication removed from middleware
+            // It should only happen at the specific authentication endpoint
+            // to avoid duplicate authentication attempts
             
             // Return the response (authenticated or not)
             return cookieResponse
@@ -120,16 +101,13 @@ extension Identity.Standalone.Authenticator {
     public struct Configuration: Sendable {
         public var enableCookies: Bool
         public var enableBearerTokens: Bool
-        public var enableCredentials: Bool
         
         public init(
             enableCookies: Bool = true,
-            enableBearerTokens: Bool = true,
-            enableCredentials: Bool = true
+            enableBearerTokens: Bool = true
         ) {
             self.enableCookies = enableCookies
             self.enableBearerTokens = enableBearerTokens
-            self.enableCredentials = enableCredentials
         }
         
         /// Default configuration with all authentication methods enabled
@@ -138,15 +116,13 @@ extension Identity.Standalone.Authenticator {
         /// API-only configuration (no cookies)
         public static let apiOnly = Configuration(
             enableCookies: false,
-            enableBearerTokens: true,
-            enableCredentials: true
+            enableBearerTokens: true
         )
         
         /// Web-only configuration (no bearer tokens)
         public static let webOnly = Configuration(
             enableCookies: true,
-            enableBearerTokens: false,
-            enableCredentials: true
+            enableBearerTokens: false
         )
     }
     
