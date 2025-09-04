@@ -69,7 +69,8 @@ extension Database.Identity {
     }
     
     package func verifyPassword(_ password: String) throws -> Bool {
-        try Bcrypt.verify(password, created: self.passwordHash)
+        print("CALLING Bcrypt.verify")
+        return try Bcrypt.verify(password, created: self.passwordHash)
     }
 }
 

@@ -27,5 +27,6 @@ extension Identity.Backend {
         case emailInvalid
         case emailAlreadyInUse
         case invalidToken
+        case internalError
     }
 }

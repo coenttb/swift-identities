@@ -76,7 +76,7 @@ extension Identity.Backend {
                     key TEXT NOT NULL UNIQUE,
                     scopes TEXT[] NOT NULL DEFAULT '{}',
                     "identityId" UUID NOT NULL REFERENCES identities(id) ON DELETE CASCADE,
-                    "isActive" INTEGER NOT NULL DEFAULT 1 CHECK ("isActive" IN (0, 1)),
+                    "isActive" BOOLEAN NOT NULL DEFAULT TRUE,
                     "rateLimit" INTEGER NOT NULL DEFAULT 1000,
                     "validUntil" TIMESTAMP NOT NULL,
                     "createdAt" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -162,7 +162,7 @@ extension Identity.Backend {
                     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
                     "identityId" UUID NOT NULL UNIQUE REFERENCES identities(id) ON DELETE CASCADE,
                     secret TEXT NOT NULL,
-                    "isConfirmed" INTEGER NOT NULL DEFAULT 0 CHECK ("isConfirmed" IN (0, 1)),
+                    "isConfirmed" BOOLEAN NOT NULL DEFAULT FALSE,
                     algorithm VARCHAR(10) NOT NULL DEFAULT 'SHA1',
                     digits INTEGER NOT NULL DEFAULT 6,
                     "timeStep" INTEGER NOT NULL DEFAULT 30,
@@ -185,7 +185,7 @@ extension Identity.Backend {
                     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
                     "identityId" UUID NOT NULL REFERENCES identities(id) ON DELETE CASCADE,
                     "codeHash" TEXT NOT NULL,
-                    "isUsed" INTEGER NOT NULL DEFAULT 0 CHECK ("isUsed" IN (0, 1)),
+                    "isUsed" BOOLEAN NOT NULL DEFAULT FALSE,
                     "createdAt" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
                     "usedAt" TIMESTAMP
                 )
@@ -199,7 +199,7 @@ extension Identity.Backend {
             try await db.execute("""
                 CREATE INDEX IF NOT EXISTS identity_backup_codes_unused_idx 
                 ON identity_backup_codes("identityId", "isUsed") 
-                WHERE "isUsed" = 0
+                WHERE "isUsed" = false
             """)
         }
         
@@ -293,7 +293,7 @@ extension Identity.Backend {
             // Index for API key lookups by key hash
             try await db.execute("""
             CREATE INDEX IF NOT EXISTS idx_api_keys_hash 
-            ON identity_api_keys("keyHash") 
+            ON identity_api_keys(key) 
             WHERE "isActive" = true;
         """)
             
@@ -314,7 +314,7 @@ extension Identity.Backend {
             try await db.execute("""
             CREATE INDEX IF NOT EXISTS idx_deletions_identity_pending 
             ON identity_deletions("identityId") 
-            WHERE "deletedAt" IS NULL;
+            WHERE "confirmedAt" IS NULL;
         """)
             
             logger.info("Performance indexes added successfully", metadata: [

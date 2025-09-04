@@ -116,6 +116,7 @@ extension Database.Identity.BackupCode {
     
     /// Verify a code against its hash
     package static func verifyCode(_ code: String, hash: String) throws -> Bool {
+        print("CALLING Bcrypt.verify")
         return try Bcrypt.verify(code, created: hash)
     }
     

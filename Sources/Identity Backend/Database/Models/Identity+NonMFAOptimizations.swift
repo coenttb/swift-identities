@@ -6,29 +6,29 @@ import EmailAddress
 // MARK: - Selection Types for API Key Authentication
 
 @Selection
-public struct ApiKeyWithIdentity: Sendable {
-    public let apiKey: IdentityApiKey
-    public let identity: Database.Identity
+package struct ApiKeyWithIdentity: Sendable {
+    package let apiKey: IdentityApiKey
+    package let identity: Database.Identity
 }
 
 @Selection
-public struct TokenWithIdentity: Sendable {
-    public let token: Database.Identity.Token
-    public let identity: Database.Identity
+package struct TokenWithIdentity: Sendable {
+    package let token: Database.Identity.Token
+    package let identity: Database.Identity
 }
 
 @Selection  
-public struct EmailChangeRequestWithIdentity: Sendable {
-    public let emailChangeRequest: Database.Identity.Email.Change.Request
-    public let identity: Database.Identity
-    public let currentEmail: String
+package struct EmailChangeRequestWithIdentity: Sendable {
+    package let emailChangeRequest: Database.Identity.Email.Change.Request
+    package let identity: Database.Identity
+    package let currentEmail: String
 }
 
 @Selection
-public struct ProfileWithIdentity: Sendable {
-    public let profile: Database.Identity.Profile
-    public let identity: Database.Identity
-    public let hasApiKeys: Bool
+package struct ProfileWithIdentity: Sendable {
+    package let profile: Database.Identity.Profile
+    package let identity: Database.Identity
+    package let hasApiKeys: Bool
 }
 
 // MARK: - API Key Optimizations
@@ -44,7 +44,7 @@ extension IdentityApiKey {
         return try await db.write { db in
             // Get API key with identity in single query
             let result = try await IdentityApiKey
-                .where { $0.value.eq(key) }
+                .where { $0.key.eq(key) }
                 .where { $0.isActive.eq(true) }
                 .join(Database.Identity.all) { apiKey, identity in
                     apiKey.identityId.eq(identity.id)
@@ -245,7 +245,7 @@ extension Database.Identity.Profile {
                 }
                 .fetchOne(db)
         }) else {
-            throw Identity.Backend.ValidationError.internalError("Failed to create profile")
+            throw Identity.Backend.ValidationError.internalError/*("Failed to create profile")*/
         }
         
         return result
@@ -256,32 +256,32 @@ extension Database.Identity.Profile {
 
 extension Database.Identity {
     
-    /// Batch invalidate sessions for multiple identities
-    /// Returns count of identities updated
-    package static func invalidateSessionsBatch(identityIds: [UUID]) async throws -> Int {
-        @Dependency(\.defaultDatabase) var db
-        @Dependency(\.date) var date
-        
-        guard !identityIds.isEmpty else { return 0 }
-        
-        var updatedCount = 0
-        
-        try await db.write { db in
-            // TODO: When swift-structured-queries supports WHERE IN, replace with single query
-            for identityId in identityIds {
-                try await Database.Identity
-                    .where { $0.id.eq(identityId) }
-                    .update { identity in
-                        identity.sessionVersion = identity.sessionVersion + 1
-                        identity.updatedAt = date()
-                    }
-                    .execute(db)
-                updatedCount += 1
-            }
-        }
-        
-        return updatedCount
-    }
+//    /// Batch invalidate sessions for multiple identities
+//    /// Returns count of identities updated
+//    package static func invalidateSessionsBatch(identityIds: [UUID]) async throws -> Int {
+//        @Dependency(\.defaultDatabase) var db
+//        @Dependency(\.date) var date
+//        
+//        guard !identityIds.isEmpty else { return 0 }
+//        
+//        var updatedCount = 0
+//        
+//        try await db.write { db in
+//            // TODO: When swift-structured-queries supports WHERE IN, replace with single query
+//            for identityId in identityIds {
+//                try await Database.Identity
+//                    .where { $0.id.eq(identityId) }
+//                    .update { identity in
+//                        identity.sessionVersion = identity.sessionVersion + 1
+//                        identity.updatedAt = date()
+//                    }
+//                    .execute(db)
+//                updatedCount += 1
+//            }
+//        }
+//        
+//        return updatedCount
+//    }
     
     /// Check multiple emails exist in single query
     /// Returns dictionary of email -> exists
@@ -316,33 +316,33 @@ extension Database.Identity {
 
 // MARK: - Verification Status Batch Operations
 
-extension Database.Identity {
-    
-    /// Update email verification status for multiple identities
-    package static func updateVerificationStatusBatch(
-        identityIds: [UUID],
-        status: EmailVerificationStatus
-    ) async throws -> Int {
-        @Dependency(\.defaultDatabase) var db
-        @Dependency(\.date) var date
-        
-        guard !identityIds.isEmpty else { return 0 }
-        
-        var updatedCount = 0
-        
-        try await db.write { db in
-            for identityId in identityIds {
-                try await Database.Identity
-                    .where { $0.id.eq(identityId) }
-                    .update { identity in
-                        identity.emailVerificationStatus = status
-                        identity.updatedAt = date()
-                    }
-                    .execute(db)
-                updatedCount += 1
-            }
-        }
-        
-        return updatedCount
-    }
-}
+//extension Database.Identity {
+//    
+//    /// Update email verification status for multiple identities
+//    package static func updateVerificationStatusBatch(
+//        identityIds: [UUID],
+//        status: EmailVerificationStatus
+//    ) async throws -> Int {
+//        @Dependency(\.defaultDatabase) var db
+//        @Dependency(\.date) var date
+//        
+//        guard !identityIds.isEmpty else { return 0 }
+//        
+//        var updatedCount = 0
+//        
+//        try await db.write { db in
+//            for identityId in identityIds {
+//                try await Database.Identity
+//                    .where { $0.id.eq(identityId) }
+//                    .update { identity in
+//                        identity.emailVerificationStatus = status
+//                        identity.updatedAt = date()
+//                    }
+//                    .execute(db)
+//                updatedCount += 1
+//            }
+//        }
+//        
+//        return updatedCount
+//    }
+//}
