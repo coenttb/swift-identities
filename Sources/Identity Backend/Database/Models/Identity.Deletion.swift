@@ -53,45 +53,51 @@ extension Database.Identity {
 // MARK: - Query Helpers
 
 extension Database.Identity.Deletion {
+    // No change needed
     public static func findByIdentity(_ identityId: UUID) -> Where<Database.Identity.Deletion> {
         Self.where { $0.identityId.eq(identityId) }
     }
     
+    // Replace IS NULL with == nil
     public static var pending: Where<Database.Identity.Deletion> {
         Self.where { deletion in
-            #sql("\(deletion.confirmedAt) IS NULL") &&
-            #sql("\(deletion.cancelledAt) IS NULL")
+            deletion.confirmedAt == nil &&
+            deletion.cancelledAt == nil
         }
     }
     
+    // Replace IS NOT NULL with != nil
     public static var confirmed: Where<Database.Identity.Deletion> {
         Self.where { deletion in
-            #sql("\(deletion.confirmedAt) IS NOT NULL")
+            deletion.confirmedAt != nil
         }
     }
     
     public static var cancelled: Where<Database.Identity.Deletion> {
         Self.where { deletion in
-            #sql("\(deletion.cancelledAt) IS NOT NULL")
+            deletion.cancelledAt != nil
         }
     }
     
+    // Use != nil and == nil with .lte() for date comparison
     public static var readyForDeletion: Where<Database.Identity.Deletion> {
         Self.where { deletion in
-            #sql("\(deletion.confirmedAt) IS NOT NULL") &&
-            #sql("\(deletion.cancelledAt) IS NULL") &&
-            #sql("\(deletion.scheduledFor) <= CURRENT_TIMESTAMP")
+            deletion.confirmedAt != nil &&
+            deletion.cancelledAt == nil &&
+            deletion.scheduledFor.lte(Date())
         }
     }
     
+    // Use != nil and == nil with .gt() for date comparison
     public static var awaitingGracePeriod: Where<Database.Identity.Deletion> {
         Self.where { deletion in
-            #sql("\(deletion.confirmedAt) IS NOT NULL") &&
-            #sql("\(deletion.cancelledAt) IS NULL") &&
-            #sql("\(deletion.scheduledFor) > CURRENT_TIMESTAMP")
+            deletion.confirmedAt != nil &&
+            deletion.cancelledAt == nil &&
+            deletion.scheduledFor.gt(Date())
         }
     }
 }
+
 
 // MARK: - Status & Actions
 
