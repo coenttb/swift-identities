@@ -53,11 +53,11 @@ extension Database.Identity {
     
     package func save() async throws {
         @Dependency(\.defaultDatabase) var db
+        @Dependency(\.date) var date
         var updated = self
-        updated.updatedAt = Date()
+        updated.updatedAt = date()
         
-        
-        try await db.write { [updated] db in
+        _ = try await db.write { [updated] db in
             try await Database.Identity
                 .where { $0.id.eq(self.id) }
                 .update { _ in
@@ -78,6 +78,8 @@ extension Database.Identity {
     }
     
     package static func verifyPassword(email: EmailAddress, password: String) async throws -> Database.Identity? {
+        @Dependency(\.date) var date
+        
         guard let identity = try await findByEmail(email) else {
             return nil
         }
@@ -86,10 +88,11 @@ extension Database.Identity {
             return nil
         }
         
-        // Update last login
+        // Update last login using optimized method
+        try await updateLastLogin(id: identity.id)
+        
         var updated = identity
-        updated.lastLoginAt = Date()
-        try await updated.save()
+        updated.lastLoginAt = date()
         
         return updated
     }
@@ -102,18 +105,20 @@ extension Database.Identity {
     
     package mutating func updateEmailVerificationStatus(_ status: EmailVerificationStatus) async throws {
         @Dependency(\.defaultDatabase) var db
+        @Dependency(\.date) var date
         let id = self.id
-        let updatedAt = Date()
+        let updatedAt = date()
         
-        try await db.write { db in
+        _ = try await db.write { db in
             try await Database.Identity
+                .where { $0.id.eq(id) }
                 .update { identity in
                     identity.emailVerificationStatus = status
                     identity.updatedAt = updatedAt
                 }
-                .where { $0.id.eq(id) }
                 .execute(db)
         }
         self.emailVerificationStatus = status
+        self.updatedAt = updatedAt
     }
 }

@@ -33,28 +33,27 @@ extension Identity.Backend.Client.Authenticate {
                 @Dependency(\.date) var date
 
                 do {
-                    guard let identity = try await Database.Identity.verifyPassword(email: email, password: password) else {
+                    // Use cached and optimized single query for authentication
+                    guard let authData = try await Database.Identity.verifyPasswordOptimized(email: email, password: password) else {
                         logger.warning("Login attempt failed: Invalid credentials for email: \(email)")
                         throw Abort(.unauthorized, reason: "Invalid credentials")
                     }
+                    
+                    let identity = authData.identity
 
                     guard identity.emailVerificationStatus == .verified else {
                         logger.warning("Login attempt failed: Email not verified for: \(email)")
                         throw Abort(.unauthorized, reason: "Email not verified")
                     }
                     
-                    // Check if MFA is enabled for this identity
-                    @Dependency(\.defaultDatabase) var database
-                    let totpData = try? await Identity_Backend.Database.Identity.TOTP.findConfirmedByIdentity(identity.id)
-                    let totpEnabled = totpData != nil
-                    
-                    if let totpData = totpData {
-                        logger.info("MFA check for \(email): TOTP found - id: \(totpData.id), isConfirmed: \(totpData.isConfirmed)")
+                    // MFA status already included in authData
+                    if authData.totpEnabled {
+                        logger.info("MFA check for \(email): TOTP enabled")
                     } else {
-                        logger.info("MFA check for \(email): No confirmed TOTP found")
+                        logger.info("MFA check for \(email): No TOTP configured")
                     }
                     
-                    if totpEnabled {
+                    if authData.totpEnabled {
                         // Generate MFA session token instead of full authentication
                         @Dependency(\.tokenClient) var tokenClient
                         let sessionToken = try await tokenClient.generateMFASession(
@@ -128,9 +127,8 @@ extension Identity.Backend.Client.Authenticate {
                             throw Abort(.unauthorized, reason: "Session has been invalidated")
                         }
 
-                        var updatedIdentity = identity
-                        updatedIdentity.lastLoginAt = date()
-                        try await updatedIdentity.save()
+                        // Use optimized update without fetching
+                        try await Database.Identity.updateLastLogin(id: identity.id)
 
                         request.auth.login(identity)
 
@@ -228,10 +226,8 @@ extension Identity.Backend.Client.Authenticate {
                     var mutableApiKey = apiKey
                     try await mutableApiKey.updateLastUsed()
                     
-                    // Update identity last login
-                    var updatedIdentity = identity
-                    updatedIdentity.lastLoginAt = date()
-                    try await updatedIdentity.save()
+                    // Update identity last login using optimized method
+                    try await Database.Identity.updateLastLogin(id: identity.id)
 
                     let (accessToken, refreshToken) = try await tokenClient.generateTokenPair(
                         identity.id,

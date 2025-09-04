@@ -204,58 +204,125 @@ extension Identity.Backend {
         }
         
         // Development test user
-        #if DEBUG
+#if DEBUG
+        @Sendable func createTestUser(using db: any Records.Database.Connection.`Protocol`) async throws {
+            @Dependency(\.logger) var logger
+            
+            let testEmail = "test@test.com"
+            let testPassword = "test"
+            
+            // Check if test user already exists
+            let existingUser = try await Database.Identity
+                .where { $0.emailString == testEmail }
+                .fetchOne(db)
+            
+            if existingUser == nil {
+                // Hash the password
+                let passwordHash = try Bcrypt.hash(testPassword)
+                
+                // Create the test user with verified email
+                let testUser = Database.Identity(
+                    id: UUID(),
+                    email: try .init(testEmail),
+                    passwordHash: passwordHash,
+                    emailVerificationStatus: .verified,
+                    sessionVersion: 0,
+                    createdAt: Date(),
+                    updatedAt: Date(),
+                    lastLoginAt: nil
+                )
+                
+                try await Database.Identity.insert { testUser }.execute(db)
+                
+                logger.info("Test user created", metadata: [
+                    "component": "Identity.Database",
+                    "environment": "DEBUG",
+                    "email": "test@test.com"
+                ])
+            } else {
+                logger.debug("Test user already exists", metadata: [
+                    "component": "Identity.Database",
+                    "environment": "DEBUG",
+                    "email": "test@test.com"
+                ])
+            }
+        }
+        
         migrator.registerMigration("create_test_user") { db in
             try await createTestUser(using: db)
         }
-        #endif
+#endif
+        
+        
+        // Performance optimization indexes
+        migrator.registerMigration("add_performance_indexes") { db in
+            @Dependency(\.logger) var logger
+            
+            logger.info("Adding performance indexes for Identity tables", metadata: [
+                "component": "Identity.Database",
+                "migration": "add_performance_indexes"
+            ])
+            
+            // Composite index for authentication queries
+            try await db.execute("""
+            CREATE INDEX IF NOT EXISTS idx_identities_email_verification 
+            ON identities(email, "emailVerificationStatus");
+        """)
+            
+            // Index for TOTP lookups - composite index for identity + confirmed status
+            try await db.execute("""
+            CREATE INDEX IF NOT EXISTS idx_identity_totp_confirmed 
+            ON identity_totp("identityId", "isConfirmed") 
+            WHERE "isConfirmed" = true;
+        """)
+            
+            // Index for unused backup codes lookup
+            try await db.execute("""
+            CREATE INDEX IF NOT EXISTS idx_backup_codes_unused 
+            ON identity_backup_codes("identityId", "isUsed") 
+            WHERE "isUsed" = false;
+        """)
+            
+            // Index for active API keys
+            try await db.execute("""
+            CREATE INDEX IF NOT EXISTS idx_api_keys_active 
+            ON identity_api_keys("identityId", "isActive") 
+            WHERE "isActive" = true;
+        """)
+            
+            // Index for API key lookups by key hash
+            try await db.execute("""
+            CREATE INDEX IF NOT EXISTS idx_api_keys_hash 
+            ON identity_api_keys("keyHash") 
+            WHERE "isActive" = true;
+        """)
+            
+            // Index for email change requests
+            try await db.execute("""
+            CREATE INDEX IF NOT EXISTS idx_email_change_requests_identity 
+            ON identity_email_change_requests("identityId") 
+            WHERE "confirmedAt" IS NULL;
+        """)
+            
+            // Index for profile lookups
+            try await db.execute("""
+            CREATE INDEX IF NOT EXISTS idx_profiles_identity 
+            ON identity_profiles("identityId");
+        """)
+            
+            // Index for deletion requests
+            try await db.execute("""
+            CREATE INDEX IF NOT EXISTS idx_deletions_identity_pending 
+            ON identity_deletions("identityId") 
+            WHERE "deletedAt" IS NULL;
+        """)
+            
+            logger.info("Performance indexes added successfully", metadata: [
+                "component": "Identity.Database",
+                "migration": "add_performance_indexes"
+            ])
+        }
         
         return migrator
     }
-    
-    #if DEBUG
-    /// Creates a test user for development purposes
-    private static func createTestUser(using db: any Records.Database.Connection.`Protocol`) async throws {
-        @Dependency(\.logger) var logger
-        
-        let testEmail = "test@test.com"
-        let testPassword = "test"
-        
-        // Check if test user already exists
-        let existingUser = try await Database.Identity
-            .where { $0.emailString == testEmail }
-            .fetchOne(db)
-        
-        if existingUser == nil {
-            // Hash the password
-            let passwordHash = try Bcrypt.hash(testPassword)
-            
-            // Create the test user with verified email
-            let testUser = Database.Identity(
-                id: UUID(),
-                email: try .init(testEmail),
-                passwordHash: passwordHash,
-                emailVerificationStatus: .verified,
-                sessionVersion: 0,
-                createdAt: Date(),
-                updatedAt: Date(),
-                lastLoginAt: nil
-            )
-            
-            try await Database.Identity.insert { testUser }.execute(db)
-            
-            logger.info("Test user created", metadata: [
-                "component": "Identity.Database",
-                "environment": "DEBUG",
-                "email": "test@test.com"
-            ])
-        } else {
-            logger.debug("Test user already exists", metadata: [
-                "component": "Identity.Database",
-                "environment": "DEBUG",
-                "email": "test@test.com"
-            ])
-        }
-    }
-    #endif
 }

@@ -37,4 +37,9 @@ extension EnvVars {
         get { self["IDENTITIES_JWT_REAUTHORIZATION_EXPIRY"].flatMap(Int.init).map(TimeInterval.init)! }
         set { self["IDENTITIES_JWT_REAUTHORIZATION_EXPIRY"]! = newValue.description }
     }
+    
+    package var bcryptCost: Int {
+        get { self["BCRYPT_COST"].flatMap(Int.init) ?? 10 }
+        set { self["BCRYPT_COST"] = newValue.description }
+    }
 }

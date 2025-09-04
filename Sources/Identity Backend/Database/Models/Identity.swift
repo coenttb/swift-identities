@@ -2,6 +2,8 @@ import Foundation
 import Records
 import EmailAddress
 import Vapor
+import Dependencies
+import EnvironmentVariables
 
 public enum Database {}
 
@@ -61,7 +63,8 @@ extension Database {
 
 extension Database.Identity {
     package mutating func setPassword(_ password: String) throws {
-        self.passwordHash = try Bcrypt.hash(password)
+        @Dependency(\.envVars) var envVars
+        self.passwordHash = try Bcrypt.hash(password, cost: envVars.bcryptCost)
         self.updatedAt = Date()
     }
     
