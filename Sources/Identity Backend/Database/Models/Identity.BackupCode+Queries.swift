@@ -17,7 +17,7 @@ extension Database.Identity.BackupCode {
         }
     }
     
-    package static func findUnusedByIdentity(_ identityId: UUID) async throws -> [Database.Identity.BackupCode] {
+    package static func findUnusedByIdentity(_ identityId: Identity.ID) async throws -> [Database.Identity.BackupCode] {
         @Dependency(\.defaultDatabase) var db
         return try await db.read { db in
             try await Database.Identity.BackupCode.findUnusedByIdentity(identityId)
@@ -25,7 +25,7 @@ extension Database.Identity.BackupCode {
         }
     }
     
-    package static func countUnusedByIdentity(_ identityId: UUID) async throws -> Int {
+    package static func countUnusedByIdentity(_ identityId: Identity.ID) async throws -> Int {
         @Dependency(\.defaultDatabase) var db
         let codes = try await db.read { db in
             try await Database.Identity.BackupCode.findUnusedByIdentity(identityId)
@@ -35,7 +35,7 @@ extension Database.Identity.BackupCode {
     }
     
     package static func create(
-        identityId: UUID,
+        identityId: Identity.ID,
         codes: [String]
     ) async throws {
         @Dependency(\.defaultDatabase) var db
@@ -63,7 +63,7 @@ extension Database.Identity.BackupCode {
     }
     
     package static func verify(
-        identityId: UUID,
+        identityId: Identity.ID,
         code: String
     ) async throws -> Bool {
         let unusedCodes = try await findUnusedByIdentity(identityId)
@@ -94,7 +94,7 @@ extension Database.Identity.BackupCode {
         }
     }
     
-    package static func deleteForIdentity(_ identityId: UUID) async throws {
+    package static func deleteForIdentity(_ identityId: Identity.ID) async throws {
         @Dependency(\.defaultDatabase) var db
         _ = try await db.write { db in
             try await Database.Identity.BackupCode

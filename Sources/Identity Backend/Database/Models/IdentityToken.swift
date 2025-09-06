@@ -9,7 +9,7 @@ extension Database.Identity {
         package let id: UUID
         package var value: String
         package var validUntil: Date
-        package var identityId: UUID
+        package var identityId: Identity.ID
         package var type: TokenType
         package var createdAt: Date = Date()
         package var lastUsedAt: Date?
@@ -30,7 +30,7 @@ extension Database.Identity {
             id: UUID,
             value: String,
             validUntil: Date,
-            identityId: UUID,
+            identityId: Identity.ID,
             type: TokenType,
             createdAt: Date = Date(),
             lastUsedAt: Date? = nil
@@ -46,7 +46,7 @@ extension Database.Identity {
         
         package init(
             id: UUID,
-            identityId: UUID,
+            identityId: Identity.ID,
             type: TokenType,
             validUntil: Date? = nil
         ) {
@@ -92,7 +92,7 @@ extension Database.Identity.Token {
         Self.where { $0.value.eq(value) }
     }
     
-    package static func findByIdentity(_ identityId: UUID) -> Where<Database.Identity.Token> {
+    package static func findByIdentity(_ identityId: Identity.ID) -> Where<Database.Identity.Token> {
         Self.where { $0.identityId.eq(identityId) }
     }
     

@@ -221,8 +221,11 @@ extension Identity.Backend {
                 let passwordHash = try Bcrypt.hash(testPassword)
                 
                 // Create the test user with verified email
+                @Dependency(\.uuid) var uuid
+                let id = Identity.ID(uuid())
+                
                 let testUser = Database.Identity(
-                    id: UUID(),
+                    id: id,
                     email: try .init(testEmail),
                     passwordHash: passwordHash,
                     emailVerificationStatus: .verified,

@@ -8,7 +8,7 @@ extension Database.Identity.Token {
     
     // Async initializer that creates and persists to database
     package init(
-        identityId: UUID,
+        identityId: Identity.ID,
         type: TokenType,
         validityHours: Int = 1
     ) async throws {
@@ -51,7 +51,7 @@ extension Database.Identity.Token {
         }
     }
     
-    package static func invalidateAllForIdentity(_ identityId: UUID, type: TokenType? = nil) async throws {
+    package static func invalidateAllForIdentity(_ identityId: Identity.ID, type: TokenType? = nil) async throws {
         @Dependency(\.defaultDatabase) var db
         
         try await db.write { db in

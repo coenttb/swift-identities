@@ -188,7 +188,7 @@ extension Database.Identity.Profile {
     
     /// Get or create profile with identity data and API key status
     /// Useful for profile management pages
-    package static func getOrCreateWithIdentity(for identityId: UUID) async throws -> ProfileWithIdentity {
+    package static func getOrCreateWithIdentity(for identityId: Identity.ID) async throws -> ProfileWithIdentity {
         @Dependency(\.defaultDatabase) var db
         @Dependency(\.uuid) var uuid
         

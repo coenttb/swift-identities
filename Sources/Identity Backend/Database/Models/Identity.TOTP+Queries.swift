@@ -10,7 +10,7 @@ import RFC_6238
 
 extension Database.Identity.TOTP {
     
-    package static func findByIdentity(_ identityId: UUID) async throws -> Database.Identity.TOTP? {
+    package static func findByIdentity(_ identityId: Identity.ID) async throws -> Database.Identity.TOTP? {
         @Dependency(\.defaultDatabase) var db
         return try await db.read { db in
             try await Database.Identity.TOTP.findByIdentity(identityId)
@@ -18,7 +18,7 @@ extension Database.Identity.TOTP {
         }
     }
     
-    package static func findConfirmedByIdentity(_ identityId: UUID) async throws -> Database.Identity.TOTP? {
+    package static func findConfirmedByIdentity(_ identityId: Identity.ID) async throws -> Database.Identity.TOTP? {
         @Dependency(\.defaultDatabase) var db
         return try await db.read { db in
             try await Database.Identity.TOTP.findConfirmedByIdentity(identityId)
@@ -27,7 +27,7 @@ extension Database.Identity.TOTP {
     }
     
     package static func create(
-        identityId: UUID,
+        identityId: Identity.ID,
         secret: String,
         algorithm: RFC_6238.TOTP.Algorithm = .sha1,
         digits: Int = 6,
@@ -84,7 +84,7 @@ extension Database.Identity.TOTP {
         }
     }
     
-    package static func deleteForIdentity(_ identityId: UUID) async throws {
+    package static func deleteForIdentity(_ identityId: Identity.ID) async throws {
         @Dependency(\.defaultDatabase) var db
         _ = try await db.write { db in
             try await Database.Identity.TOTP

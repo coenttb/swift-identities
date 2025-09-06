@@ -11,13 +11,13 @@ extension Identity.Token {
         public let jwt: JWT
         
         /// The identity ID extracted from the subject claim
-        public var identityId: UUID {
+        public var identityId: Identity.ID {
             guard let sub = jwt.payload.sub,
                   let components = Self.parseSubject(sub),
                   let id = UUID(uuidString: components.id) else {
                 fatalError()
             }
-            return id
+            return Identity.ID(id)
         }
         
         /// The email address extracted from the subject claim
@@ -71,7 +71,7 @@ extension Identity.Token {
         
         /// Creates a new access token
         public init(
-            identityId: UUID,
+            identityId: Identity.ID,
             email: EmailAddress,
             sessionVersion: Int,
             issuer: String,

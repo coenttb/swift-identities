@@ -19,14 +19,16 @@ extension Database.Identity {
         
         let id = uuid()
         try self.init(
-            id: id,
+            id: .init(id),
             email: email,
             password: password,
             emailVerificationStatus: emailVerificationStatus
         )
         
         try await db.write { [`self` = self] db in
-            try await Database.Identity.insert { `self` }.execute(db)
+            try await Database.Identity
+                .insert { `self` }
+                .execute(db)
         }
     }
     
@@ -44,7 +46,7 @@ extension Database.Identity {
         }
     }
     
-    package static func findById(_ id: UUID) async throws -> Database.Identity? {
+    package static func findById(_ id: Identity.ID) async throws -> Database.Identity? {
         @Dependency(\.defaultDatabase) var db
         return try await db.read { db in
             try await Database.Identity.where { $0.id.eq(id) }.fetchOne(db)
@@ -67,7 +69,7 @@ extension Database.Identity {
         }
     }
     
-    package static func delete(id: UUID) async throws {
+    package static func delete(id: Identity.ID) async throws {
         @Dependency(\.defaultDatabase) var db
         try await db.write { db in
             try await Database.Identity

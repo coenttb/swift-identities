@@ -10,12 +10,12 @@ extension Identity.Token {
         public let jwt: JWT
         
         /// The identity ID extracted from the subject claim
-        public var identityId: UUID {
+        public var identityId: Identity.ID {
             guard let sub = jwt.payload.sub,
                   let id = UUID(uuidString: sub) else {
                 fatalError()
             }
-            return id
+            return Identity.ID(id)
         }
         
         /// Session version for token invalidation
@@ -48,7 +48,7 @@ extension Identity.Token {
         
         /// Creates a new refresh token
         public init(
-            identityId: UUID,
+            identityId: Identity.ID,
             sessionVersion: Int,
             issuer: String,
             expiresIn: TimeInterval,

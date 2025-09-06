@@ -16,7 +16,7 @@ extension Database.Identity.Email.Change {
     @Table("identity_email_change_requests")
     package struct Request: Codable, Equatable, Identifiable, Sendable {
         package let id: UUID
-        package var identityId: UUID
+        package var identityId: Identity.ID
         internal var newEmail: String
         package var verificationToken: String
         package var requestedAt: Date = Date()
@@ -35,7 +35,7 @@ extension Database.Identity.Email.Change {
         
         package init(
             id: UUID,
-            identityId: UUID,
+            identityId: Identity.ID,
             newEmail: String,
             verificationToken: String,
             requestedAt: Date = Date(),
@@ -55,7 +55,7 @@ extension Database.Identity.Email.Change {
         
         package init(
             id: UUID,
-            identityId: UUID,
+            identityId: Identity.ID,
             newEmail: EmailAddress,
             expirationHours: Int = 24
         ) {
@@ -89,7 +89,7 @@ extension Database.Identity.Email.Change.Request {
         Self.where { $0.verificationToken.eq(token) }
     }
     
-    package static func findByIdentity(_ identityId: UUID) -> Where<Database.Identity.Email.Change.Request> {
+    package static func findByIdentity(_ identityId: Identity.ID) -> Where<Database.Identity.Email.Change.Request> {
         Self.where { $0.identityId.eq(identityId) }
     }
     

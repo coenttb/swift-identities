@@ -14,7 +14,7 @@ import EmailAddress
 extension Identity.Backend.Client.Create {
     package static func live(
         sendVerificationEmail: @escaping @Sendable (_ email: EmailAddress, _ token: String) async throws -> Void,
-        onIdentityCreationSuccess: @escaping @Sendable (_ identity: (id: UUID, email: EmailAddress)) async throws -> Void
+        onIdentityCreationSuccess: @escaping @Sendable (_ identity: (id: Identity.ID, email: EmailAddress)) async throws -> Void
     ) -> Self {
         @Dependency(\.logger) var logger
         @Dependency(\.passwordValidation.validate) var validatePassword

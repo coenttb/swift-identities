@@ -15,7 +15,7 @@ extension Database.Identity.Profile {
     
     // Async initializer that creates and persists to database
     package init(
-        identityId: UUID,
+        identityId: Identity.ID,
         displayName: String? = nil
     ) async throws {
         @Dependency(\.defaultDatabase) var db
@@ -40,7 +40,7 @@ extension Database.Identity.Profile {
         }
     }
     
-    package static func getByIdentity(_ identityId: UUID) async throws -> Database.Identity.Profile? {
+    package static func getByIdentity(_ identityId: Identity.ID) async throws -> Database.Identity.Profile? {
         @Dependency(\.defaultDatabase) var db
         return try await db.read { db in
             try await Database.Identity.Profile.findByIdentity(identityId)
@@ -48,7 +48,7 @@ extension Database.Identity.Profile {
         }
     }
     
-    package static func getOrCreate(for identityId: UUID) async throws -> Database.Identity.Profile {
+    package static func getOrCreate(for identityId: Identity.ID) async throws -> Database.Identity.Profile {
         @Dependency(\.defaultDatabase) var db
         
         // Check if profile exists

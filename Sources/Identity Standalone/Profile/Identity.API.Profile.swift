@@ -44,7 +44,7 @@ extension Identity.API.Profile {
     /// Response containing profile information
     public struct Response: Codable, Equatable, Sendable {
         public let id: UUID
-        public let identityId: UUID
+        public let identityId: Identity.ID
         public let displayName: String?
         public let email: EmailAddress
         public let createdAt: Date
@@ -52,7 +52,7 @@ extension Identity.API.Profile {
         
         public init(
             id: UUID,
-            identityId: UUID,
+            identityId: Identity.ID,
             displayName: String?,
             email: EmailAddress,
             createdAt: Date,

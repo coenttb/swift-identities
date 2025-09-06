@@ -239,7 +239,7 @@ private func hashBackupCode(_ code: String) throws -> String {
 // MARK: - Common Verification Logic
 
 private func verifyTOTPCode(
-    identityId: UUID,
+    identityId: Identity.ID,
     code: String,
     window: Int,
     configuration: Identity.MFA.TOTP.Configuration

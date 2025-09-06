@@ -62,7 +62,7 @@ struct IdentityProviderTests {
             let expiredToken = Identity.Token.Refresh(
                 expiration: .init(value: expiredDate),
                 issuedAt: .init(value: pastDate),
-                identityId: UUID(),
+                identityId: Identity.ID(),
                 tokenId: .init(value: UUID().uuidString),
                 sessionVersion: 1
             )
@@ -92,7 +92,7 @@ struct IdentityProviderTests {
             let validToken = Identity.Token.Refresh(
                 expiration: .init(value: date().addingTimeInterval(3600)),
                 issuedAt: .init(value: date()),
-                identityId: UUID(),
+                identityId: Identity.ID(),
                 tokenId: .init(value: UUID().uuidString),
                 sessionVersion: 1
             )

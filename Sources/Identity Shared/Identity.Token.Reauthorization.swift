@@ -10,12 +10,12 @@ extension Identity.Token {
         public let jwt: JWT
         
         /// The identity ID extracted from the subject claim
-        public var identityId: UUID? {
+        public var identityId: Identity.ID? {
             guard let sub = jwt.payload.sub,
                   let id = UUID(uuidString: sub) else {
                 return nil
             }
-            return id
+            return Identity.ID(id)
         }
         
         /// The purpose of this reauthorization
@@ -53,7 +53,7 @@ extension Identity.Token {
         
         /// Creates a new reauthorization token
         public init(
-            identityId: UUID,
+            identityId: Identity.ID,
             sessionVersion: Int,
             purpose: String,
             allowedOperations: [String] = [],

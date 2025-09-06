@@ -10,12 +10,12 @@ extension Identity.Token {
         public let jwt: JWT
         
         /// The identity ID that needs to complete MFA
-        public var identityId: UUID {
+        public var identityId: Identity.ID {
             guard let sub = jwt.payload.sub,
                   let id = UUID(uuidString: sub) else {
                 fatalError("Invalid MFA session token: missing or invalid subject")
             }
-            return id
+            return Identity.ID(id)
         }
         
         /// Session version for token invalidation
@@ -54,7 +54,7 @@ extension Identity.Token {
         
         /// Creates a new MFA session token
         public init(
-            identityId: UUID,
+            identityId: Identity.ID,
             sessionVersion: Int,
             attemptsRemaining: Int = 3,
             availableMethods: [Identity.MFA.Method] = [.totp],

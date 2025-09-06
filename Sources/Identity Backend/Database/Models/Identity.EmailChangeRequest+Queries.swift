@@ -9,7 +9,7 @@ extension Database.Identity.Email.Change.Request {
     
     // Async initializer that creates and persists to database
     package init(
-        identityId: UUID,
+        identityId: Identity.ID,
         newEmail: EmailAddress
     ) async throws {
         @Dependency(\.defaultDatabase) var db

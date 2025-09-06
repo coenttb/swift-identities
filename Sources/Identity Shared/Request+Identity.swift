@@ -27,7 +27,7 @@ extension Vapor.Request {
         }
         
         /// The authenticated identity's ID
-        public var id: UUID {
+        public var id: Identity.ID {
             token.identityId
         }
         

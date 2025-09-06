@@ -66,7 +66,7 @@ extension Identity.Frontend {
     private static func handleAuthenticate(
         _ authenticate: Identity.API.Authenticate,
         client: Identity.Client,
-        loginSuccessRedirect: (UUID) async throws -> URL
+        loginSuccessRedirect: (Identity.ID) async throws -> URL
     ) async throws -> any AsyncResponseEncodable {
         switch authenticate {
         case .credentials(let credentials):

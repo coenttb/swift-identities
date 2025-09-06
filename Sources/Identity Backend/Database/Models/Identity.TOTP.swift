@@ -11,7 +11,7 @@ extension Database.Identity {
     @Table("identity_totp")
     public struct TOTP: Codable, Equatable, Identifiable, Sendable {
         public let id: UUID
-        public let identityId: UUID
+        public let identityId: Identity.ID
         public let secret: String // Encrypted base32 secret
         public let isConfirmed: Bool
         public let algorithm: String
@@ -24,7 +24,7 @@ extension Database.Identity {
         
         package init(
             id: UUID = UUID(),
-            identityId: UUID,
+            identityId: Identity.ID,
             secret: String,
             isConfirmed: Bool = false,
             algorithm: RFC_6238.TOTP.Algorithm = .sha1,
@@ -54,7 +54,7 @@ extension Database.Identity {
 // MARK: - Query Helpers
 
 extension Database.Identity.TOTP {
-    package static func findByIdentity(_ identityId: UUID) -> Where<Database.Identity.TOTP> {
+    package static func findByIdentity(_ identityId: Identity.ID) -> Where<Database.Identity.TOTP> {
         Self.where { $0.identityId.eq(identityId) }
     }
     
@@ -66,7 +66,7 @@ extension Database.Identity.TOTP {
         Self.where { $0.isConfirmed.eq(false) }
     }
     
-    package static func findConfirmedByIdentity(_ identityId: UUID) -> Where<Database.Identity.TOTP> {
+    package static func findConfirmedByIdentity(_ identityId: Identity.ID) -> Where<Database.Identity.TOTP> {
         Self.where {
             $0.identityId.eq(identityId)
                 .and($0.isConfirmed.eq(true))

@@ -78,14 +78,14 @@ extension Identity.Frontend {
         
         /// Redirect configuration shared between Consumer and Standalone
         public struct Redirect: Sendable {
-            public var loginSuccess: @Sendable (UUID) async throws -> URL
+            public var loginSuccess: @Sendable (Identity.ID) async throws -> URL
             public var loginProtected: @Sendable () async throws -> URL
             public var createProtected: @Sendable () async throws -> URL
             public var createVerificationSuccess: @Sendable () async throws -> URL
             public var logoutSuccess: @Sendable () async throws -> URL
             
             public init(
-                loginSuccess: @escaping @Sendable (UUID) async throws -> URL,
+                loginSuccess: @escaping @Sendable (Identity.ID) async throws -> URL,
                 loginProtected: @escaping @Sendable () async throws -> URL,
                 createProtected: @escaping @Sendable () async throws -> URL,
                 createVerificationSuccess: @escaping @Sendable () async throws -> URL,

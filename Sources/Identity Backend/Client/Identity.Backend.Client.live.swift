@@ -25,7 +25,7 @@ extension Identity.Backend.Client {
         onEmailChangeSuccess: @escaping @Sendable (_ currentEmail: EmailAddress, _ newEmail: EmailAddress) async throws -> Void,
         sendDeletionRequestNotification: @escaping @Sendable (_ email: EmailAddress) async throws -> Void,
         sendDeletionConfirmationNotification: @escaping @Sendable (_ email: EmailAddress) async throws -> Void,
-        onIdentityCreationSuccess: @escaping @Sendable (_ identity: (id: UUID, email: EmailAddress)) async throws -> Void = { _ in },
+        onIdentityCreationSuccess: @escaping @Sendable (_ identity: (id: Identity.ID, email: EmailAddress)) async throws -> Void = { _ in },
         mfaConfiguration: Identity.MFA.TOTP.Configuration? = nil
     ) -> Self {
         @Dependency(\.logger) var logger

@@ -19,7 +19,7 @@ extension Identity.MFA.TOTP {
         /// Confirm TOTP setup by verifying the initial code
         @DependencyEndpoint
         public var confirmSetup: (
-            _ identityId: UUID,
+            _ identityId: Identity.ID,
             _ secret: String,
             _ code: String
         ) async throws -> Void
@@ -29,14 +29,14 @@ extension Identity.MFA.TOTP {
         /// Verify a TOTP code during authentication
         @DependencyEndpoint
         public var verifyCode: (
-            _ identityId: UUID,
+            _ identityId: Identity.ID,
             _ code: String
         ) async throws -> Bool
         
         /// Verify a TOTP code with custom window
         @DependencyEndpoint
         public var verifyCodeWithWindow: (
-            _ identityId: UUID,
+            _ identityId: Identity.ID,
             _ code: String,
             _ window: Int
         ) async throws -> Bool
@@ -46,21 +46,21 @@ extension Identity.MFA.TOTP {
         /// Generate backup codes for recovery
         @DependencyEndpoint
         public var generateBackupCodes: (
-            _ identityId: UUID,
+            _ identityId: Identity.ID,
             _ count: Int
         ) async throws -> [String]
         
         /// Verify a backup code
         @DependencyEndpoint
         public var verifyBackupCode: (
-            _ identityId: UUID,
+            _ identityId: Identity.ID,
             _ code: String
         ) async throws -> Bool
         
         /// Get remaining backup codes count
         @DependencyEndpoint
         public var remainingBackupCodes: (
-            _ identityId: UUID
+            _ identityId: Identity.ID
         ) async throws -> Int
         
         // MARK: - Management Operations
@@ -68,19 +68,19 @@ extension Identity.MFA.TOTP {
         /// Check if TOTP is enabled for an identity
         @DependencyEndpoint
         public var isEnabled: (
-            _ identityId: UUID
+            _ identityId: Identity.ID
         ) async throws -> Bool
         
         /// Disable TOTP for an identity
         @DependencyEndpoint
         public var disable: (
-            _ identityId: UUID
+            _ identityId: Identity.ID
         ) async throws -> Void
         
         /// Get TOTP status for an identity
         @DependencyEndpoint
         public var getStatus: (
-            _ identityId: UUID
+            _ identityId: Identity.ID
         ) async throws -> Status
         
         // MARK: - QR Code Generation

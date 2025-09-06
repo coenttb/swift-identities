@@ -15,7 +15,7 @@ extension Identity.Token {
         /// Generate an access token
         @DependencyEndpoint
         public var generateAccess: (
-            _ identityId: UUID,
+            _ identityId: Identity.ID,
             _ email: EmailAddress,
             _ sessionVersion: Int
         ) async throws -> String
@@ -29,7 +29,7 @@ extension Identity.Token {
         /// Generate a refresh token
         @DependencyEndpoint
         public var generateRefresh: (
-            _ identityId: UUID,
+            _ identityId: Identity.ID,
             _ sessionVersion: Int
         ) async throws -> String
         
@@ -41,7 +41,7 @@ extension Identity.Token {
         @DependencyEndpoint
         public var refreshAccess: (
             _ refreshToken: String,
-            _ identityId: UUID,
+            _ identityId: Identity.ID,
             _ email: EmailAddress,
             _ sessionVersion: Int
         ) async throws -> String
@@ -51,7 +51,7 @@ extension Identity.Token {
         /// Generate an MFA session token
         @DependencyEndpoint
         public var generateMFASession: (
-            _ identityId: UUID,
+            _ identityId: Identity.ID,
             _ sessionVersion: Int,
             _ attemptsRemaining: Int,
             _ availableMethods: [Identity.MFA.Method]
@@ -66,7 +66,7 @@ extension Identity.Token {
         /// Generate a reauthorization token
         @DependencyEndpoint
         public var generateReauthorization: (
-            _ identityId: UUID,
+            _ identityId: Identity.ID,
             _ sessionVersion: Int,
             _ purpose: String,
             _ allowedOperations: [String]
@@ -81,7 +81,7 @@ extension Identity.Token {
         /// Generate both access and refresh tokens
         @DependencyEndpoint
         public var generateTokenPair: (
-            _ identityId: UUID,
+            _ identityId: Identity.ID,
             _ email: EmailAddress,
             _ sessionVersion: Int
         ) async throws -> (access: String, refresh: String)

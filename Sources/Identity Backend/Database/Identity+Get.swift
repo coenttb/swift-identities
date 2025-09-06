@@ -15,7 +15,7 @@ import ServerFoundationVapor
 extension Database.Identity {
     public enum Get {
         public enum Identifier {
-            case id(UUID)
+            case id(Identity.ID)
             case email(String)
             case auth
             
@@ -73,7 +73,7 @@ extension Database.Identity {
 
 extension Database.Identity {
     package init(
-        id: UUID,
+        id: Identity.ID,
         email: EmailAddress,
         password: String,
         emailVerificationStatus: Database.Identity.EmailVerificationStatus = .unverified

@@ -9,7 +9,7 @@ extension Database.Identity {
     @Table("identity_backup_codes")
     public struct BackupCode: Codable, Equatable, Identifiable, Sendable {
         public let id: UUID
-        public let identityId: UUID
+        public let identityId: Identity.ID
         public let codeHash: String // Hashed backup code
         public let isUsed: Bool
         public let createdAt: Date
@@ -17,7 +17,7 @@ extension Database.Identity {
         
         package init(
             id: UUID = UUID(),
-            identityId: UUID,
+            identityId: Identity.ID,
             codeHash: String,
             isUsed: Bool = false,
             createdAt: Date = Date(),
@@ -37,7 +37,7 @@ extension Database.Identity {
 // MARK: - Query Helpers
 
 extension Database.Identity.BackupCode {
-    package static func findByIdentity(_ identityId: UUID) -> Where<Database.Identity.BackupCode> {
+    package static func findByIdentity(_ identityId: Identity.ID) -> Where<Database.Identity.BackupCode> {
         Self.where { $0.identityId.eq(identityId) }
     }
     
@@ -49,7 +49,7 @@ extension Database.Identity.BackupCode {
         Self.where { $0.isUsed.eq(true) }
     }
     
-    package static func findUnusedByIdentity(_ identityId: UUID) -> Where<Database.Identity.BackupCode> {
+    package static func findUnusedByIdentity(_ identityId: Identity.ID) -> Where<Database.Identity.BackupCode> {
         Self.where { 
             $0.identityId.eq(identityId)
                 .and($0.isUsed.eq(false))

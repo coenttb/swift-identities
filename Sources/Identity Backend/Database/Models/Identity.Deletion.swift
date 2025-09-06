@@ -6,7 +6,7 @@ extension Database.Identity {
     @Table("identity_deletions")
     public struct Deletion: Codable, Equatable, Identifiable, Sendable {
         public let id: UUID
-        public var identityId: UUID
+        public var identityId: Identity.ID
         public var requestedAt: Date = Date()
         public var reason: String?
         public var confirmedAt: Date?
@@ -15,7 +15,7 @@ extension Database.Identity {
         
         public init(
             id: UUID,
-            identityId: UUID,
+            identityId: Identity.ID,
             requestedAt: Date = Date(),
             reason: String? = nil,
             confirmedAt: Date? = nil,
@@ -33,7 +33,7 @@ extension Database.Identity {
         
         public init(
             id: UUID,
-            identityId: UUID,
+            identityId: Identity.ID,
             reason: String? = nil,
             gracePeriodDays: Int = 30
         ) {
@@ -54,7 +54,7 @@ extension Database.Identity {
 
 extension Database.Identity.Deletion {
     // No change needed
-    public static func findByIdentity(_ identityId: UUID) -> Where<Database.Identity.Deletion> {
+    public static func findByIdentity(_ identityId: Identity.ID) -> Where<Database.Identity.Deletion> {
         Self.where { $0.identityId.eq(identityId) }
     }
     

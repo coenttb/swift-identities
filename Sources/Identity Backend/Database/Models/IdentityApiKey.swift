@@ -8,7 +8,7 @@ package struct IdentityApiKey: Codable, Equatable, Identifiable, Sendable {
     package var name: String
     package var key: String
     package var scopes: String  // Store as JSON string, maps to jsonb column in PostgreSQL
-    package var identityId: UUID
+    package var identityId: Identity.ID
     package var isActive: Bool = true
     package var rateLimit: Int = 1000
     package var validUntil: Date
@@ -40,7 +40,7 @@ package struct IdentityApiKey: Codable, Equatable, Identifiable, Sendable {
         name: String,
         key: String,
         scopes: [String],
-        identityId: UUID,
+        identityId: Identity.ID,
         isActive: Bool = true,
         rateLimit: Int = 1000,
         validUntil: Date,
@@ -67,7 +67,7 @@ package struct IdentityApiKey: Codable, Equatable, Identifiable, Sendable {
     package init(
         id: UUID,
         name: String,
-        identityId: UUID,
+        identityId: Identity.ID,
         scopes: [String] = [],
         rateLimit: Int = 1000,
         validUntil: Date? = nil
@@ -114,7 +114,7 @@ extension IdentityApiKey {
         Self.where { $0.key.eq(key) }
     }
     
-    package static func findByIdentity(_ identityId: UUID) -> Where<IdentityApiKey> {
+    package static func findByIdentity(_ identityId: Identity.ID) -> Where<IdentityApiKey> {
         Self.where { $0.identityId.eq(identityId) }
     }
     

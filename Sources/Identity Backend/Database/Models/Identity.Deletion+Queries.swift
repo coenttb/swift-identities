@@ -8,7 +8,7 @@ extension Database.Identity.Deletion {
     
     // Async initializer that creates and persists to database
     package init(
-        identityId: UUID,
+        identityId: Identity.ID,
         reason: String? = nil,
         gracePeriodDays: Int = 30
     ) async throws {
@@ -30,7 +30,7 @@ extension Database.Identity.Deletion {
         }
     }
     
-    package static func findPendingForIdentity(_ identityId: UUID) async throws -> Database.Identity.Deletion? {
+    package static func findPendingForIdentity(_ identityId: Identity.ID) async throws -> Database.Identity.Deletion? {
         @Dependency(\.defaultDatabase) var db
         return try await db.read { db in
             try await Database.Identity.Deletion.findByIdentity(identityId).pending

@@ -5,12 +5,14 @@ import Vapor
 import Dependencies
 import EnvironmentVariables
 
+public typealias IdentityID = Identity.ID
+
 public enum Database {}
 
 extension Database {
     @Table("identities")
     public struct Identity: Codable, Equatable, Identifiable, Sendable {
-        public let id: UUID
+        public let id: IdentityID
         @Column("email")
         package var emailString: String
         package var passwordHash: String
@@ -37,7 +39,7 @@ extension Database {
         }
 //        
         package init(
-            id: UUID,
+            id: IdentityID,
             email: EmailAddress,
             passwordHash: String,
             emailVerificationStatus: EmailVerificationStatus = .unverified,

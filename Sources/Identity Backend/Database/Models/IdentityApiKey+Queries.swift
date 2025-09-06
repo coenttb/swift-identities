@@ -9,7 +9,7 @@ extension IdentityApiKey {
     // Async initializer that creates and persists to database
     package init(
         name: String,
-        identityId: UUID,
+        identityId: Identity.ID,
         scopes: [String] = [],
         rateLimit: Int = 1000
     ) async throws {
@@ -70,7 +70,7 @@ extension IdentityApiKey {
         }
     }
     
-    package static func listForIdentity(_ identityId: UUID) async throws -> [IdentityApiKey] {
+    package static func listForIdentity(_ identityId: Identity.ID) async throws -> [IdentityApiKey] {
         @Dependency(\.defaultDatabase) var db
         return try await db.read { db in
             try await IdentityApiKey.findByIdentity(identityId).fetchAll(db)

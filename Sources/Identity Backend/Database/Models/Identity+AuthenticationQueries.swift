@@ -49,7 +49,7 @@ extension Database.Identity {
     
     /// Single query to get identity with full MFA status
     /// Useful for MFA management endpoints
-    package static func findWithMFAStatus(identityId: UUID) async throws -> IdentityWithMFAStatus? {
+    package static func findWithMFAStatus(identityId: Identity.ID) async throws -> IdentityWithMFAStatus? {
         @Dependency(\.defaultDatabase) var db
         
         return try await db.read { db in
@@ -80,7 +80,7 @@ extension Database.Identity {
     
     /// Update lastLoginAt without fetching the record
     /// Replaces: fetch -> modify -> save pattern
-    package static func updateLastLogin(id: UUID) async throws {
+    package static func updateLastLogin(id: Identity.ID) async throws {
         @Dependency(\.defaultDatabase) var db
         @Dependency(\.date) var date
         
@@ -126,7 +126,7 @@ extension Database.Identity {
     
     /// Batch update for session invalidation
     /// Increments session version for all identities in the list
-    package static func invalidateSessions(identityIds: [UUID]) async throws -> Int {
+    package static func invalidateSessions(identityIds: [Identity.ID]) async throws -> Int {
         @Dependency(\.defaultDatabase) var db
         @Dependency(\.date) var date
         
@@ -173,7 +173,7 @@ extension Database.Identity {
 extension Database.Identity.TOTP {
     
     /// Check if TOTP is enabled without fetching the full record
-    package static func isEnabled(for identityId: UUID) async throws -> Bool {
+    package static func isEnabled(for identityId: Identity.ID) async throws -> Bool {
         @Dependency(\.defaultDatabase) var db
         
         let count = try await db.read { db in
@@ -210,7 +210,7 @@ extension Database.Identity.TOTP {
 extension Database.Identity.BackupCode {
     
     /// Get count of unused backup codes without fetching them all
-    package static func unusedCount(for identityId: UUID) async throws -> Int {
+    package static func unusedCount(for identityId: Identity.ID) async throws -> Int {
         @Dependency(\.defaultDatabase) var db
         
         return try await db.read { db in
@@ -225,7 +225,7 @@ extension Database.Identity.BackupCode {
     
     /// Mark a backup code as used atomically
     /// Returns true if the code was found and marked as used
-    package static func useCode(identityId: UUID, code: String) async throws -> Bool {
+    package static func useCode(identityId: Identity.ID, code: String) async throws -> Bool {
         @Dependency(\.defaultDatabase) var db
         @Dependency(\.date) var date
         

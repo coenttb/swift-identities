@@ -13,14 +13,14 @@ extension Database.Identity {
     @Table("identity_profiles")
     public struct Profile: Codable, Equatable, Identifiable, Sendable {
         public let id: UUID
-        public let identityId: UUID
+        public let identityId: Identity.ID
         public var displayName: String?
         public var createdAt: Date = Date()
         public var updatedAt: Date = Date()
         
         package init(
             id: UUID,
-            identityId: UUID,
+            identityId: Identity.ID,
             displayName: String? = nil,
             createdAt: Date = Date(),
             updatedAt: Date = Date()
@@ -33,7 +33,7 @@ extension Database.Identity {
         }
         
         package init(
-            identityId: UUID,
+            identityId: Identity.ID,
             displayName: String? = nil
         ) {
             @Dependency(\.uuid) var uuid
@@ -77,7 +77,7 @@ extension Database.Identity.Profile {
 // MARK: - Query Helpers
 
 extension Database.Identity.Profile {
-    public static func findByIdentity(_ identityId: UUID) -> Where<Database.Identity.Profile> {
+    public static func findByIdentity(_ identityId: Identity.ID) -> Where<Database.Identity.Profile> {
         Self.where { $0.identityId.eq(identityId) }
     }
 }
