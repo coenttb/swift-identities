@@ -64,14 +64,24 @@ extension Database {
 // MARK: - Password Management
 
 extension Database.Identity {
-    package mutating func setPassword(_ password: String) throws {
+    package mutating func setPassword(_ password: String) async throws {
         @Dependency(\.envVars) var envVars
-        self.passwordHash = try Bcrypt.hash(password, cost: envVars.bcryptCost)
+        @Dependency(\.application) var application
+        
+        let passwordHash: String = try await application.threadPool.runIfActive {
+            try Bcrypt.hash(password, cost: envVars.bcryptCost)
+        }
+        
+        self.passwordHash = passwordHash
         self.updatedAt = Date()
     }
     
-    package func verifyPassword(_ password: String) throws -> Bool {
-        try Bcrypt.verify(password, created: self.passwordHash)
+    package func verifyPassword(_ password: String) async throws -> Bool {
+        @Dependency(\.application) var application
+        
+        return try await application.threadPool.runIfActive {
+            try Bcrypt.verify(password, created: self.passwordHash)
+        }
     }
 }
 

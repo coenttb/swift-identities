@@ -69,7 +69,7 @@ extension Identity.Backend.Client {
                 do {
                     let identity = try await Database.Identity.get(by: .auth)
 
-                    guard try identity.verifyPassword(password)
+                    guard try await identity.verifyPassword(password)
                     else { throw Identity.Backend.AuthenticationError.invalidCredentials }
 
                     @Dependency(\.tokenClient) var tokenClient

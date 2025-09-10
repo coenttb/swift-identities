@@ -72,7 +72,7 @@ extension Identity.Backend.Client.Password {
                         }
 
                         // Update password and increment session version
-                        try identity.setPassword(newPassword)
+                        try await identity.setPassword(newPassword)
                         identity.sessionVersion += 1
                         try await identity.save()
 
@@ -106,14 +106,14 @@ extension Identity.Backend.Client.Password {
                 request: { currentPassword, newPassword in
                     var identity = try await Database.Identity.get(by: .auth)
 
-                    guard try identity.verifyPassword(currentPassword) else {
+                    guard try await identity.verifyPassword(currentPassword) else {
                         throw Identity.Backend.AuthenticationError.invalidCredentials
                     }
 
                     _ = try validatePassword(newPassword)
 
                     // Update password and increment session version
-                    try identity.setPassword(newPassword)
+                    try await identity.setPassword(newPassword)
                     identity.sessionVersion += 1
                     try await identity.save()
 

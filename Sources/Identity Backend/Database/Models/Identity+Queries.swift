@@ -86,7 +86,7 @@ extension Database.Identity {
             return nil
         }
         
-        guard try identity.verifyPassword(password) else {
+        guard try await identity.verifyPassword(password) else {
             return nil
         }
         
@@ -100,7 +100,7 @@ extension Database.Identity {
     }
     
     package mutating func updatePassword(_ newPassword: String) async throws {
-        try self.setPassword(newPassword)
+        try await self.setPassword(newPassword)
         self.sessionVersion += 1 // Invalidate all existing sessions
         try await self.save()
     }

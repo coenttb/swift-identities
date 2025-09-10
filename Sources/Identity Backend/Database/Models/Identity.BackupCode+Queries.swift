@@ -69,7 +69,7 @@ extension Database.Identity.BackupCode {
         let unusedCodes = try await findUnusedByIdentity(identityId)
         
         for backupCode in unusedCodes {
-            if try verifyCode(code, hash: backupCode.codeHash) {
+            if try await verifyCode(code, hash: backupCode.codeHash) {
                 // Mark as used
                 try await backupCode.markAsUsed()
                 return true
@@ -115,8 +115,12 @@ extension Database.Identity.BackupCode {
     }
     
     /// Verify a code against its hash
-    package static func verifyCode(_ code: String, hash: String) throws -> Bool {
-        try Bcrypt.verify(code, created: hash)
+    package static func verifyCode(_ code: String, hash: String) async throws -> Bool {
+        @Dependency(\.application) var application
+        
+        return try await application.threadPool.runIfActive {
+            try Bcrypt.verify(code, created: hash)
+        }
     }
     
     /// Generate a random backup code

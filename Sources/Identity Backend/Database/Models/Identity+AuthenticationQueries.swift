@@ -107,7 +107,7 @@ extension Database.Identity {
         }
         
         // Verify password
-        guard try authData.identity.verifyPassword(password) else {
+        guard try await authData.identity.verifyPassword(password) else {
             return nil
         }
         
@@ -132,13 +132,10 @@ extension Database.Identity {
         
         guard !identityIds.isEmpty else { return 0 }
         
-        // Build OR condition for multiple IDs
-        var totalUpdated = 0
-        
-        // For now, update each identity separately
-        // TODO: Investigate if swift-structured-queries supports batch WHERE IN
-        for identityId in identityIds {
-            try await db.write { db in
+        return try await db.write { db in
+            var totalUpdated = 0
+            
+            for identityId in identityIds {
                 try await Database.Identity
                     .where { $0.id.eq(identityId) }
                     .update { identity in
@@ -146,11 +143,12 @@ extension Database.Identity {
                         identity.updatedAt = date()
                     }
                     .execute(db)
+                
+                totalUpdated += 1
             }
-          
+            
+            return totalUpdated
         }
-        
-        return totalUpdated
     }
     
     /// Check if email exists without fetching the full record
