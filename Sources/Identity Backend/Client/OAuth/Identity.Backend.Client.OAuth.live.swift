@@ -138,9 +138,8 @@ extension Identity.Backend.Client.OAuth {
                         )
                         
                         try await Database.OAuthConnection.insert { connection }.execute(db)
+                        return existingIdentity
                     }
-                    
-                    
                     
                     // Create new identity
                     let newIdentity = try await Database.Identity.init(
@@ -184,15 +183,47 @@ extension Identity.Backend.Client.OAuth {
             },
             
             connection: { provider in
-                // This would need the current identity context
-                // Typically called from a protected route with identity in context
-                nil // Placeholder - needs request context
+                // Get current authenticated identity
+                @Dependency(\.defaultDatabase) var database
+                
+                do {
+                    let identity = try await Database.Identity.get(by: .auth)
+                    
+                    // Find connection for this provider
+                    guard let dbConnection = try await Database.OAuthConnection.find(
+                        identityId: identity.id,
+                        provider: provider
+                    ) else {
+                        return nil
+                    }
+                    
+                    return Identity.Client.OAuth.OAuthConnection(from: dbConnection)
+                } catch {
+                    // Not authenticated or no connection found
+                    return nil
+                }
             },
             
             disconnect: { provider in
-                // This would need the current identity context
-                // Typically called from a protected route with identity in context
-                // Placeholder - needs request context
+                // Get current authenticated identity
+                @Dependency(\.defaultDatabase) var database
+                
+                let identity = try await Database.Identity.get(by: .auth)
+                
+                // Find and delete the connection
+                guard let connection = try await Database.OAuthConnection.find(
+                    identityId: identity.id,
+                    provider: provider
+                ) else {
+                    throw OAuthError.providerNotFound(provider)
+                }
+                
+                try await database.write { db in
+                    try await Database.OAuthConnection.all
+                        .where { $0.id.eq(connection.id) }
+                        .delete()
+                        .execute(db)
+                }
             }
         )
     }

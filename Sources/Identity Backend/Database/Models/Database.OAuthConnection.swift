@@ -171,3 +171,14 @@ extension Database.OAuthConnection {
         }
     }
 }
+
+extension Identity.Client.OAuth.OAuthConnection {
+    public init(from oauthConnection: Database.OAuthConnection) {
+        self = Identity.Client.OAuth.OAuthConnection(
+            provider: oauthConnection.provider,
+            providerUserId: oauthConnection.providerUserId,
+            connectedAt: oauthConnection.createdAt,
+            scopes: oauthConnection.scopes
+        )
+    }
+}
