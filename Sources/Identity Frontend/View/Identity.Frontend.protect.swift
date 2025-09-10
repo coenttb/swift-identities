@@ -81,6 +81,19 @@ extension Identity.Frontend {
                 throw Abort(.unauthorized, reason: "Authentication required for backup codes")
             }
             // .verify doesn't require full authentication (it's part of login flow)
+        case .oauth(let oauth):
+            // OAuth views generally don't require authentication
+            // except for the connections management page
+            switch oauth {
+            case .connections:
+                // Managing OAuth connections requires authentication
+                if !isAuthenticated {
+                    throw Abort(.unauthorized, reason: "Authentication required to manage OAuth connections")
+                }
+            case .login, .callback, .error:
+                // These are part of the OAuth flow and don't require authentication
+                break
+            }
         }
     }
 }

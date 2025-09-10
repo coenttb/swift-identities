@@ -17,97 +17,67 @@ extension Identity.Route {
         route: Identity.Route
     ) async throws -> any AsyncResponseEncodable {
         switch route {
-        case .create(let createRoute):
-            return try await handleStandaloneCreate(createRoute)
+        case .create(let create):
+            switch create {
+            case .api(let api):
+                return try await Identity.API.response(api: .create(api))
+            case .view(let view):
+                return try await Identity.View.standaloneResponse(view: .create(mapCreateView(view)))
+            }
             
-        case .authenticate(let authRoute):
-            return try await handleStandaloneAuthenticate(authRoute)
+        case .authenticate(let authenticate):
+            switch authenticate {
+            case .api(let api):
+                return try await Identity.API.response(api: .authenticate(api))
+            case .view(let view):
+                return try await Identity.View.standaloneResponse(view: .authenticate(mapAuthView(view)))
+            }
             
-        case .delete(let deleteRoute):
-            return try await handleStandaloneDelete(deleteRoute)
+        case .delete(let delete):
+            switch delete {
+            case .api(let api):
+                return try await Identity.API.response(api: .delete(api))
+            case .view(let view):
+                return try await Identity.View.standaloneResponse(view: .delete(view))
+            }
             
-        case .email(let emailRoute):
-            return try await handleStandaloneEmail(emailRoute)
+        case .email(let email):
+            switch email {
+            case .api(let api):
+                return try await Identity.API.response(api: .email(api))
+            case .view(let view):
+                return try await Identity.View.standaloneResponse(view: .email(mapEmailView(view)))
+            }
             
-        case .password(let passwordRoute):
-            return try await handleStandalonePassword(passwordRoute)
+        case .password(let password):
+            switch password {
+            case .api(let api):
+                return try await Identity.API.response(api: .password(api))
+            case .view(let view):
+                return try await Identity.View.standaloneResponse(view: .password(mapPasswordView(view)))
+            }
             
-        case .mfa(let mfaRoute):
-            return try await handleStandaloneMFA(mfaRoute)
+        case .mfa(let mfa):
+            switch mfa {
+            case .api(let api):
+                return try await Identity.API.response(api: .mfa(api))
+            case .view(let view):
+                return try await Identity.View.standaloneResponse(view: .mfa(mapMFAView(view)))
+            }
             
         case .logout:
             return try await Identity.View.standaloneResponse(view: .logout)
             
         case .reauthorize(let reauth):
             return try await Identity.API.response(api: .reauthorize(reauth))
-        }
-    }
-    
-    // MARK: - Feature Handlers
-    
-    private static func handleStandaloneCreate(
-        _ route: Identity.Creation.Route
-    ) async throws -> any AsyncResponseEncodable {
-        switch route {
-        case .api(let api):
-            return try await Identity.API.response(api: .create(api))
-        case .view(let view):
-            return try await Identity.View.standaloneResponse(view: .create(mapCreateView(view)))
-        }
-    }
-    
-    private static func handleStandaloneAuthenticate(
-        _ route: Identity.Authentication.Route
-    ) async throws -> any AsyncResponseEncodable {
-        switch route {
-        case .api(let api):
-            return try await Identity.API.response(api: .authenticate(api))
-        case .view(let view):
-            return try await Identity.View.standaloneResponse(view: .authenticate(mapAuthView(view)))
-        }
-    }
-    
-    private static func handleStandaloneDelete(
-        _ route: Identity.Deletion.Route
-    ) async throws -> any AsyncResponseEncodable {
-        switch route {
-        case .api(let api):
-            return try await Identity.API.response(api: .delete(api))
-        case .view(let view):
-            return try await Identity.View.standaloneResponse(view: .delete(view))
-        }
-    }
-    
-    private static func handleStandaloneEmail(
-        _ route: Identity.Email.Route
-    ) async throws -> any AsyncResponseEncodable {
-        switch route {
-        case .api(let api):
-            return try await Identity.API.response(api: .email(api))
-        case .view(let view):
-            return try await Identity.View.standaloneResponse(view: .email(mapEmailView(view)))
-        }
-    }
-    
-    private static func handleStandalonePassword(
-        _ route: Identity.Password.Route
-    ) async throws -> any AsyncResponseEncodable {
-        switch route {
-        case .api(let api):
-            return try await Identity.API.response(api: .password(api))
-        case .view(let view):
-            return try await Identity.View.standaloneResponse(view: .password(mapPasswordView(view)))
-        }
-    }
-    
-    private static func handleStandaloneMFA(
-        _ route: Identity.MFA.Route
-    ) async throws -> any AsyncResponseEncodable {
-        switch route {
-        case .api(let api):
-            return try await Identity.API.response(api: .mfa(api))
-        case .view(let view):
-            return try await Identity.View.standaloneResponse(view: .mfa(mapMFAView(view)))
+            
+        case .oauth(let oauth):
+            switch oauth {
+            case .api(let oauth):
+                return try await Identity.API.response(api: .oauth(oauth))
+            case .view(let oauth):
+                return try await Identity.View.standaloneResponse(view: .oauth(oauth))
+            }
         }
     }
     

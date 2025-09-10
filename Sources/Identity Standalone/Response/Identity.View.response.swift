@@ -149,6 +149,11 @@ extension Identity.View {
                 view: password,
                 configuration: configuration
             )
+        case .oauth(let oath):
+            return try await Identity.OAuth.response(
+                view: oath,
+                configuration: configuration
+            )
         }
     }
     

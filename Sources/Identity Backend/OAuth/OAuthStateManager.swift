@@ -62,6 +62,7 @@ public enum OAuthError: Error, LocalizedError {
     case tokenExchangeFailed
     case missingEmail
     case accountAlreadyLinked
+    case tokenExpired
     
     public var errorDescription: String? {
         switch self {
@@ -77,6 +78,8 @@ public enum OAuthError: Error, LocalizedError {
             return "OAuth provider did not provide an email address"
         case .accountAlreadyLinked:
             return "This OAuth account is already linked to another user"
+        case .tokenExpired:
+            return "Token expired"
         }
     }
 }

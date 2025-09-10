@@ -60,6 +60,11 @@ extension Identity.Frontend {
         case .mfa:
             // MFA not yet implemented in Frontend
             throw Abort(.notImplemented, reason: "MFA not yet implemented in Frontend")
+        case .oauth(let oauth):
+            return try await handleOAuth(
+                oauth,
+                client: client
+            )
         }
     }
     
@@ -273,5 +278,88 @@ extension Identity.Frontend {
             return response
         }
         
+    }
+    
+    private static func handleOAuth(
+        _ oauth: Identity.API.OAuth,
+        client: Identity.Client
+    ) async throws -> any AsyncResponseEncodable {
+        guard let oauthClient = client.oauth else {
+            throw Abort(.notImplemented, reason: "OAuth not configured")
+        }
+        
+        switch oauth {
+        case .providers:
+            // Return list of available OAuth providers
+            let providers = try await oauthClient.providers()
+            let providerData = providers.map { provider in
+                ["id": provider.identifier, "name": provider.displayName]
+            }
+            return Response.json(success: true, data: providerData)
+            
+        case .authorize(let providerName):
+            // Generate authorization URL and redirect
+            @Dependency(\.request) var request
+            guard let request else { throw Abort.requestUnavailable }
+            
+            // Build redirect URI from current request
+            let scheme = request.headers.first(name: "X-Forwarded-Proto") ?? "http"
+            let host = request.headers.first(name: .host) ?? "localhost"
+            let redirectURI = "\(scheme)://\(host)/api/oauth/callback"
+            
+            let authURL = try await oauthClient.authorizationURL(
+                providerName,
+                redirectURI
+            )
+            return Response(status: .seeOther, headers: ["Location": authURL.absoluteString])
+            
+        case .callback(let credentials):
+            // Handle OAuth callback
+            let authResponse = try await oauthClient.callback(credentials)
+            
+            @Dependency(Identity.Frontend.Configuration.self) var config
+            let cookies = config.cookies
+            
+            // Set authentication cookies
+            let accessCookieValue = HTTPCookies.Value(
+                string: authResponse.accessToken,
+                expires: Date(timeIntervalSinceNow: TimeInterval(cookies.accessToken.expires)),
+                maxAge: Int(cookies.accessToken.expires),
+                domain: cookies.accessToken.domain,
+                path: cookies.accessToken.path,
+                isSecure: cookies.accessToken.isSecure,
+                isHTTPOnly: cookies.accessToken.isHTTPOnly,
+                sameSite: cookies.accessToken.sameSitePolicy
+            )
+            
+            let refreshCookieValue = HTTPCookies.Value(
+                string: authResponse.refreshToken,
+                expires: Date(timeIntervalSinceNow: TimeInterval(cookies.refreshToken.expires)),
+                maxAge: Int(cookies.refreshToken.expires),
+                domain: cookies.refreshToken.domain,
+                path: cookies.refreshToken.path,
+                isSecure: cookies.refreshToken.isSecure,
+                isHTTPOnly: cookies.refreshToken.isHTTPOnly,
+                sameSite: cookies.refreshToken.sameSitePolicy
+            )
+            
+            let response = Response(
+                status: .seeOther,
+                headers: ["Location": "/dashboard"] // Or redirect to intended destination
+            )
+            response.cookies[Identity.Cookies.Names.accessToken] = accessCookieValue
+            response.cookies[Identity.Cookies.Names.refreshToken] = refreshCookieValue
+            return response
+            
+        case .connections:
+            // Get OAuth connections for current user
+            let connections = try await oauthClient.getAllConnections()
+            return Response.json(success: true, data: connections)
+            
+        case .disconnect(let providerName):
+            // Disconnect OAuth provider
+            try await oauthClient.disconnect(providerName)
+            return Response.success(true)
+        }
     }
 }

@@ -1,0 +1,170 @@
+//
+//  Identity.OAuth.response.swift
+//  coenttb-identities
+//
+//  OAuth view response handlers
+//
+
+import ServerFoundationVapor
+import IdentitiesTypes
+import HTML
+import ServerFoundationVapor
+import Identity_Views
+import Dependencies
+import Language
+
+// MARK: - Response Dispatcher
+
+extension Identity.OAuth {
+    /// Dispatches OAuth view requests to appropriate handlers.
+    public static func response(
+        view: Identity.View.OAuth,
+        configuration: Identity.Frontend.Configuration
+    ) async throws -> any AsyncResponseEncodable {
+        let router = configuration.router
+        
+        // Check if OAuth is configured
+        guard configuration.client.oauth != nil else {
+            throw Abort(.notImplemented, reason: "OAuth is not configured")
+        }
+        
+        switch view {
+        case .login:
+            return try await handleLogin(configuration: configuration)
+            
+        case .callback(let credentials):
+            return try await handleCallback(credentials: credentials, configuration: configuration)
+            
+        case .connections:
+            return try await handleConnections(configuration: configuration)
+            
+        case .error(let message):
+            return try await handleError(message: message, configuration: configuration)
+        }
+    }
+}
+
+// MARK: - View Handlers
+
+extension Identity.OAuth {
+    
+    /// Handles OAuth login view showing available providers.
+    private static func handleLogin(
+        configuration: Identity.Frontend.Configuration
+    ) async throws -> any AsyncResponseEncodable {
+        guard let oauthClient = configuration.client.oauth else {
+            throw Abort(.notImplemented, reason: "OAuth is not configured")
+        }
+        
+        // Get available providers
+        let providers = try await oauthClient.providers()
+        
+        // Generate authorization URLs for each provider
+        @Dependency(\.request) var request
+        guard let request else { throw Abort.requestUnavailable }
+        
+        let scheme = request.headers.first(name: "X-Forwarded-Proto") ?? "http"
+        let host = request.headers.first(name: .host) ?? "localhost"
+        let redirectURI = "\(scheme)://\(host)/identity/oauth/callback"
+        
+        var providerUrls: [(provider: Identity.OAuth.Provider, url: URL)] = []
+        for provider in providers {
+            let authURL = try await oauthClient.authorizationURL(
+                provider.identifier,
+                redirectURI
+            )
+            providerUrls.append((provider: provider, url: authURL))
+        }
+        
+        return try await Identity.Frontend.htmlDocument(
+            for: .oauth(.login),
+            title: "Sign in with OAuth",
+            description: "Sign in using your preferred OAuth provider",
+            configuration: configuration
+        ) {
+            Identity.OAuth.Login.View(
+                providers: providerUrls,
+                cancelHref: configuration.navigation.home
+            )
+        }
+    }
+    
+    /// Handles OAuth callback processing.
+    private static func handleCallback(
+        credentials: Identity.OAuth.Credentials,
+        configuration: Identity.Frontend.Configuration
+    ) async throws -> any AsyncResponseEncodable {
+        // The callback is typically handled by the API endpoint
+        // This view can show a processing state or error
+        return try await Identity.Frontend.htmlDocument(
+            for: .oauth(.callback(credentials)),
+            title: "Processing OAuth Login",
+            description: "Processing your OAuth login",
+            configuration: configuration
+        ) {
+            Identity.OAuth.Callback.View(
+                provider: credentials.provider,
+                redirectUrl: configuration.redirect.loginSuccess
+            )
+        }
+    }
+    
+    /// Handles OAuth connections management view.
+    private static func handleConnections(
+        configuration: Identity.Frontend.Configuration
+    ) async throws -> any AsyncResponseEncodable {
+        guard let oauthClient = configuration.client.oauth else {
+            throw Abort(.notImplemented, reason: "OAuth is not configured")
+        }
+        
+        // Get current connections
+        let connections = try await oauthClient.getAllConnections()
+        
+        // Get available providers
+        let allProviders = try await oauthClient.providers()
+        
+        // Determine which providers are connected
+        let connectedProviders = Set(connections.map { $0.provider })
+        let availableProviders = allProviders.filter { !connectedProviders.contains($0.identifier) }
+        
+        let router = configuration.router
+        
+        return try await Identity.Frontend.htmlDocument(
+            for: .oauth(.connections),
+            title: "Manage OAuth Connections",
+            description: "Manage your connected OAuth accounts",
+            configuration: configuration
+        ) {
+            Identity.OAuth.Connections.View(
+                connections: connections,
+                availableProviders: availableProviders,
+                connectAction: { provider in
+                    router.url(for: .api(.oauth(.authorize(provider: provider))))
+                },
+                disconnectAction: { provider in
+                    router.url(for: .api(.oauth(.disconnect(provider: provider))))
+                },
+                dashboardHref: configuration.navigation.home
+            )
+        }
+    }
+    
+    /// Handles OAuth error view.
+    private static func handleError(
+        message: String,
+        configuration: Identity.Frontend.Configuration
+    ) async throws -> any AsyncResponseEncodable {
+        return try await Identity.Frontend.htmlDocument(
+            for: .oauth(.error(message)),
+            title: "OAuth Error",
+            description: "An error occurred during OAuth authentication",
+            configuration: configuration
+        ) {
+            Identity.OAuth.Error.View(
+                errorMessage: message,
+                retryHref: configuration.router.url(for: .view(.oauth(.login))),
+                cancelHref: configuration.navigation.home
+            )
+        }
+    }
+}

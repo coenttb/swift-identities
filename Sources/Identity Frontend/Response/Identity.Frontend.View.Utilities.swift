@@ -51,6 +51,7 @@ extension Identity.Frontend {
                 case .email: return "Change Email"
                 case .password: return "Password"
                 case .mfa: return "MFA"
+                case .oauth: return "OAuth"
                 }
             },
             description: { view in
@@ -62,6 +63,7 @@ extension Identity.Frontend {
                 case .email: return "Change your email address"
                 case .password: return "Manage your password"
                 case .mfa: return "MFA"
+                case .oauth: return "OAuth"
                 }
             },
             favicons: branding.favicons,
