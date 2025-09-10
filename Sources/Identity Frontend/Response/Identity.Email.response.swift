@@ -84,10 +84,10 @@ extension Identity.Email {
         
         return try await Identity.Frontend.htmlDocument(for: .email(.change(.reauthorization)), configuration: configuration) {
             Identity.Reauthorization.View(
-                currentUserName: token.displayName,
-                passwordResetHref: router.url(for: .password(.view(.reset(.request)))),
+                currentUserName: token.email.description,
+                passwordResetHref: router.url(for: .view(.password(.reset(.request)))),
                 confirmFormAction: router.url(for: .reauthorize(.init())),
-                redirectOnSuccess: router.url(for: .email(.view(.change(.request))))
+                redirectOnSuccess: router.url(for: .view(.email(.change(.request))))
             )
         }
     }

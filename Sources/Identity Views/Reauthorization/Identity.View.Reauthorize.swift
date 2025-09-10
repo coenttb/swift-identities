@@ -48,6 +48,7 @@ extension Identity.Reauthorization {
                               )
                             **\(currentUserName)**.
                             """ }
+                            .textAlign(.center)
 
                             form(
                                 action: .init(confirmFormAction.relativePath),

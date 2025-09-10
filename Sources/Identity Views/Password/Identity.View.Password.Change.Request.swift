@@ -9,17 +9,21 @@ import Foundation
 import IdentitiesTypes
 import HTML
 import HTMLWebsite
+import HTMLMarkdown
 import ServerFoundationVapor
 
 extension Identity.Password.Change.Request {
     package struct View: HTML {
+        let currentUserName: String
         let formActionURL: URL
         let redirectOnSuccess: URL
 
-        package  init(
+        package init(
+            currentUserName: String,
             formActionURL: URL,
             redirectOnSuccess: URL
         ) {
+            self.currentUserName = currentUserName
             self.formActionURL = formActionURL
             self.redirectOnSuccess = redirectOnSuccess
         }
@@ -30,6 +34,17 @@ extension Identity.Password.Change.Request {
             PageModule(theme: .authenticationFlow) {
                 div {
                 VStack {
+                    HTMLMarkdown { """
+                      \(
+                          TranslatedString(
+                              dutch: "Ingelogd als",
+                              english: "Signed in as"
+                          )
+                      )
+                    **\(currentUserName)**.
+                    """ }
+                    .textAlign(.center)
+                    
                     HTMLComponents.Paragraph {
                         TranslatedString(
                             dutch: "Voer uw huidige wachtwoord en uw nieuwe wachtwoord in.",

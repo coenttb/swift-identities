@@ -112,11 +112,14 @@ extension Identity.Password {
     ) async throws -> any AsyncResponseEncodable {
         let router = configuration.router
         
+        @Dependency(\.request?.identity?.email.description) var email
+                
         return try await Identity.Frontend.htmlDocument(
             for: .password(.change(.request)),
             configuration: configuration
         ) {
             try await Identity.Password.Change.Request.View(
+                currentUserName: email ?? "...",
                 formActionURL: router.url(for: .password(.api(.change(.request(change: .init()))))),
                 redirectOnSuccess: configuration.redirect.logoutSuccess()
             )
