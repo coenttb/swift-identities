@@ -113,11 +113,10 @@ extension Identity.Backend.Client {
                 )
             },
             oauth: oauthProviderRegistry.map { registry in
-                @Dependency(\.encryption) var encryption
-                let stateManager = OAuthStateManager(database: database)
+                @Dependency(Identity.Token.Client.self) var encryption
+                
+                let stateManager = OAuthStateManager()
                 return Identity.Backend.Client.OAuth.live(
-                    database: database,
-                    encryption: encryption,
                     registry: registry,
                     stateManager: stateManager
                 )

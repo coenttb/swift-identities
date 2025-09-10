@@ -74,7 +74,8 @@ extension Database.OAuthState {
             try await db.write { db in
                 try await Self.all
                     .where { $0.state.eq(state) }
-                    .delete(db)
+                    .delete()
+                    .execute(db)
             }
             return nil
         }
@@ -83,7 +84,8 @@ extension Database.OAuthState {
         try await db.write { db in
             try await Self.all
                 .where { $0.state.eq(state) }
-                .delete(db)
+                .delete()
+                .execute(db)
         }
         
         return oauthState
@@ -96,7 +98,8 @@ extension Database.OAuthState {
         try await db.write { db in
             try await Self.all
                 .where { $0.expiresAt.lt(Date()) }
-                .delete(db)
+                .delete()
+                .execute(db)
         }
     }
     

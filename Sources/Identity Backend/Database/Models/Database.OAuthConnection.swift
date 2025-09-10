@@ -36,7 +36,7 @@ extension Database {
         @Column("expires_at")
         public var expiresAt: Date?
         
-        @Column("scopes")
+        @Column("scopes", as: [String]?.PostgresJSONB.self)
         public var scopes: [String]?
         
         @Column("user_info")
@@ -94,7 +94,7 @@ extension Database.OAuthConnection {
         @Dependency(\.defaultDatabase) var db
         
         return try await db.read { db in
-            try await self.all
+            try await Self.all
                 .where { connection in
                     connection.provider.eq(provider)
                         .and(connection.providerUserId.eq(providerUserId))
@@ -110,9 +110,9 @@ extension Database.OAuthConnection {
         @Dependency(\.defaultDatabase) var db
         
         return try await db.read { db in
-            try await self.all
+            try await Self.all
                 .where { $0.identityId.eq(identityId) }
-                .fetch(db)
+                .fetchAll(db)
         }
     }
     
@@ -124,7 +124,7 @@ extension Database.OAuthConnection {
         @Dependency(\.defaultDatabase) var db
         
         return try await db.read { db in
-            try await self.all
+            try await Self.all
                 .where { connection in
                     connection.identityId.eq(identityId)
                         .and(connection.provider.eq(provider))
