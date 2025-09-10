@@ -35,7 +35,7 @@ extension Identity.OAuth.Connections {
         }
         
         public var body: some HTML {
-            PageModule(theme: .settings) {
+            PageModule(theme: .content) {
                 VStack(alignment: .stretch) {
                     // Title
                     Header(2) {
@@ -122,6 +122,8 @@ extension Identity.OAuth.Connections {
                 .maxWidth(.px(600))
                 .margin(.auto)
             }
+            .maxWidth(.px(800))
+            .margin(.auto)
         }
         
         @HTMLBuilder
@@ -238,10 +240,4 @@ extension Identity.OAuth.Connections {
 // Namespace
 extension Identity.OAuth {
     public enum Connections {}
-}
-extension PageModule.Theme {
-    static var settings: Self {
-//        @CLAUDE IMPLEMENT
-        fatalError()
-    }
 }

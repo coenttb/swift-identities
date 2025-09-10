@@ -28,7 +28,7 @@ extension Identity.OAuth.Error {
         }
         
         public var body: some HTML {
-            PageModule(theme: .error) {
+            PageModule(theme: .content) {
                 VStack(alignment: .center) {
                     // Error icon
                     div {
@@ -126,6 +126,8 @@ extension Identity.OAuth.Error {
                 .margin(.auto)
                 .padding(.extraLarge)
             }
+            .maxWidth(.px(800))
+            .margin(.auto)
         }
     }
 }
@@ -135,10 +137,3 @@ extension Identity.OAuth {
     public enum Error {}
 }
 
-
-extension PageModule.Theme {
-    static var error: Self {
-//        @CLAUDE IMPLEMENT
-        fatalError()
-    }
-}

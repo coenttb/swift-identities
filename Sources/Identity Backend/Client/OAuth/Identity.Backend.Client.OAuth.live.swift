@@ -97,10 +97,10 @@ private func callbackImplementation(
             throw OAuthError.providerNotFound(credentials.provider)
         }
         
-        // 3. Exchange code for tokens
+        // 3. Exchange code for tokens using redirectURI from state
         let tokens = try await provider.exchangeCode(
             credentials.code,
-            redirectURI: credentials.redirectURI
+            redirectURI: stateData.redirectURI
         )
         
         // 4. Get user info
