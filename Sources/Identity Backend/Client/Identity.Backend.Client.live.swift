@@ -26,7 +26,8 @@ extension Identity.Backend.Client {
         sendDeletionRequestNotification: @escaping @Sendable (_ email: EmailAddress) async throws -> Void,
         sendDeletionConfirmationNotification: @escaping @Sendable (_ email: EmailAddress) async throws -> Void,
         onIdentityCreationSuccess: @escaping @Sendable (_ identity: (id: Identity.ID, email: EmailAddress)) async throws -> Void = { _ in },
-        mfaConfiguration: Identity.MFA.TOTP.Configuration? = nil
+        mfaConfiguration: Identity.MFA.TOTP.Configuration? = nil,
+        oauthProviderRegistry: OAuthProviderRegistry? = nil
     ) -> Self {
         @Dependency(\.logger) var logger
         @Dependency(\.defaultDatabase) var database
@@ -110,6 +111,16 @@ extension Identity.Backend.Client {
                     backupCodes: Identity.Backend.Client.MFA.backupCodesLive(configuration: config),
                     status: Identity.Client.MFA.Status.live()
                 )
+            },
+            oauth: oauthProviderRegistry.map { registry in
+                @Dependency(\.encryption) var encryption
+                let stateManager = OAuthStateManager(database: database)
+                return Identity.Backend.Client.OAuth.live(
+                    database: database,
+                    encryption: encryption,
+                    registry: registry,
+                    stateManager: stateManager
+                )
             }
         )
     }
@@ -118,7 +129,8 @@ extension Identity.Backend.Client {
 extension Identity.Backend.Client {
     public static func logging(
         router: AnyParserPrinter<URLRequestData, Identity.Route>,
-        mfaConfiguration: Identity.MFA.TOTP.Configuration? = nil
+        mfaConfiguration: Identity.MFA.TOTP.Configuration? = nil,
+        oauthProviderRegistry: OAuthProviderRegistry? = nil
     ) -> Self {
         return .live(
             sendVerificationEmail: { email, token in
@@ -201,7 +213,8 @@ extension Identity.Backend.Client {
                     "email": "\(identity.email)"
                 ])
             },
-            mfaConfiguration: mfaConfiguration
+            mfaConfiguration: mfaConfiguration,
+            oauthProviderRegistry: oauthProviderRegistry
         )
     }
 }

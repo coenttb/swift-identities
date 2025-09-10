@@ -70,6 +70,21 @@ extension Identity.API {
                 guard let request else { throw Abort.requestUnavailable }
                 try request.auth.require(type)
             }
+            
+        case .oauth(let oauth):
+            switch oauth {
+            case .providers, .authorize:
+                // Public endpoints - no authentication required
+                break
+            case .callback:
+                // Callback doesn't require authentication - creates session
+                break
+            case .connections, .disconnect:
+                // These require authentication to manage connections
+                @Dependency(\.request) var request
+                guard let request else { throw Abort.requestUnavailable }
+                try request.auth.require(type)
+            }
         }
     }
 }

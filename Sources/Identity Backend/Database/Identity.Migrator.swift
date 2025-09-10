@@ -257,6 +257,55 @@ extension Identity.Backend {
 #endif
         
         
+        // OAuth connections table
+        migrator.registerMigration("create_oauth_connections_table") { db in
+            try await db.execute("""
+                CREATE TABLE IF NOT EXISTS oauth_connections (
+                    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                    identity_id UUID NOT NULL REFERENCES identities(id) ON DELETE CASCADE,
+                    provider VARCHAR(50) NOT NULL,
+                    provider_user_id VARCHAR(255) NOT NULL,
+                    access_token TEXT NOT NULL,
+                    refresh_token TEXT,
+                    token_type VARCHAR(50),
+                    expires_at TIMESTAMP,
+                    scopes TEXT[],
+                    user_info BYTEA,
+                    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                    last_used_at TIMESTAMP,
+                    UNIQUE(provider, provider_user_id)
+                )
+            """)
+            
+            try await db.execute("""
+                CREATE INDEX IF NOT EXISTS oauth_connections_identity_idx ON oauth_connections(identity_id)
+            """)
+            
+            try await db.execute("""
+                CREATE INDEX IF NOT EXISTS oauth_connections_provider_idx ON oauth_connections(provider, provider_user_id)
+            """)
+        }
+        
+        // OAuth states table for CSRF protection
+        migrator.registerMigration("create_oauth_states_table") { db in
+            try await db.execute("""
+                CREATE TABLE IF NOT EXISTS oauth_states (
+                    state VARCHAR(255) PRIMARY KEY,
+                    provider VARCHAR(50) NOT NULL,
+                    redirect_uri TEXT NOT NULL,
+                    identity_id UUID REFERENCES identities(id) ON DELETE CASCADE,
+                    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                    expires_at TIMESTAMP NOT NULL
+                )
+            """)
+            
+            // Index for cleanup of expired states
+            try await db.execute("""
+                CREATE INDEX IF NOT EXISTS oauth_states_expires_idx ON oauth_states(expires_at)
+            """)
+        }
+        
         // Performance optimization indexes
         migrator.registerMigration("add_performance_indexes") { db in
             @Dependency(\.logger) var logger

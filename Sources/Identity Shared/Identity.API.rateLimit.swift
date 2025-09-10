@@ -363,6 +363,45 @@ extension Identity.API {
                 throw Abort.rateLimit(nextAllowedAttempt: rateLimit.nextAllowedAttempt)
             }
             return .init(limiter: rateLimiter.reauthorize, key: key)
+            
+        case .oauth(let oauth):
+            @Dependency(\.request) var request
+            guard let request else { throw Abort.requestUnavailable }
+            let key = request.realIP
+            
+            switch oauth {
+            case .providers:
+                // Public endpoint with relaxed rate limiting
+                let rateLimit = await rateLimiter.reauthorize.checkLimit(key)
+                guard rateLimit.isAllowed else {
+                    throw Abort.rateLimit(nextAllowedAttempt: rateLimit.nextAllowedAttempt)
+                }
+                return .init(limiter: rateLimiter.reauthorize, key: key)
+                
+            case .authorize:
+                // OAuth authorization - track by IP
+                let rateLimit = await rateLimiter.credentials.checkLimit("oauth:\(key)")
+                guard rateLimit.isAllowed else {
+                    throw Abort.rateLimit(nextAllowedAttempt: rateLimit.nextAllowedAttempt)
+                }
+                return .init(limiter: rateLimiter.credentials, key: "oauth:\(key)")
+                
+            case .callback:
+                // OAuth callback - track by IP
+                let rateLimit = await rateLimiter.credentials.checkLimit("oauth-callback:\(key)")
+                guard rateLimit.isAllowed else {
+                    throw Abort.rateLimit(nextAllowedAttempt: rateLimit.nextAllowedAttempt)
+                }
+                return .init(limiter: rateLimiter.credentials, key: "oauth-callback:\(key)")
+                
+            case .connections, .disconnect:
+                // Authenticated endpoints - normal rate limiting
+                let rateLimit = await rateLimiter.reauthorize.checkLimit(key)
+                guard rateLimit.isAllowed else {
+                    throw Abort.rateLimit(nextAllowedAttempt: rateLimit.nextAllowedAttempt)
+                }
+                return .init(limiter: rateLimiter.reauthorize, key: key)
+            }
         }
     }
 }
