@@ -14,7 +14,7 @@ extension Identity.Provider {
 
         }
 
-        @Dependency(\.identity.provider.client) var client
+        @Dependency(\.identity.provider.client) var identity
 
         public func authenticate(
             bearer: BearerAuthorization,
@@ -27,7 +27,7 @@ extension Identity.Provider {
                     try await withDependencies {
                         $0.request = request
                     } operation: {
-                        _ = try await client.authenticate.apiKey(bearer.token)
+                        _ = try await identity.authenticate.apiKey(bearer.token)
                     }
                 } catch {
 

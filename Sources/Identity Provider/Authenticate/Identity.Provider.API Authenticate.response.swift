@@ -14,25 +14,25 @@ extension Identity.Provider.API.Authenticate {
         authenticate: Identity.Provider.API.Authenticate
     ) async throws -> Response {
 
-        @Dependency(\.identity.provider.client) var client
+        @Dependency(\.identity.provider.client) var identity
 
         switch authenticate {
         case .credentials(let credentials):
-            let identityAuthenticationResponse = try await client.authenticate.credentials(credentials)
+            let identityAuthenticationResponse = try await identity.authenticate.credentials(credentials)
             return Response.success(true, data: identityAuthenticationResponse)
 
         case .token(let token):
             switch token {
             case .access(let access):
-                try await client.authenticate.token.access(access)
+                try await identity.authenticate.token.access(access)
                 return Response.success(true)
 
             case .refresh(let refresh):
-                let identityAuthenticationResponse = try await client.authenticate.token.refresh(refresh)
+                let identityAuthenticationResponse = try await identity.authenticate.token.refresh(refresh)
                 return Response.success(true, data: identityAuthenticationResponse)
             }
         case .apiKey(let apiKey):
-            let identityAuthenticationResponse = try await client.authenticate.apiKey(apiKey)
+            let identityAuthenticationResponse = try await identity.authenticate.apiKey(apiKey)
             return Response.success(true, data: identityAuthenticationResponse)
 
         }

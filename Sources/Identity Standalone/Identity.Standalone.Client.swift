@@ -16,14 +16,14 @@ extension Identity.Standalone {
     /// This client extends the base Identity.Client with additional profile
     /// management capabilities that are only available in Standalone deployments.
     public struct Client: Sendable {
-        /// Base identity client with all standard operations
-        public var identity: Identity.Client
+        /// Base identity with all standard operations
+        public var identity: Identity
         
         /// Profile management operations (Standalone only)
         public var profile: Identity.Standalone.Client.Profile
         
         public init(
-            identity: Identity.Client,
+            identity: Identity,
             profile: Identity.Standalone.Client.Profile = .init()
         ) {
             self.identity = identity

@@ -172,9 +172,9 @@ extension Database.OAuthConnection {
     }
 }
 
-extension Identity.Client.OAuth.OAuthConnection {
+extension Identity.OAuth.Connection {
     public init(from oauthConnection: Database.OAuthConnection) {
-        self = Identity.Client.OAuth.OAuthConnection(
+        self = Identity.OAuth.Connection(
             provider: oauthConnection.provider,
             providerUserId: oauthConnection.providerUserId,
             connectedAt: oauthConnection.createdAt,

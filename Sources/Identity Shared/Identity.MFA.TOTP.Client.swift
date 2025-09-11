@@ -75,7 +75,7 @@ extension Identity.MFA.TOTP {
 // MARK: - Test Implementation
 // The Client type is now defined in swift-identities-types
 
-extension Identity.MFA.TOTP.Client: TestDependencyKey {
+extension Identity.MFA.TOTP.Client: @retroactive TestDependencyKey {
     public static var testValue: Self {
         Self()
     }

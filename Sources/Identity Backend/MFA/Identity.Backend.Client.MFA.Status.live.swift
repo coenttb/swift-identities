@@ -10,52 +10,56 @@ import IdentitiesTypes
 import Dependencies
 import ServerFoundationVapor
 
-extension Identity.Client.MFA.Status {
+extension Identity.MFA.Status.Client {
     /// Creates a live backend implementation of the MFA Status client
     public static func live() -> Self {
         @Dependency(\.logger) var logger
         
         return Self(
-            configured: {
-                logger.debug("Checking configured MFA methods")
+            get: {
+                logger.debug("Getting MFA status")
                 
                 // Get current identity
-                let identity = try await Identity_Backend.Database.Identity.get(by: .auth)
+                let identity = try await Database.Identity.get(by: .auth)
                 
                 // Check TOTP status  
-                let totpEnabled = await (try? Identity_Backend.Database.Identity.TOTP.findByIdentity(identity.id)) != nil
+                let totpEnabled = await (try? Database.Identity.TOTP.findByIdentity(identity.id)) != nil
                 
                 // Check backup codes remaining
-                let backupCodesRemaining = (try? await Identity_Backend.Database.Identity.BackupCode.countUnusedByIdentity(identity.id)) ?? 0
+                let backupCodesRemaining = (try? await Database.Identity.BackupCode.countUnusedByIdentity(identity.id)) ?? 0
                 
-                return Identity.MFA.ConfiguredMethods(
+                let configuredMethods = Identity.MFA.Status.ConfiguredMethods(
                     totp: totpEnabled,
                     sms: false,  // Not implemented yet
                     email: false, // Not implemented yet
                     webauthn: false, // Not implemented yet
                     backupCodesRemaining: backupCodesRemaining
                 )
-            },
-            isRequired: {
+                
                 // For now, MFA is optional
                 // In production, this could check organization policies, user roles, etc.
-                return false
+                let isRequired = false
+                
+                return Identity.MFA.Status.Response(
+                    configured: configuredMethods,
+                    isRequired: isRequired
+                )
             },
             challenge: {
                 logger.debug("Getting MFA challenge")
                 
                 // Get current identity
-                let identity = try await Identity_Backend.Database.Identity.get(by: .auth)
+                let identity = try await Database.Identity.get(by: .auth)
                 
                 // Check configured methods
                 var methods = Set<Identity.MFA.Method>()
                 
-                let totpEnabled = await (try? Identity_Backend.Database.Identity.TOTP.findByIdentity(identity.id)) != nil
+                let totpEnabled = await (try? Database.Identity.TOTP.findByIdentity(identity.id)) != nil
                 if totpEnabled {
                     methods.insert(.totp)
                 }
                 
-                let backupCodesRemaining = (try? await Identity_Backend.Database.Identity.BackupCode.countUnusedByIdentity(identity.id)) ?? 0
+                let backupCodesRemaining = (try? await Database.Identity.BackupCode.countUnusedByIdentity(identity.id)) ?? 0
                 if backupCodesRemaining > 0 {
                     methods.insert(.backupCode)
                 }

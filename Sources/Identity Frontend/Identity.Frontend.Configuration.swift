@@ -23,7 +23,7 @@ extension Identity.Frontend {
     public struct Configuration: Sendable {
         public var baseURL: URL
         public var router: AnyParserPrinter<URLRequestData, Identity.Route>
-        public var client: Identity.Client
+        public var client: Identity
         public var jwt: Identity.Token.Client
         public var cookies: Identity.Frontend.Configuration.Cookies
         public var branding: Branding
@@ -37,7 +37,7 @@ extension Identity.Frontend {
         package init(
             baseURL: URL,
             router: AnyParserPrinter<URLRequestData, Identity.Route>,
-            client: Identity.Client,
+            client: Identity,
             jwt: Identity.Token.Client,
             cookies: Identity.Frontend.Configuration.Cookies,
             branding: Branding,

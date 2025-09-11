@@ -11,7 +11,7 @@ import Vapor
 import Dependencies
 import EmailAddress
 
-extension Identity.Backend.Client.Email {
+extension Identity.Email.Change.Client {
     package static func live(
         sendEmailChangeConfirmation: @escaping @Sendable (_ currentEmail: EmailAddress, _ newEmail: EmailAddress, _ token: String) async throws -> Void,
         sendEmailChangeRequestNotification: @escaping @Sendable (_ currentEmail: EmailAddress, _ newEmail: EmailAddress) async throws -> Void,
@@ -21,8 +21,7 @@ extension Identity.Backend.Client.Email {
         @Dependency(\.tokenClient) var tokenClient
 
         return .init(
-            change: .init(
-                request: { newEmail in
+            request: { newEmail in
                     do {
                         @Dependency(\.request) var request
                         guard let request else { throw Abort.requestUnavailable }
@@ -187,7 +186,6 @@ extension Identity.Backend.Client.Email {
                         throw error
                     }
                 }
-            )
         )
     }
 }

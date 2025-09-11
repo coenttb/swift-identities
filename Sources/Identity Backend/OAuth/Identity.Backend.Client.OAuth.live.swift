@@ -14,11 +14,11 @@ import ServerFoundationVapor
 import JWT
 import Logging
 
-extension Identity.Backend.Client.OAuth {
+extension Identity.OAuth.Client {
     public static func live(
         registry: OAuthProviderRegistry,
         stateManager: OAuthStateManager
-    ) -> Identity.Client.OAuth {
+    ) -> Identity.OAuth.Client {
         
         return .init(
             registerProvider: registerProviderImplementation(registry: registry),
@@ -264,7 +264,7 @@ private func callbackImplementation(
 }
 
 // MARK: - Get Connection
-private let connectionImplementation: @Sendable (String) async throws -> Identity.Client.OAuth.OAuthConnection? = { provider in
+private let connectionImplementation: @Sendable (String) async throws -> Identity.OAuth.Connection? = { provider in
     // Get current authenticated identity
     @Dependency(\.defaultDatabase) var database
     
@@ -279,7 +279,7 @@ private let connectionImplementation: @Sendable (String) async throws -> Identit
             return nil
         }
         
-        return Identity.Client.OAuth.OAuthConnection(from: dbConnection)
+        return Identity.OAuth.Connection(from: dbConnection)
     } catch {
         // Not authenticated or no connection found
         return nil
@@ -441,7 +441,7 @@ private func getValidTokenImplementation(
 }
 
 // MARK: - Get All Connections
-private let getAllConnectionsImplementation: @Sendable () async throws -> [Identity.Client.OAuth.OAuthConnection] = {
+private let getAllConnectionsImplementation: @Sendable () async throws -> [Identity.OAuth.Connection] = {
     @Dependency(\.defaultDatabase) var database
     @Dependency(\.logger) var logger
     
@@ -453,7 +453,7 @@ private let getAllConnectionsImplementation: @Sendable () async throws -> [Ident
         )
         
         return dbConnections.map { dbConnection in
-            Identity.Client.OAuth.OAuthConnection(from: dbConnection)
+            Identity.OAuth.Connection(from: dbConnection)
         }
     } catch {
         logger.error("Failed to get OAuth connections", metadata: [

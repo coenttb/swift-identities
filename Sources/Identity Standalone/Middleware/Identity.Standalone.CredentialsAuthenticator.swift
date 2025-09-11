@@ -22,12 +22,12 @@ extension Identity.Standalone {
             credentials: Credentials,
             for request: Request
         ) async throws {
-            @Dependency(\.identity.client) var client
+            @Dependency(\.identity) var identity
             @Dependency(\.tokenClient) var tokenClient
             
             do {
                 // Authenticate with credentials
-                let response = try await client.authenticate.credentials(
+                let response = try await identity.authenticate.credentials(
                     username: credentials.username,
                     password: credentials.password
                 )

@@ -14,7 +14,7 @@ extension Identity.Provider.API.Delete {
         delete: Identity.Provider.API.Delete
     ) async throws -> Response {
 
-        @Dependency(\.identity.provider.client) var client
+        @Dependency(\.identity.provider.client) var identity
 
         switch delete {
         case .request(let request):
@@ -23,21 +23,21 @@ extension Identity.Provider.API.Delete {
             }
 
             do {
-                try await client.delete.request(request)
+                try await identity.delete.request(request)
                 return Response.success(true)
             } catch {
                 throw Abort(.internalServerError, reason: "Failed to delete")
             }
         case .cancel:
             do {
-                try await client.delete.cancel()
+                try await identity.delete.cancel()
                 return Response.success(true)
             } catch {
                 throw Abort(.internalServerError, reason: "Failed to delete")
             }
         case .confirm:
             do {
-                try await client.delete.confirm()
+                try await identity.delete.confirm()
                 return Response.success(true)
             } catch {
                 throw Abort(.internalServerError, reason: "Failed to confirm deletion")

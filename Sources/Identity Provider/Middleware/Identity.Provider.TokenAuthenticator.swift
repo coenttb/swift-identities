@@ -15,7 +15,7 @@ extension Identity.Provider {
     public struct TokenAuthenticator: AsyncMiddleware {
         public init() {}
 
-        @Dependency(\.identity.provider.client) var client
+        @Dependency(\.identity.provider.client) var identity
 
         public func respond(
             to request: Request,
@@ -26,7 +26,7 @@ extension Identity.Provider {
             } operation: {
                 if let bearerAuth = request.headers.bearerAuthorization {
                     do {
-                        try await client.authenticate.token.access(token: bearerAuth.token)
+                        try await identity.authenticate.token.access(bearerAuth.token)
                         return try await next.respond(to: request)
                     } catch {
                         // Token validation failed, continue without authentication

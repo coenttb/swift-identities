@@ -11,7 +11,7 @@ import Vapor
 import Dependencies
 import EmailAddress
 
-extension Identity.Backend.Client.Password {
+extension Identity.Password.Client {
     package static func live(
         sendPasswordResetEmail: @escaping @Sendable (_ email: EmailAddress, _ token: String) async throws -> Void,
         sendPasswordChangeNotification: @escaping @Sendable (_ email: EmailAddress) async throws -> Void

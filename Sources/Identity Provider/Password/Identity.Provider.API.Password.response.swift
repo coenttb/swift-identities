@@ -14,14 +14,14 @@ extension Identity.Provider.API.Password {
         password: Identity.Provider.API.Password
     ) async throws -> Response {
 
-        @Dependency(\.identity.provider.client) var client
+        @Dependency(\.identity.provider.client) var identity
 
         switch password {
         case .reset(let reset):
             switch reset {
             case let .request(request):
                 do {
-                    try await client.password.reset.request(request)
+                    try await identity.password.reset.request(request)
                     return Response.success(true)
                 } catch {
                     @Dependencies.Dependency(\.logger) var logger
@@ -30,7 +30,7 @@ extension Identity.Provider.API.Password {
                 }
             case let .confirm(confirm):
                 do {
-                    try await client.password.reset.confirm(confirm)
+                    try await identity.password.reset.confirm(confirm)
 
                     return Response.success(true)
                 } catch {
@@ -43,7 +43,7 @@ extension Identity.Provider.API.Password {
             switch change {
             case let .request(change: request):
                 do {
-                    try await client.password.change.request(request)
+                    try await identity.password.change.request(request)
                     return Response.success(true)
                 } catch {
                     @Dependencies.Dependency(\.logger) var logger

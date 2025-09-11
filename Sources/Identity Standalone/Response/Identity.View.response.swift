@@ -23,7 +23,7 @@ extension Identity.View {
     ) async throws -> any AsyncResponseEncodable {
         
         @Dependency(\.identity) var configuration
-        @Dependency(\.identity.client) var client
+        @Dependency(\.identity) var identity
         @Dependency(\.identity.router) var router
         @Dependency(\.request) var request
         
@@ -75,7 +75,7 @@ extension Identity.View {
             }
             
             // Check deletion status from backend
-            if let deletionStatus = try? await client.delete.status() {
+            if let deletionStatus = try? await identity.delete.client.status() {
                 switch deletionStatus.status {
                 case .pending, .awaitingGracePeriod:
                     return try await Identity.Frontend.htmlDocument(
@@ -162,7 +162,7 @@ extension Identity.View {
         mfa: Identity.MFA.View,
         configuration: Identity.Standalone.Configuration
     ) async throws -> any AsyncResponseEncodable {
-        @Dependency(\.identity.client) var client
+        @Dependency(\.identity) var identity
         @Dependency(\.identity.router) var router
         @Dependency(\.request) var request
         

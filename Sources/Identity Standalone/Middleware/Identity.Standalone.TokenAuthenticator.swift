@@ -27,7 +27,7 @@ extension Identity.Standalone {
             bearer: BearerAuthorization,
             for request: Request
         ) async throws {
-            @Dependency(\.identity.client) var client
+            @Dependency(\.identity) var identity
             @Dependency(\.tokenClient) var tokenClient
             
             do {
@@ -56,7 +56,7 @@ extension Identity.Standalone {
             to request: Request,
             chainingTo next: AsyncResponder
         ) async throws -> Response {
-            @Dependency(\.identity.client) var client
+            @Dependency(\.identity) var identity
             @Dependency(\.tokenClient) var tokenClient
             @Dependency(\.logger) var logger
             

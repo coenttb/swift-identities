@@ -11,8 +11,8 @@ import IdentitiesTypes
 import JWT
 import EmailAddress
 
-extension Identity.Backend.Client {
-    /// Creates a live backend client with direct database access.
+extension Identity.Backend {
+    /// Creates a live backend Identity with direct database access.
     ///
     /// This implementation provides the core business logic for identity operations,
     /// including database access, token generation, and email sending.
@@ -28,14 +28,19 @@ extension Identity.Backend.Client {
         onIdentityCreationSuccess: @escaping @Sendable (_ identity: (id: Identity.ID, email: EmailAddress)) async throws -> Void = { _ in },
         mfaConfiguration: Identity.MFA.TOTP.Configuration? = nil,
         oauthProviderRegistry: OAuthProviderRegistry? = nil
-    ) -> Self {
+    ) -> Identity {
         @Dependency(\.logger) var logger
         @Dependency(\.defaultDatabase) var database
 
-        return .init(
-            authenticate: .live(),
-            logout: .init(
-                current: {
+        return Identity(
+            authenticate: Identity.Authentication(
+                client: .live(),
+                router: Identity.Authentication.Route.Router(),
+                token: .live()
+            ),
+            logout: Identity.Logout(
+                client: .init(
+                    current: {
                     @Dependency(\.request) var request
                     guard let request else { throw Abort.requestUnavailable }
                     
@@ -65,9 +70,13 @@ extension Identity.Backend.Client {
                     }
                     // No need to clear current session as it's already invalid
                 }
+                ),
+                router: Identity.Logout.Route.Router()
             ),
-            reauthorize: { password in
-                do {
+            reauthorize: Identity.Reauthorization(
+                client: .init(
+                    reauthorize: { password in
+                        do {
                     let identity = try await Database.Identity.get(by: .auth)
 
                     guard try await identity.verifyPassword(password)
@@ -83,55 +92,108 @@ extension Identity.Backend.Client {
                     )
                     
                     return try JWT.parse(from: token)
-                } catch {
-                    logger.error("Reauthorization failed: \(error)")
-                    throw error
-                }
-            },
-            create: .live(
-                sendVerificationEmail: sendVerificationEmail,
-                onIdentityCreationSuccess: onIdentityCreationSuccess
+                        } catch {
+                            logger.error("Reauthorization failed: \(error)")
+                            throw error
+                        }
+                    }
+                ),
+                router: Identity.Reauthorization.Request.Router()
             ),
-            delete: .live(
-                sendDeletionRequestNotification: sendDeletionRequestNotification,
-                sendDeletionConfirmationNotification: sendDeletionConfirmationNotification
+            create: Identity.Creation(
+                client: .live(
+                    sendVerificationEmail: sendVerificationEmail,
+                    onIdentityCreationSuccess: onIdentityCreationSuccess
+                ),
+                router: Identity.Creation.Route.Router()
             ),
-            email: .live(
-                sendEmailChangeConfirmation: sendEmailChangeConfirmation,
-                sendEmailChangeRequestNotification: sendEmailChangeRequestNotification,
-                onEmailChangeSuccess: onEmailChangeSuccess
+            delete: Identity.Deletion(
+                client: .live(
+                    sendDeletionRequestNotification: sendDeletionRequestNotification,
+                    sendDeletionConfirmationNotification: sendDeletionConfirmationNotification
+                ),
+                router: Identity.Deletion.Route.Router()
             ),
-            password: .live(
-                sendPasswordResetEmail: sendPasswordResetEmail,
-                sendPasswordChangeNotification: sendPasswordChangeNotification
+            email: Identity.Email(
+                change: Identity.Email.Change(
+                    client: .live(
+                        sendEmailChangeConfirmation: sendEmailChangeConfirmation,
+                        sendEmailChangeRequestNotification: sendEmailChangeRequestNotification,
+                        onEmailChangeSuccess: onEmailChangeSuccess
+                    ),
+                    router: Identity.Email.Change.API.Router()
+                ),
+                router: Identity.Email.Route.Router()
+            ),
+            password: Identity.Password(
+                change: Identity.Password.Change(
+                    client: Identity.Password.Client.live(
+                        sendPasswordResetEmail: sendPasswordResetEmail,
+                        sendPasswordChangeNotification: sendPasswordChangeNotification
+                    ).change,
+                    router: Identity.Password.Change.API.Router()
+                ),
+                reset: Identity.Password.Reset(
+                    client: Identity.Password.Client.live(
+                        sendPasswordResetEmail: sendPasswordResetEmail,
+                        sendPasswordChangeNotification: sendPasswordChangeNotification
+                    ).reset,
+                    router: Identity.Password.Reset.API.Router()
+                ),
+                router: Identity.Password.Route.Router()
             ),
             mfa: mfaConfiguration.map { config in
-                Identity.Client.MFA(
-                    totp: Identity.Client.MFA.TOTP.live(configuration: config),
-                    backupCodes: Identity.Backend.Client.MFA.backupCodesLive(configuration: config),
-                    status: Identity.Client.MFA.Status.live()
+                Identity.MFA(
+                    totp: Identity.MFA.TOTP(
+                        client: Identity.MFA.TOTP.Client.live(configuration: config),
+                        router: Identity.MFA.TOTP.API.Router()
+                    ),
+                    sms: Identity.MFA.SMS(
+                        client: .init(),  // Not implemented yet
+                        router: Identity.MFA.SMS.API.Router()
+                    ),
+                    email: Identity.MFA.Email(
+                        client: .init(),  // Not implemented yet
+                        router: Identity.MFA.Email.API.Router()
+                    ),
+                    webauthn: Identity.MFA.WebAuthn(
+                        client: .init(),  // Not implemented yet
+                        router: Identity.MFA.WebAuthn.API.Router()
+                    ),
+                    backupCodes: Identity.MFA.BackupCodes(
+                        client: Identity.MFA.BackupCodes.Client.live(configuration: config),
+                        router: Identity.MFA.BackupCodes.API.Router()
+                    ),
+                    status: Identity.MFA.Status(
+                        client: Identity.MFA.Status.Client.live(),
+                        router: Identity.MFA.Status.API.Router()
+                    ),
+                    router: Identity.MFA.Route.Router()
                 )
             },
             oauth: oauthProviderRegistry.map { registry in
                 @Dependency(Identity.Token.Client.self) var encryption
                 
                 let stateManager = OAuthStateManager()
-                return Identity.Backend.Client.OAuth.live(
-                    registry: registry,
-                    stateManager: stateManager
+                return Identity.OAuth(
+                    client: Identity.OAuth.Client.live(
+                        registry: registry,
+                        stateManager: stateManager
+                    ),
+                    router: Identity.OAuth.Route.Router()
                 )
             }
         )
     }
 }
 
-extension Identity.Backend.Client {
+extension Identity.Backend {
     public static func logging(
         router: AnyParserPrinter<URLRequestData, Identity.Route>,
         mfaConfiguration: Identity.MFA.TOTP.Configuration? = nil,
         oauthProviderRegistry: OAuthProviderRegistry? = nil
-    ) -> Self {
-        return .live(
+    ) -> Identity {
+        return Identity.Backend.live(
             sendVerificationEmail: { email, token in
                 @Dependency(\.logger) var logger
                 logger.info("Demo: Verification email triggered", metadata: [

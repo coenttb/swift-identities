@@ -11,7 +11,7 @@ import Vapor
 import Dependencies
 import EmailAddress
 
-extension Identity.Backend.Client.Delete {
+extension Identity.Deletion.Client {
     package static func live(
         sendDeletionRequestNotification: @escaping @Sendable (_ email: EmailAddress) async throws -> Void,
         sendDeletionConfirmationNotification: @escaping @Sendable (_ email: EmailAddress) async throws -> Void

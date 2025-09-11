@@ -11,7 +11,7 @@ import Vapor
 import Dependencies
 import EmailAddress
 
-extension Identity.Backend.Client.Create {
+extension Identity.Creation.Client {
     package static func live(
         sendVerificationEmail: @escaping @Sendable (_ email: EmailAddress, _ token: String) async throws -> Void,
         onIdentityCreationSuccess: @escaping @Sendable (_ identity: (id: Identity.ID, email: EmailAddress)) async throws -> Void

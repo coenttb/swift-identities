@@ -14,13 +14,13 @@ extension Identity.Provider.API.Create {
         create: Identity.Provider.API.Create
     ) async throws -> Response {
 
-        @Dependency(\.identity.provider.client) var client
+        @Dependency(\.identity.provider.client) var identity
         @Dependency(\.logger) var logger
 
         switch create {
         case .request(let request):
             do {
-                try await client.create.request(request)
+                try await identity.create.request(request)
                 return Response.success(true)
             } catch {
                 throw error
@@ -36,7 +36,7 @@ extension Identity.Provider.API.Create {
 //            }
         case .verify(let verify):
             do {
-                try await client.create.verify(verify)
+                try await identity.create.verify(verify)
                 return Response.success(true, status: .created)
             } catch {
                 throw Abort(.internalServerError, reason: "Failed to verify account creation. Error: \(String(describing: error))")

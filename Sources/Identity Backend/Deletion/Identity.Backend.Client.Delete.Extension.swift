@@ -9,7 +9,7 @@ import Foundation
 import IdentitiesTypes
 import ServerFoundation
 
-extension Identity.Client.Delete {
+extension Identity.Deletion.Client {
     /// Represents the current status of an identity deletion request.
     ///
     /// This struct provides information about pending deletion requests,

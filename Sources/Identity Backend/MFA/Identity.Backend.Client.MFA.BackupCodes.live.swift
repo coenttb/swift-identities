@@ -10,16 +10,16 @@ import Foundation
 import IdentitiesTypes
 import Vapor
 
-extension Identity.Backend.Client.MFA {
-    package static func backupCodesLive(
+extension Identity.MFA.BackupCodes.Client {
+    package static func live(
         configuration: Identity.MFA.TOTP.Configuration
-    ) -> Identity.Client.MFA.BackupCodes {
+    ) -> Self {
         @Dependency(\.logger) var logger
         @Dependency(\.tokenClient) var tokenClient
         @Dependency(\.defaultDatabase) var database
         @Dependency(\.request) var request
         
-        return Identity.Client.MFA.BackupCodes(
+        return Identity.MFA.BackupCodes.Client(
             regenerate: {
                 logger.debug("Backup codes regeneration initiated")
                 

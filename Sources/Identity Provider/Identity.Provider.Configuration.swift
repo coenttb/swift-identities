@@ -28,7 +28,7 @@ extension Identity.Provider.Configuration {
         public var issuer: String?
         public var tokens: Identity.Provider.Configuration.Tokens
         public var router: AnyParserPrinter<URLRequestData, Identity.API>
-        public var client: Identity.Provider.Client
+        public var client: Identity
         public var rateLimiters: RateLimiters
 
         public init(
@@ -37,7 +37,7 @@ extension Identity.Provider.Configuration {
             issuer: String?,
             tokens: Identity.Provider.Configuration.Tokens,
             router: AnyParserPrinter<URLRequestData, Identity.API>,
-            client: Identity.Provider.Client,
+            client: Identity,
             rateLimiters: RateLimiters = .init()
         ) {
             self.baseURL = baseURL

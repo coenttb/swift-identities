@@ -65,12 +65,12 @@ extension Identity.Provider.API {
 
         case .logout(let logout):
             await rateLimitClient.recordAttempt()
-            @Dependency(\.identity.provider.client) var client
+            @Dependency(\.identity.provider.client) var identity
             switch logout {
             case .current:
-                try await client.logout.current()
+                try await identity.logout.client.current()
             case .all:
-                try await client.logout.all()
+                try await identity.logout.client.all()
             }
             await rateLimitClient.recordSuccess()
             return Response.success(true)
@@ -99,8 +99,8 @@ extension Identity.Provider.API {
 
         case .reauthorize(let reauthorize):
             await rateLimitClient.recordAttempt()
-            @Dependency(\.identity.provider.client) var client
-            let data = try await client.reauthorize(password: reauthorize.password)
+            @Dependency(\.identity.provider.client) var identity
+            let data = try await identity.reauthorize.reauthorize(password: reauthorize.password)
             await rateLimitClient.recordSuccess()
             return Response.success(true, data: data)
             

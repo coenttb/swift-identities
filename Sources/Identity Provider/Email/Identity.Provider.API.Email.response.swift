@@ -14,14 +14,14 @@ extension Identity.Provider.API.Email {
         email: Identity.Provider.API.Email
     ) async throws -> Response {
 
-        @Dependency(\.identity.provider.client) var client
+        @Dependency(\.identity.provider.client) var identity
 
         switch email {
         case .change(let change):
             switch change {
             case .request(let request):
                 do {
-                    let data = try await client.email.change.request(request)
+                    let data = try await identity.email.change.request(request)
 
                     return Response.success(true, data: data)
                 } catch {
@@ -32,7 +32,7 @@ extension Identity.Provider.API.Email {
 
             case .confirm(let confirm):
                 do {
-                    let data = try await client.email.change.confirm(confirm)
+                    let data = try await identity.email.change.confirm(confirm)
 
                     @Dependencies.Dependency(\.logger) var logger
                     logger.log(.info, "Email change confirmed for new email")
