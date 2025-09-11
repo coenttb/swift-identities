@@ -11,12 +11,12 @@ import IdentitiesTypes
 import JWT
 import EmailAddress
 
-extension Identity.Backend {
+extension Identity {
     /// Creates a live backend Identity with direct database access.
     ///
     /// This implementation provides the core business logic for identity operations,
     /// including database access, token generation, and email sending.
-    public static func live(
+    public static func backend(
         sendVerificationEmail: @escaping @Sendable (_ email: EmailAddress, _ token: String) async throws -> Void,
         sendPasswordResetEmail: @escaping @Sendable (_ email: EmailAddress, _ token: String) async throws -> Void,
         sendPasswordChangeNotification: @escaping @Sendable (_ email: EmailAddress) async throws -> Void,
@@ -28,7 +28,7 @@ extension Identity.Backend {
         onIdentityCreationSuccess: @escaping @Sendable (_ identity: (id: Identity.ID, email: EmailAddress)) async throws -> Void = { _ in },
         mfaConfiguration: Identity.MFA.TOTP.Configuration? = nil,
         oauthProviderRegistry: OAuthProviderRegistry? = nil
-    ) -> Identity {
+    ) -> Self {
         @Dependency(\.logger) var logger
         @Dependency(\.defaultDatabase) var database
 
@@ -45,7 +45,7 @@ extension Identity.Backend {
                     guard let request else { throw Abort.requestUnavailable }
                     
                     do {
-                        var identity = try await Database.Identity.get(by: .auth)
+                        var identity = try await Identity.Record.get(by: .auth)
                         identity.sessionVersion += 1
                         try await identity.save()
                     } catch {
@@ -55,12 +55,12 @@ extension Identity.Backend {
                     }
                     
                     // Always logout from the session regardless of whether identity exists
-                    request.auth.logout(Database.Identity.self)
+                    request.auth.logout(Identity.Record.self)
                 },
                 all: {
                     do {
                         // Increment session version to invalidate all existing tokens
-                        var identity = try await Database.Identity.get(by: .auth)
+                        var identity = try await Identity.Record.get(by: .auth)
                         identity.sessionVersion += 1
                         try await identity.save()
                         logger.notice("Logout all sessions for identity: \(identity.id)")
@@ -77,7 +77,7 @@ extension Identity.Backend {
                 client: .init(
                     reauthorize: { password in
                         do {
-                    let identity = try await Database.Identity.get(by: .auth)
+                    let identity = try await Identity.Record.get(by: .auth)
 
                     guard try await identity.verifyPassword(password)
                     else { throw Identity.Backend.AuthenticationError.invalidCredentials }
@@ -193,7 +193,7 @@ extension Identity.Backend {
         mfaConfiguration: Identity.MFA.TOTP.Configuration? = nil,
         oauthProviderRegistry: OAuthProviderRegistry? = nil
     ) -> Identity {
-        return Identity.Backend.live(
+        return Identity.backend(
             sendVerificationEmail: { email, token in
                 @Dependency(\.logger) var logger
                 logger.info("Demo: Verification email triggered", metadata: [

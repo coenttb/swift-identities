@@ -18,10 +18,10 @@ extension Identity.Standalone.Client.Profile {
         Self(
             get: {
                 // Get authenticated identity
-                let identity = try await Database.Identity.get(by: .auth)
+                let identity = try await Identity.Record.get(by: .auth)
                 
                 // Get or create profile
-                let profile = try await Database.Identity.Profile.getOrCreate(for: identity.id)
+                let profile = try await Identity.Profile.Record.getOrCreate(for: identity.id)
                 
                 return Identity.API.Profile.Response(
                     id: profile.id,
@@ -34,10 +34,10 @@ extension Identity.Standalone.Client.Profile {
             },
             updateDisplayName: { displayName in
                 // Get authenticated identity
-                let identity = try await Database.Identity.get(by: .auth)
+                let identity = try await Identity.Record.get(by: .auth)
                 
                 // Get or create profile
-                var profile = try await Database.Identity.Profile.getOrCreate(for: identity.id)
+                var profile = try await Identity.Profile.Record.getOrCreate(for: identity.id)
                 
                 // Update display name
                 try await profile.updateDisplayName(displayName)

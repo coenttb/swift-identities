@@ -1,15 +1,12 @@
 import Foundation
 import Records
+import IdentitiesTypes
 import TOTP
 import RFC_6238
 
-extension Identity {
-    public enum TOTP {}
-}
-
-extension Database.Identity {
+extension Identity.MFA.TOTP {
     @Table("identity_totp")
-    public struct TOTP: Codable, Equatable, Identifiable, Sendable {
+    public struct Record: Codable, Equatable, Identifiable, Sendable {
         public let id: UUID
         public let identityId: Identity.ID
         public let secret: String // Encrypted base32 secret
@@ -48,25 +45,24 @@ extension Database.Identity {
             self.usageCount = usageCount
         }
     }
-    
 }
 
 // MARK: - Query Helpers
 
-extension Database.Identity.TOTP {
-    package static func findByIdentity(_ identityId: Identity.ID) -> Where<Database.Identity.TOTP> {
+extension Identity.MFA.TOTP.Record {
+    package static func findByIdentity(_ identityId: Identity.ID) -> Where<Identity.MFA.TOTP.Record> {
         Self.where { $0.identityId.eq(identityId) }
     }
     
-    package static var confirmed: Where<Database.Identity.TOTP> {
+    package static var confirmed: Where<Identity.MFA.TOTP.Record> {
         Self.where { $0.isConfirmed.eq(true) }
     }
     
-    package static var unconfirmed: Where<Database.Identity.TOTP> {
+    package static var unconfirmed: Where<Identity.MFA.TOTP.Record> {
         Self.where { $0.isConfirmed.eq(false) }
     }
     
-    package static func findConfirmedByIdentity(_ identityId: Identity.ID) -> Where<Database.Identity.TOTP> {
+    package static func findConfirmedByIdentity(_ identityId: Identity.ID) -> Where<Identity.MFA.TOTP.Record> {
         Self.where {
             $0.identityId.eq(identityId)
                 .and($0.isConfirmed.eq(true))

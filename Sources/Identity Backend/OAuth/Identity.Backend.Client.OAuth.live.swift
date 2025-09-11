@@ -150,14 +150,14 @@ private func callbackImplementation(
         }
         
         // 6. Find or create identity
-        let identity: Database.Identity = try await database.write { db in
+        let identity: Identity.Record = try await database.write { db in
             // Check if OAuth connection already exists
-            if let existingConnection = try await Database.OAuthConnection.find(
+            if let existingConnection = try await Identity.OAuth.Connection.Record.find(
                 provider: callbackRequest.provider,
                 providerUserId: userInfo.id
             ) {
                 // Get the associated identity
-                guard let identity = try await Database.Identity.find(existingConnection.identityId).fetchOne(db) else {
+                guard let identity = try await Identity.Record.find(existingConnection.identityId).fetchOne(db) else {
                     throw OAuthError.userInfoExtractionFailed
                 }
                 
@@ -176,12 +176,12 @@ private func callbackImplementation(
             // Check if we're linking to an existing identity
             if let identityId = stateData.identityId {
                 // Linking OAuth to existing account
-                guard let identity = try await Database.Identity.find(identityId).fetchOne(db) else {
+                guard let identity = try await Identity.Record.find(identityId).fetchOne(db) else {
                     throw OAuthError.userInfoExtractionFailed
                 }
                 
                 // Create OAuth connection
-                let connection = Database.OAuthConnection(
+                let connection = Identity.OAuth.Connection.Record(
                     identityId: identityId,
                     provider: callbackRequest.provider,
                     providerUserId: userInfo.id,
@@ -193,7 +193,7 @@ private func callbackImplementation(
                     userInfo: userInfo.rawData
                 )
                 
-                try await Database.OAuthConnection.insert { connection }.execute(db)
+                try await Identity.OAuth.Connection.Record.insert { connection }.execute(db)
                 
                 return identity
             }
@@ -204,9 +204,9 @@ private func callbackImplementation(
             }
             
             // Check if email already exists
-            if let existingIdentity = try await Database.Identity.findByEmail(email) {
+            if let existingIdentity = try await Identity.Record.findByEmail(email) {
                 // Link OAuth to existing identity with same email
-                let connection = Database.OAuthConnection(
+                let connection = Identity.OAuth.Connection.Record(
                     identityId: existingIdentity.id,
                     provider: callbackRequest.provider,
                     providerUserId: userInfo.id,
@@ -218,19 +218,19 @@ private func callbackImplementation(
                     userInfo: userInfo.rawData
                 )
                 
-                try await Database.OAuthConnection.insert { connection }.execute(db)
+                try await Identity.OAuth.Connection.Record.insert { connection }.execute(db)
                 return existingIdentity
             }
             
             // Create new identity
-            let newIdentity = try await Database.Identity.init(
+            let newIdentity = try await Identity.Record.init(
                 email: try .init(email),
                 password: "",
                 emailVerificationStatus: userInfo.emailVerified == true ? .verified : .unverified
             )
             
             // Create OAuth connection
-            let connection = Database.OAuthConnection(
+            let connection = Identity.OAuth.Connection.Record(
                 identityId: newIdentity.id,
                 provider: callbackRequest.provider,
                 providerUserId: userInfo.id,
@@ -242,7 +242,7 @@ private func callbackImplementation(
                 userInfo: userInfo.rawData
             )
             
-            try await Database.OAuthConnection.insert { connection }.execute(db)
+            try await Identity.OAuth.Connection.Record.insert { connection }.execute(db)
             
             return newIdentity
         }
@@ -269,10 +269,10 @@ private let connectionImplementation: @Sendable (String) async throws -> Identit
     @Dependency(\.defaultDatabase) var database
     
     do {
-        let identity = try await Database.Identity.get(by: .auth)
+        let identity = try await Identity.Record.get(by: .auth)
         
         // Find connection for this provider
-        guard let dbConnection = try await Database.OAuthConnection.find(
+        guard let dbConnection = try await Identity.OAuth.Connection.Record.find(
             identityId: identity.id,
             provider: provider
         ) else {
@@ -291,10 +291,10 @@ private let disconnectImplementation: @Sendable (String) async throws -> Void = 
     // Get current authenticated identity
     @Dependency(\.defaultDatabase) var database
     
-    let identity = try await Database.Identity.get(by: .auth)
+    let identity = try await Identity.Record.get(by: .auth)
     
     // Find and delete the connection
-    guard let connection = try await Database.OAuthConnection.find(
+    guard let connection = try await Identity.OAuth.Connection.Record.find(
         identityId: identity.id,
         provider: provider
     ) else {
@@ -302,7 +302,7 @@ private let disconnectImplementation: @Sendable (String) async throws -> Void = 
     }
     
     try await database.write { db in
-        try await Database.OAuthConnection.all
+        try await Identity.OAuth.Connection.Record.all
             .where { $0.id.eq(connection.id) }
             .delete()
             .execute(db)
@@ -317,9 +317,9 @@ private func getValidTokenImplementation(
         @Dependency(\.defaultDatabase) var database
         @Dependency(\.logger) var logger
         
-        let identity = try await Database.Identity.get(by: .auth)
+        let identity = try await Identity.Record.get(by: .auth)
         
-        guard let connection = try await Database.OAuthConnection.find(
+        guard let connection = try await Identity.OAuth.Connection.Record.find(
             identityId: identity.id,
             provider: providerName
         ) else {
@@ -446,9 +446,9 @@ private let getAllConnectionsImplementation: @Sendable () async throws -> [Ident
     @Dependency(\.logger) var logger
     
     do {
-        let identity = try await Database.Identity.get(by: .auth)
+        let identity = try await Identity.Record.get(by: .auth)
         
-        let dbConnections = try await Database.OAuthConnection.findAll(
+        let dbConnections = try await Identity.OAuth.Connection.Record.findAll(
             identityId: identity.id
         )
         

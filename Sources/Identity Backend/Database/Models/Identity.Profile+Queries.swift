@@ -11,7 +11,7 @@ import Dependencies
 
 // MARK: - Database Operations
 
-extension Database.Identity.Profile {
+extension Identity.Profile.Record {
     
     // Async initializer that creates and persists to database
     package init(
@@ -35,20 +35,20 @@ extension Database.Identity.Profile {
         let `self` = self
         
         _ = try await db.write { db in
-            try await Database.Identity.Profile.insert { `self` }
+            try await Identity.Profile.Record.insert { `self` }
                 .execute(db)
         }
     }
     
-    package static func getByIdentity(_ identityId: Identity.ID) async throws -> Database.Identity.Profile? {
+    package static func getByIdentity(_ identityId: Identity.ID) async throws -> Identity.Profile.Record? {
         @Dependency(\.defaultDatabase) var db
         return try await db.read { db in
-            try await Database.Identity.Profile.findByIdentity(identityId)
+            try await Identity.Profile.Record.findByIdentity(identityId)
                 .fetchOne(db)
         }
     }
     
-    package static func getOrCreate(for identityId: Identity.ID) async throws -> Database.Identity.Profile {
+    package static func getOrCreate(for identityId: Identity.ID) async throws -> Identity.Profile.Record {
         @Dependency(\.defaultDatabase) var db
         
         // Check if profile exists
@@ -57,7 +57,7 @@ extension Database.Identity.Profile {
         }
         
         // Create new profile
-        return try await Database.Identity.Profile(
+        return try await Identity.Profile.Record(
             identityId: identityId
         )
     }
@@ -74,7 +74,7 @@ extension Database.Identity.Profile {
         let id = self.id
         
         try await db.write { db in
-            try await Database.Identity.Profile
+            try await Identity.Profile.Record
                 .update { profile in
                     profile.displayName = updatedDisplayName
                     profile.updatedAt = updatedAt

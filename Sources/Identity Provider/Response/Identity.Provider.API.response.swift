@@ -23,7 +23,7 @@ extension Identity.Provider.API {
 
         // Then check protection
         do {
-            try Identity.API.protect(api: api, with: Database.Identity.self)
+            try Identity.API.protect(api: api, with: Identity.Record.self)
         } catch {
             await rateLimitClient.recordFailure()
             throw error

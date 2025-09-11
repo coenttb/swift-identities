@@ -8,20 +8,20 @@ import RFC_6238
 
 // MARK: - Database Operations
 
-extension Database.Identity.TOTP {
+extension Identity.MFA.TOTP.Record {
     
-    package static func findByIdentity(_ identityId: Identity.ID) async throws -> Database.Identity.TOTP? {
+    package static func findByIdentity(_ identityId: Identity.ID) async throws -> Identity.MFA.TOTP.Record? {
         @Dependency(\.defaultDatabase) var db
         return try await db.read { db in
-            try await Database.Identity.TOTP.findByIdentity(identityId)
+            try await Identity.MFA.TOTP.Record.findByIdentity(identityId)
                 .fetchOne(db)
         }
     }
     
-    package static func findConfirmedByIdentity(_ identityId: Identity.ID) async throws -> Database.Identity.TOTP? {
+    package static func findConfirmedByIdentity(_ identityId: Identity.ID) async throws -> Identity.MFA.TOTP.Record? {
         @Dependency(\.defaultDatabase) var db
         return try await db.read { db in
-            try await Database.Identity.TOTP.findConfirmedByIdentity(identityId)
+            try await Identity.MFA.TOTP.Record.findConfirmedByIdentity(identityId)
                 .fetchOne(db)
         }
     }
@@ -32,11 +32,11 @@ extension Database.Identity.TOTP {
         algorithm: RFC_6238.TOTP.Algorithm = .sha1,
         digits: Int = 6,
         timeStep: Int = 30
-    ) async throws -> Database.Identity.TOTP {
+    ) async throws -> Identity.MFA.TOTP.Record {
         @Dependency(\.defaultDatabase) var db
         @Dependency(\.uuid) var uuid
         
-        let totp = Database.Identity.TOTP(
+        let totp = Identity.MFA.TOTP.Record(
             id: uuid(),
             identityId: identityId,
             secret: secret,
@@ -47,7 +47,7 @@ extension Database.Identity.TOTP {
         )
         
         _ = try await db.write { db in
-            try await Database.Identity.TOTP.insert { totp }
+            try await Identity.MFA.TOTP.Record.insert { totp }
                 .execute(db)
         }
         
@@ -59,7 +59,7 @@ extension Database.Identity.TOTP {
         @Dependency(\.logger) var logger
         
         _ = try await db.write { db in
-            try await Database.Identity.TOTP
+            try await Identity.MFA.TOTP.Record
                 .update { totp in
                     totp.isConfirmed = true
                     totp.confirmedAt = Date()
@@ -74,7 +74,7 @@ extension Database.Identity.TOTP {
         
         let now = Date()
         _ = try await db.write { db in
-            try await Database.Identity.TOTP
+            try await Identity.MFA.TOTP.Record
                 .update { totp in
                     totp.lastUsedAt = now
                     totp.usageCount = totp.usageCount + 1
@@ -87,7 +87,7 @@ extension Database.Identity.TOTP {
     package static func deleteForIdentity(_ identityId: Identity.ID) async throws {
         @Dependency(\.defaultDatabase) var db
         _ = try await db.write { db in
-            try await Database.Identity.TOTP
+            try await Identity.MFA.TOTP.Record
                 .delete()
                 .where { $0.identityId.eq(identityId) }
                 .execute(db)
@@ -97,7 +97,7 @@ extension Database.Identity.TOTP {
 
 // MARK: - Helper Functions
 
-extension Database.Identity.TOTP {
+extension Identity.MFA.TOTP.Record {
     /// Encrypt the secret for storage
     package static func encryptSecret(_ secret: String) throws -> String {
         @Dependency(\.envVars.encryptionKey) var encryptionKey

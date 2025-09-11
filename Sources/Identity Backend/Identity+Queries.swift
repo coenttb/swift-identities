@@ -6,7 +6,7 @@ import Vapor
 
 // MARK: - Database Operations
 
-extension Database.Identity {
+extension Identity.Record {
     
     // Async initializer that creates and persists to database
     package init(
@@ -26,30 +26,30 @@ extension Database.Identity {
         )
         
         try await db.write { [`self` = self] db in
-            try await Database.Identity
+            try await Identity.Record
                 .insert { `self` }
                 .execute(db)
         }
     }
     
-    package static func findByEmail(_ email: EmailAddress) async throws -> Database.Identity? {
+    package static func findByEmail(_ email: EmailAddress) async throws -> Identity.Record? {
         @Dependency(\.defaultDatabase) var db
         return try await db.read { db in
-            try await Database.Identity.findByEmail(email).fetchOne(db)
+            try await Identity.Record.findByEmail(email).fetchOne(db)
         }
     }
     
-    package static func findByEmail(_ email: String) async throws -> Database.Identity? {
+    package static func findByEmail(_ email: String) async throws -> Identity.Record? {
         @Dependency(\.defaultDatabase) var db
         return try await db.read { db in
-            try await Database.Identity.findByEmail(email).fetchOne(db)
+            try await Identity.Record.findByEmail(email).fetchOne(db)
         }
     }
     
-    package static func findById(_ id: Identity.ID) async throws -> Database.Identity? {
+    package static func findById(_ id: Identity.ID) async throws -> Identity.Record? {
         @Dependency(\.defaultDatabase) var db
         return try await db.read { db in
-            try await Database.Identity.where { $0.id.eq(id) }.fetchOne(db)
+            try await Identity.Record.where { $0.id.eq(id) }.fetchOne(db)
         }
     }
     
@@ -60,7 +60,7 @@ extension Database.Identity {
         updated.updatedAt = date()
         
         _ = try await db.write { [updated] db in
-            try await Database.Identity
+            try await Identity.Record
                 .where { $0.id.eq(self.id) }
                 .update { _ in
                     updated
@@ -72,14 +72,14 @@ extension Database.Identity {
     package static func delete(id: Identity.ID) async throws {
         @Dependency(\.defaultDatabase) var db
         try await db.write { db in
-            try await Database.Identity
+            try await Identity.Record
                 .delete()
                 .where { $0.id.eq(id) }
                 .execute(db)
         }
     }
     
-    package static func verifyPassword(email: EmailAddress, password: String) async throws -> Database.Identity? {
+    package static func verifyPassword(email: EmailAddress, password: String) async throws -> Identity.Record? {
         @Dependency(\.date) var date
         
         guard let identity = try await findByEmail(email) else {
@@ -112,7 +112,7 @@ extension Database.Identity {
         let updatedAt = date()
         
         _ = try await db.write { db in
-            try await Database.Identity
+            try await Identity.Record
                 .where { $0.id.eq(id) }
                 .update { identity in
                     identity.emailVerificationStatus = status

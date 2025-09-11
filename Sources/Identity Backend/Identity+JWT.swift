@@ -16,7 +16,7 @@ extension Identity.Authentication.Response {
      * Creates an authentication response with access and refresh tokens
      * for the given identity
      */
-    package init(_ identity: Database.Identity) async throws {
+    package init(_ identity: Identity.Record) async throws {
         @Dependency(\.tokenClient) var tokenClient
         
         let (accessToken, refreshToken) = try await tokenClient.generateTokenPair(
@@ -39,7 +39,7 @@ extension Identity.Token.Access {
      * IMPORTANT: The subject claim will contain both the identity ID and email
      * in the format "ID:email" to ensure both pieces of information are preserved.
      */
-    package init(identity: Database.Identity) async throws {
+    package init(identity: Identity.Record) async throws {
         @Dependency(\.tokenClient) var tokenClient
         
         let tokenString = try await tokenClient.generateAccess(
@@ -58,7 +58,7 @@ extension Identity.Token.Refresh {
     /**
      * Creates a refresh token from an Identity
      */
-    package init(identity: Database.Identity) async throws {
+    package init(identity: Identity.Record) async throws {
         @Dependency(\.tokenClient) var tokenClient
         
         let tokenString = try await tokenClient.generateRefresh(
@@ -80,7 +80,7 @@ extension Identity.Token.Reauthorization {
      * to be consistent with access tokens.
      */
     package init(
-        identity: Database.Identity,
+        identity: Identity.Record,
         purpose: String = "general",
         allowedOperations: [String] = []
     ) async throws {

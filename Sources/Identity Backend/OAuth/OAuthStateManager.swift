@@ -22,9 +22,9 @@ public actor OAuthStateManager {
         redirectURI: String,
         identityId: Identity.ID? = nil
     ) async throws -> String {
-        let stateValue = Database.OAuthState.generateState()
+        let stateValue = Identity.OAuth.State.Record.generateState()
         
-        let state = Database.OAuthState(
+        let state = Identity.OAuth.State.Record(
             state: stateValue,
             provider: provider,
             redirectURI: redirectURI,
@@ -32,15 +32,15 @@ public actor OAuthStateManager {
         )
         
         try await database.write { db in
-            try await Database.OAuthState.insert { state }.execute(db)
+            try await Identity.OAuth.State.Record.insert { state }.execute(db)
         }
         
         return stateValue
     }
     
     /// Validate and consume an OAuth state
-    public func validateState(_ state: String) async throws -> Database.OAuthState {
-        guard let oauthState = try await Database.OAuthState.validate(state) else {
+    public func validateState(_ state: String) async throws -> Identity.OAuth.State.Record {
+        guard let oauthState = try await Identity.OAuth.State.Record.validate(state) else {
             throw OAuthError.invalidState
         }
         
@@ -49,7 +49,7 @@ public actor OAuthStateManager {
     
     /// Clean up expired states (should be called periodically)
     public func cleanupExpiredStates() async throws {
-        try await Database.OAuthState.cleanupExpired()
+        try await Identity.OAuth.State.Record.cleanupExpired()
     }
 }
 

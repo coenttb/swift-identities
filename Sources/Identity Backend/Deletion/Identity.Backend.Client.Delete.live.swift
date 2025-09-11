@@ -24,7 +24,7 @@ extension Identity.Deletion.Client {
                 // Verify reauthorization token
                 let reauthorizationToken = try await tokenClient.verifyReauthorization(reauthToken)
                 
-                let identity = try await Database.Identity.get(by: .auth)
+                let identity = try await Identity.Record.get(by: .auth)
                 
                 // Verify token belongs to this identity
                 guard reauthorizationToken.identityId == identity.id else {
@@ -34,7 +34,7 @@ extension Identity.Deletion.Client {
                 // Check for existing deletion (pending or cancelled)
                 @Dependency(\.defaultDatabase) var db
                 let existingDeletions = try await db.read { db in
-                    try await Database.Identity.Deletion.findByIdentity(identity.id).fetchAll(db)
+                    try await Identity.Deletion.Record.findByIdentity(identity.id).fetchAll(db)
                 }
                 if let existingDeletion = existingDeletions.first {
                     if existingDeletion.status == .pending {
@@ -48,7 +48,7 @@ extension Identity.Deletion.Client {
                         let scheduledFor = calendar.date(byAdding: .day, value: 7, to: now) ?? now
                         
                         try await db.write { db in
-                            try await Database.Identity.Deletion
+                            try await Identity.Deletion.Record
                                 .update { deletion in
                                     deletion.requestedAt = now
                                     deletion.cancelledAt = nil
@@ -60,7 +60,7 @@ extension Identity.Deletion.Client {
                     }
                 } else {
                     // Create new deletion request
-                    _ = try await Database.Identity.Deletion(
+                    _ = try await Identity.Deletion.Record(
                         identityId: identity.id,
                         reason: nil,
                         gracePeriodDays: 7
@@ -68,7 +68,7 @@ extension Identity.Deletion.Client {
                 }
                 
                 // Invalidate the reauthorization token
-                try await Database.Identity.Token.invalidateAllForIdentity(identity.id, type: .reauthenticationToken)
+                try await Identity.Authentication.Token.Record.invalidateAllForIdentity(identity.id, type: .reauthentication)
                 
                 logger.notice("Deletion requested", metadata: [
                     "component": "Backend.Delete",
@@ -82,10 +82,10 @@ extension Identity.Deletion.Client {
                 }
             },
             cancel: {
-                let identity = try await Database.Identity.get(by: .auth)
+                let identity = try await Identity.Record.get(by: .auth)
                 
                 // Find pending deletion request
-                guard let deletion = try await Database.Identity.Deletion.findPendingForIdentity(identity.id),
+                guard let deletion = try await Identity.Deletion.Record.findPendingForIdentity(identity.id),
                       deletion.status == .pending else {
                     throw Abort(.badRequest, reason: "User is not pending deletion")
                 }
@@ -101,10 +101,10 @@ extension Identity.Deletion.Client {
                 ])
             },
             confirm: {
-                let identity = try await Database.Identity.get(by: .auth)
+                let identity = try await Identity.Record.get(by: .auth)
                 
                 // Find pending deletion request
-                guard let deletion = try await Database.Identity.Deletion.findPendingForIdentity(identity.id),
+                guard let deletion = try await Identity.Deletion.Record.findPendingForIdentity(identity.id),
                       deletion.status == .pending else {
                     throw Abort(.badRequest, reason: "User is not pending deletion")
                 }
@@ -126,7 +126,7 @@ extension Identity.Deletion.Client {
                 try await mutableDeletion.confirm()
                 
                 // Actually delete the identity
-                try await Database.Identity.delete(id: identity.id)
+                try await Identity.Record.delete(id: identity.id)
                 
                 logger.notice("Identity deleted", metadata: [
                     "component": "Backend.Delete",

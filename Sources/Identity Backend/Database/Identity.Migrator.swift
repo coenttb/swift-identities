@@ -212,7 +212,7 @@ extension Identity.Backend {
             let testPassword = "test"
             
             // Check if test user already exists
-            let existingUser = try await Database.Identity
+            let existingUser = try await Identity.Record
                 .where { $0.emailString == testEmail }
                 .fetchOne(db)
             
@@ -224,7 +224,7 @@ extension Identity.Backend {
                 @Dependency(\.uuid) var uuid
                 let id = Identity.ID(uuid())
                 
-                let testUser = Database.Identity(
+                let testUser = Identity.Record(
                     id: id,
                     email: try .init(testEmail),
                     passwordHash: passwordHash,
@@ -235,7 +235,7 @@ extension Identity.Backend {
                     lastLoginAt: nil
                 )
                 
-                try await Database.Identity.insert { testUser }.execute(db)
+                try await Identity.Record.insert { testUser }.execute(db)
                 
                 logger.info("Test user created", metadata: [
                     "component": "Identity.Database",

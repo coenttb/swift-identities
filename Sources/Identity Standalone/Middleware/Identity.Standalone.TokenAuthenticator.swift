@@ -85,7 +85,7 @@ extension Identity.Standalone {
                    
                     
                     let identityExists = try await database.read { db in
-                        try await Database.Identity
+                        try await Identity.Record
                             .where { $0.id.eq(accessToken.identityId) }
                             .fetchOne(db)
                     } != nil

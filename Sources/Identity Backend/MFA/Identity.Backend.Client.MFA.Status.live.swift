@@ -20,13 +20,13 @@ extension Identity.MFA.Status.Client {
                 logger.debug("Getting MFA status")
                 
                 // Get current identity
-                let identity = try await Database.Identity.get(by: .auth)
+                let identity = try await Identity.Record.get(by: .auth)
                 
                 // Check TOTP status  
-                let totpEnabled = await (try? Database.Identity.TOTP.findByIdentity(identity.id)) != nil
+                let totpEnabled = await (try? Identity.MFA.TOTP.Record.findByIdentity(identity.id)) != nil
                 
                 // Check backup codes remaining
-                let backupCodesRemaining = (try? await Database.Identity.BackupCode.countUnusedByIdentity(identity.id)) ?? 0
+                let backupCodesRemaining = (try? await Identity.MFA.BackupCodes.Record.countUnusedByIdentity(identity.id)) ?? 0
                 
                 let configuredMethods = Identity.MFA.Status.ConfiguredMethods(
                     totp: totpEnabled,
@@ -49,17 +49,17 @@ extension Identity.MFA.Status.Client {
                 logger.debug("Getting MFA challenge")
                 
                 // Get current identity
-                let identity = try await Database.Identity.get(by: .auth)
+                let identity = try await Identity.Record.get(by: .auth)
                 
                 // Check configured methods
                 var methods = Set<Identity.MFA.Method>()
                 
-                let totpEnabled = await (try? Database.Identity.TOTP.findByIdentity(identity.id)) != nil
+                let totpEnabled = await (try? Identity.MFA.TOTP.Record.findByIdentity(identity.id)) != nil
                 if totpEnabled {
                     methods.insert(.totp)
                 }
                 
-                let backupCodesRemaining = (try? await Database.Identity.BackupCode.countUnusedByIdentity(identity.id)) ?? 0
+                let backupCodesRemaining = (try? await Identity.MFA.BackupCodes.Record.countUnusedByIdentity(identity.id)) ?? 0
                 if backupCodesRemaining > 0 {
                     methods.insert(.backupCode)
                 }

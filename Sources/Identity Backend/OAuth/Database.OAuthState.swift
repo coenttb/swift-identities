@@ -1,5 +1,5 @@
 //
-//  Database.OAuthState.swift
+//  Identity.OAuth.State.Record.swift
 //  swift-identities
 //
 //  Created by Coen ten Thije Boonkkamp on 10/09/2025.
@@ -10,9 +10,9 @@ import Records
 import IdentitiesTypes
 import Dependencies
 
-extension Database {
+extension Identity.OAuth.State {
     @Table("oauth_states")
-    public struct OAuthState: Sendable {
+    public struct Record: Sendable {
         public var state: String // Primary key
         
         @Column("provider")
@@ -54,9 +54,9 @@ extension Database {
 
 // MARK: - Queries
 
-extension Database.OAuthState {
+extension Identity.OAuth.State.Record {
     /// Validate and retrieve state
-    public static func validate(_ state: String) async throws -> Database.OAuthState? {
+    public static func validate(_ state: String) async throws -> Identity.OAuth.State.Record? {
         @Dependency(\.defaultDatabase) var db
         
         // First try to find the state

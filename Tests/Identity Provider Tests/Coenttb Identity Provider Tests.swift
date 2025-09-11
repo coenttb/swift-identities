@@ -153,7 +153,7 @@ struct IdentityProviderTests {
             #expect(!responseData.data.refreshToken.value.isEmpty, "Expected non-empty refresh token")
 
             // Verify identity login was recorded in database
-            let identity = try await Database.Identity.get(by: .email(try EmailAddress(testEmail)), on: app.db)
+            let identity = try await Identity.Record.get(by: .email(try EmailAddress(testEmail)), on: app.db)
             #expect(identity.lastLoginAt != nil, "Expected lastLoginAt to be updated")
         }
     }

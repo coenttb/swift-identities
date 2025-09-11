@@ -31,7 +31,7 @@ extension Identity.Authentication.Token.Client {
                         "identityId": "\(payload.identityId)"
                     ])
 
-                    guard let identity = try await Database.Identity.findById(payload.identityId) else {
+                    guard let identity = try await Identity.Record.findById(payload.identityId) else {
                         throw Abort(.unauthorized, reason: "Identity not found")
                     }
 
@@ -44,7 +44,7 @@ extension Identity.Authentication.Token.Client {
                     }
 
                     // Use optimized update without fetching
-                    try await Database.Identity.updateLastLogin(id: identity.id)
+                    try await Identity.Record.updateLastLogin(id: identity.id)
 
                     request.auth.login(identity)
 
@@ -72,7 +72,7 @@ extension Identity.Authentication.Token.Client {
                 do {
                     let payload = try await tokenClient.verifyRefresh(token)
 
-                    guard let identity = try await Database.Identity.findById(payload.identityId) else {
+                    guard let identity = try await Identity.Record.findById(payload.identityId) else {
                         throw Abort(.unauthorized, reason: "Identity not found")
                     }
 

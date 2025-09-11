@@ -4,17 +4,9 @@ import Dependencies
 import EmailAddress
 import Crypto
 
-extension Database.Identity {
-    package enum Email {
-        package enum Change {
-            
-        }
-    }
-}
-
-extension Database.Identity.Email.Change {
+extension Identity.Email.Change.Request {
     @Table("identity_email_change_requests")
-    package struct Request: Codable, Equatable, Identifiable, Sendable {
+    package struct Record: Codable, Equatable, Identifiable, Sendable {
         package let id: UUID
         package var identityId: Identity.ID
         internal var newEmail: String
@@ -84,24 +76,24 @@ extension Database.Identity.Email.Change {
 
 // MARK: - Query Helpers
 
-extension Database.Identity.Email.Change.Request {
-    package static func findByToken(_ token: String) -> Where<Database.Identity.Email.Change.Request> {
+extension Identity.Email.Change.Request.Record {
+    package static func findByToken(_ token: String) -> Where<Identity.Email.Change.Request.Record> {
         Self.where { $0.verificationToken.eq(token) }
     }
     
-    package static func findByIdentity(_ identityId: Identity.ID) -> Where<Database.Identity.Email.Change.Request> {
+    package static func findByIdentity(_ identityId: Identity.ID) -> Where<Identity.Email.Change.Request.Record> {
         Self.where { $0.identityId.eq(identityId) }
     }
     
-    package static func findByNewEmail(_ email: String) -> Where<Database.Identity.Email.Change.Request> {
+    package static func findByNewEmail(_ email: String) -> Where<Identity.Email.Change.Request.Record> {
         Self.where { $0.newEmail.eq(email) }
     }
     
-    package static func findByNewEmail(_ email: EmailAddress) -> Where<Database.Identity.Email.Change.Request> {
+    package static func findByNewEmail(_ email: EmailAddress) -> Where<Identity.Email.Change.Request.Record> {
         Self.where { $0.newEmail.eq(email.rawValue) }
     }
     
-    package static var pending: Where<Database.Identity.Email.Change.Request> {
+    package static var pending: Where<Identity.Email.Change.Request.Record> {
         Self.where { request in
             #sql("\(request.confirmedAt) IS NULL") &&
             #sql("\(request.cancelledAt) IS NULL") &&
@@ -109,19 +101,19 @@ extension Database.Identity.Email.Change.Request {
         }
     }
     
-    package static var confirmed: Where<Database.Identity.Email.Change.Request> {
+    package static var confirmed: Where<Identity.Email.Change.Request.Record> {
         Self.where { request in
             #sql("\(request.confirmedAt) IS NOT NULL")
         }
     }
     
-    package static var cancelled: Where<Database.Identity.Email.Change.Request> {
+    package static var cancelled: Where<Identity.Email.Change.Request.Record> {
         Self.where { request in
             #sql("\(request.cancelledAt) IS NOT NULL")
         }
     }
     
-    package static var expired: Where<Database.Identity.Email.Change.Request> {
+    package static var expired: Where<Identity.Email.Change.Request.Record> {
         Self.where { request in
             #sql("\(request.confirmedAt) IS NULL") &&
             #sql("\(request.cancelledAt) IS NULL") &&
@@ -129,7 +121,7 @@ extension Database.Identity.Email.Change.Request {
         }
     }
     
-    package static var valid: Where<Database.Identity.Email.Change.Request> {
+    package static var valid: Where<Identity.Email.Change.Request.Record> {
         Self.where { request in
             #sql("\(request.confirmedAt) IS NULL") &&
             #sql("\(request.cancelledAt) IS NULL") &&
@@ -140,7 +132,7 @@ extension Database.Identity.Email.Change.Request {
 
 // MARK: - Status & Actions
 
-extension Database.Identity.Email.Change.Request {
+extension Identity.Email.Change.Request.Record {
     package enum Status: String, Codable, Sendable {
         case pending
         case confirmed

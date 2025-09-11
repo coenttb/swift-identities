@@ -7,33 +7,33 @@ import EmailAddress
 
 @Selection
 package struct ApiKeyWithIdentity: Sendable {
-    package let apiKey: IdentityApiKey
-    package let identity: Database.Identity
+    package let apiKey: Identity.Authentication.ApiKey.Record
+    package let identity: Identity.Record
 }
 
 @Selection
 package struct TokenWithIdentity: Sendable {
-    package let token: Database.Identity.Token
-    package let identity: Database.Identity
+    package let token: Identity.Authentication.Token.Record
+    package let identity: Identity.Record
 }
 
 @Selection  
 package struct EmailChangeRequestWithIdentity: Sendable {
-    package let emailChangeRequest: Database.Identity.Email.Change.Request
-    package let identity: Database.Identity
+    package let emailChangeRequest: Identity.Email.Change.Request.Record
+    package let identity: Identity.Record
     package let currentEmail: String
 }
 
 @Selection
 package struct ProfileWithIdentity: Sendable {
-    package let profile: Database.Identity.Profile
-    package let identity: Database.Identity
+    package let profile: Identity.Profile.Record
+    package let identity: Identity.Record
     package let hasApiKeys: Bool
 }
 
 // MARK: - API Key Optimizations
 
-extension IdentityApiKey {
+extension Identity.Authentication.ApiKey.Record {
     
     /// Single query to validate API key and get associated identity
     /// Replaces: findByKey + separate identity lookup
@@ -43,10 +43,10 @@ extension IdentityApiKey {
         
         return try await db.write { db in
             // Get API key with identity in single query
-            let result = try await IdentityApiKey
+            let result = try await Identity.Authentication.ApiKey.Record
                 .where { $0.key.eq(key) }
                 .where { $0.isActive.eq(true) }
-                .join(Database.Identity.all) { apiKey, identity in
+                .join(Identity.Record.all) { apiKey, identity in
                     apiKey.identityId.eq(identity.id)
                 }
                 .select { apiKey, identity in
@@ -59,7 +59,7 @@ extension IdentityApiKey {
             
             // Update last used timestamp atomically if found
             if let result = result {
-                try await IdentityApiKey
+                try await Identity.Authentication.ApiKey.Record
                     .where { $0.id.eq(result.apiKey.id) }
                     .update { apiKey in
                         apiKey.lastUsedAt = date()
@@ -81,7 +81,7 @@ extension IdentityApiKey {
             // TODO: When swift-structured-queries supports WHERE IN, replace with:
             // .where { $0.id.in(ids) }
             for id in ids {
-                try await IdentityApiKey
+                try await Identity.Authentication.ApiKey.Record
                     .where { $0.id.eq(id) }
                     .update { apiKey in
                         apiKey.isActive = false
@@ -94,7 +94,7 @@ extension IdentityApiKey {
 
 // MARK: - Token Optimizations
 
-extension Database.Identity.Token {
+extension Identity.Authentication.Token.Record {
     
     /// Validate token and get associated identity in single query
     /// Replaces: findValid + separate identity lookup
@@ -102,13 +102,13 @@ extension Database.Identity.Token {
         @Dependency(\.defaultDatabase) var db
         
         return try await db.read { db in
-            try await Database.Identity.Token
+            try await Identity.Authentication.Token.Record
                 .where { token in
                     token.value.eq(value)
                         .and(token.type.eq(type))
                         .and(#sql("\(token.validUntil) > CURRENT_TIMESTAMP"))
                 }
-                .join(Database.Identity.all) { token, identity in
+                .join(Identity.Record.all) { token, identity in
                     token.identityId.eq(identity.id)
                 }
                 .select { token, identity in
@@ -127,7 +127,7 @@ extension Database.Identity.Token {
         
         // First get count of expired tokens
         let count = try await db.read { db in
-            try await Database.Identity.Token
+            try await Identity.Authentication.Token.Record
                 .where { token in
                     #sql("\(token.validUntil) <= CURRENT_TIMESTAMP")
                 }
@@ -137,7 +137,7 @@ extension Database.Identity.Token {
         // Then delete them
         if count > 0 {
             try await db.write { db in
-                try await Database.Identity.Token
+                try await Identity.Authentication.Token.Record
                     .delete()
                     .where { token in
                         #sql("\(token.validUntil) <= CURRENT_TIMESTAMP")
@@ -152,7 +152,7 @@ extension Database.Identity.Token {
 
 // MARK: - Email Change Request Optimizations
 
-extension Database.Identity.Email.Change.Request {
+extension Identity.Email.Change.Request.Record {
     
     /// Find email change request by token with identity data
     /// Replaces: findByToken + separate identity lookup
@@ -160,14 +160,14 @@ extension Database.Identity.Email.Change.Request {
         @Dependency(\.defaultDatabase) var db
         
         return try await db.read { db in
-            try await Database.Identity.Email.Change.Request
-                .join(Database.Identity.Token.all) { request, tokenEntity in
+            try await Identity.Email.Change.Request.Record
+                .join(Identity.Authentication.Token.Record.all) { request, tokenEntity in
                     request.identityId.eq(tokenEntity.identityId)
                         .and(tokenEntity.value.eq(token))
-                        .and(tokenEntity.type.eq(Database.Identity.Token.TokenType.emailChange))
+                        .and(tokenEntity.type.eq(Identity.Authentication.Token.Record.TokenType.emailChange))
                         .and(#sql("\(tokenEntity.validUntil) > CURRENT_TIMESTAMP"))
                 }
-                .join(Database.Identity.all) { request, _, identity in
+                .join(Identity.Record.all) { request, _, identity in
                     request.identityId.eq(identity.id)
                 }
                 .select { request, _, identity in
@@ -184,7 +184,7 @@ extension Database.Identity.Email.Change.Request {
 
 // MARK: - Profile Optimizations
 
-extension Database.Identity.Profile {
+extension Identity.Profile.Record {
     
     /// Get or create profile with identity data and API key status
     /// Useful for profile management pages
@@ -194,12 +194,12 @@ extension Database.Identity.Profile {
         
         // First try to get existing profile with identity
         if let existing = try await db.read({ db in
-            try await Database.Identity.Profile
+            try await Identity.Profile.Record
                 .where { $0.identityId.eq(identityId) }
-                .join(Database.Identity.all) { profile, identity in
+                .join(Identity.Record.all) { profile, identity in
                     profile.identityId.eq(identity.id)
                 }
-                .leftJoin(IdentityApiKey.all) { profile, _, apiKey in
+                .leftJoin(Identity.Authentication.ApiKey.Record.all) { profile, _, apiKey in
                     profile.identityId.eq(apiKey.identityId)
                         .and(apiKey.isActive.eq(true))
                 }
@@ -219,21 +219,21 @@ extension Database.Identity.Profile {
         }
         
         // Create new profile
-        let newProfile = Database.Identity.Profile(
+        let newProfile = Identity.Profile.Record(
             id: uuid(),
             identityId: identityId,
             displayName: nil
         )
         
         try await db.write { [newProfile] db in
-            try await Database.Identity.Profile.insert { newProfile }.execute(db)
+            try await Identity.Profile.Record.insert { newProfile }.execute(db)
         }
         
         // Fetch with identity data
         guard let result = try await db.read({ db in
-            try await Database.Identity.Profile
+            try await Identity.Profile.Record
                 .where { $0.id.eq(newProfile.id) }
-                .join(Database.Identity.all) { profile, identity in
+                .join(Identity.Record.all) { profile, identity in
                     profile.identityId.eq(identity.id)
                 }
                 .select { profile, identity in
@@ -254,7 +254,7 @@ extension Database.Identity.Profile {
 
 // MARK: - Session Management Optimizations
 
-extension Database.Identity {
+extension Identity.Record {
     
 //    /// Batch invalidate sessions for multiple identities
 //    /// Returns count of identities updated
@@ -269,7 +269,7 @@ extension Database.Identity {
 //        try await db.write { db in
 //            // TODO: When swift-structured-queries supports WHERE IN, replace with single query
 //            for identityId in identityIds {
-//                try await Database.Identity
+//                try await Identity.Record
 //                    .where { $0.id.eq(identityId) }
 //                    .update { identity in
 //                        identity.sessionVersion = identity.sessionVersion + 1
@@ -294,7 +294,7 @@ extension Database.Identity {
         let existingEmails = try await db.read { db in
             var results: Set<String> = []
             for email in emails {
-                let exists = try await Database.Identity
+                let exists = try await Identity.Record
                     .where { $0.emailString.eq(email.rawValue) }
                     .fetchCount(db) > 0
                 if exists {
@@ -316,7 +316,7 @@ extension Database.Identity {
 
 // MARK: - Verification Status Batch Operations
 
-//extension Database.Identity {
+//extension Identity.Record {
 //    
 //    /// Update email verification status for multiple identities
 //    package static func updateVerificationStatusBatch(
@@ -332,7 +332,7 @@ extension Database.Identity {
 //        
 //        try await db.write { db in
 //            for identityId in identityIds {
-//                try await Database.Identity
+//                try await Identity.Record
 //                    .where { $0.id.eq(identityId) }
 //                    .update { identity in
 //                        identity.emailVerificationStatus = status

@@ -21,6 +21,7 @@ import EmailAddress
 
 extension Identity.Authentication.Client {
     package static func live(
+        
     ) -> Self {
         @Dependency(\.logger) var logger
 
@@ -34,7 +35,7 @@ extension Identity.Authentication.Client {
 
                 do {
                     // Use cached and optimized single query for authentication
-                    guard let authData = try await Database.Identity.verifyPasswordOptimized(email: email, password: password) else {
+                    guard let authData = try await Identity.Record.verifyPasswordOptimized(email: email, password: password) else {
                         logger.warning("Login attempt failed: Invalid credentials for email: \(email)")
                         throw Abort(.unauthorized, reason: "Invalid credentials")
                     }
@@ -107,7 +108,7 @@ extension Identity.Authentication.Client {
                 guard let request else { throw Abort.requestUnavailable }
 
                 do {
-                    guard let apiKey = try await IdentityApiKey.findByKey(apiKeyString) else {
+                    guard let apiKey = try await Identity.Authentication.ApiKey.Record.findByKey(apiKeyString) else {
                         logger.warning("API key authentication failed", metadata: [
                             "component": "Backend.Authenticate",
                             "operation": "apiKeyAuth",
@@ -122,7 +123,7 @@ extension Identity.Authentication.Client {
                         throw Abort(.unauthorized, reason: "API key has expired")
                     }
 
-                    guard let identity = try await Database.Identity.findById(apiKey.identityId) else {
+                    guard let identity = try await Identity.Record.findById(apiKey.identityId) else {
                         throw Abort(.unauthorized, reason: "Associated identity not found")
                     }
 
@@ -131,7 +132,7 @@ extension Identity.Authentication.Client {
                     try await mutableApiKey.updateLastUsed()
                     
                     // Update identity last login using optimized method
-                    try await Database.Identity.updateLastLogin(id: identity.id)
+                    try await Identity.Record.updateLastLogin(id: identity.id)
 
                     let (accessToken, refreshToken) = try await tokenClient.generateTokenPair(
                         identity.id,

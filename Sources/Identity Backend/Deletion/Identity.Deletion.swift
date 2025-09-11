@@ -2,9 +2,9 @@ import Foundation
 import Records
 import Dependencies
 
-extension Database.Identity {
+extension Identity.Deletion {
     @Table("identity_deletions")
-    public struct Deletion: Codable, Equatable, Identifiable, Sendable {
+    public struct Record: Codable, Equatable, Identifiable, Sendable {
         public let id: UUID
         public var identityId: Identity.ID
         public var requestedAt: Date = Date()
@@ -52,14 +52,14 @@ extension Database.Identity {
 
 // MARK: - Query Helpers
 
-extension Database.Identity.Deletion {
+extension Identity.Deletion.Record {
     // No change needed
-    public static func findByIdentity(_ identityId: Identity.ID) -> Where<Database.Identity.Deletion> {
+    public static func findByIdentity(_ identityId: Identity.ID) -> Where<Identity.Deletion.Record> {
         Self.where { $0.identityId.eq(identityId) }
     }
     
     // Replace IS NULL with == nil
-    public static var pending: Where<Database.Identity.Deletion> {
+    public static var pending: Where<Identity.Deletion.Record> {
         Self.where { deletion in
             deletion.confirmedAt == nil &&
             deletion.cancelledAt == nil
@@ -67,20 +67,20 @@ extension Database.Identity.Deletion {
     }
     
     // Replace IS NOT NULL with != nil
-    public static var confirmed: Where<Database.Identity.Deletion> {
+    public static var confirmed: Where<Identity.Deletion.Record> {
         Self.where { deletion in
             deletion.confirmedAt != nil
         }
     }
     
-    public static var cancelled: Where<Database.Identity.Deletion> {
+    public static var cancelled: Where<Identity.Deletion.Record> {
         Self.where { deletion in
             deletion.cancelledAt != nil
         }
     }
     
     // Use != nil and == nil with .lte() for date comparison
-    public static var readyForDeletion: Where<Database.Identity.Deletion> {
+    public static var readyForDeletion: Where<Identity.Deletion.Record> {
         Self.where { deletion in
             deletion.confirmedAt != nil &&
             deletion.cancelledAt == nil &&
@@ -89,7 +89,7 @@ extension Database.Identity.Deletion {
     }
     
     // Use != nil and == nil with .gt() for date comparison
-    public static var awaitingGracePeriod: Where<Database.Identity.Deletion> {
+    public static var awaitingGracePeriod: Where<Identity.Deletion.Record> {
         Self.where { deletion in
             deletion.confirmedAt != nil &&
             deletion.cancelledAt == nil &&
@@ -101,7 +101,7 @@ extension Database.Identity.Deletion {
 
 // MARK: - Status & Actions
 
-extension Database.Identity.Deletion {
+extension Identity.Deletion.Record {
     public enum Status: String, Codable, Sendable {
         case pending
         case confirmed

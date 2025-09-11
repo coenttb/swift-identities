@@ -8,6 +8,6 @@
 import Foundation
 import ServerFoundationVapor
 
-extension Database.Identity: Authenticatable {
+extension Identity.Record: Authenticatable {
     
 }

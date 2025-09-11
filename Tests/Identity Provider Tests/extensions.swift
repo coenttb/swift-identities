@@ -87,12 +87,12 @@ func setupMockIdentity(app: Application) async throws -> (email: String, passwor
 
     #expect(createResponse.status == .ok, "Expected successful identity creation")
 
-    let identity = try await Database.Identity.get(by: .email(try EmailAddress(testEmail)), on: app.db)
+    let identity = try await Identity.Record.get(by: .email(try EmailAddress(testEmail)), on: app.db)
 
     #expect(identity.emailVerificationStatus == .unverified, "Expected email verification status to be pending")
 
     // Retrieve the verification token
-    guard let tokenRecord = try await Database.Identity.Token.query(on: app.db)
+    guard let tokenRecord = try await Identity.Authentication.Token.Record.query(on: app.db)
         .filter(\.$identity.$id == identity.id!)
         .filter(\.$type == .emailVerification)
         .first()
@@ -117,7 +117,7 @@ func setupMockIdentity(app: Application) async throws -> (email: String, passwor
     #expect(verifyResponse.status == .created, "Expected successful email verification")
 
     // Check database that email verification status is now verified
-    let updatedIdentity = try await Database.Identity.get(by: .email(try EmailAddress(testEmail)), on: app.db)
+    let updatedIdentity = try await Identity.Record.get(by: .email(try EmailAddress(testEmail)), on: app.db)
     #expect(updatedIdentity.emailVerificationStatus == .verified, "Expected email verification status to be verified")
 
     print("Successfully created and verified mock identity: \(testEmail)")

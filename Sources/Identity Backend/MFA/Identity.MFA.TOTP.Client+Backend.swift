@@ -78,7 +78,7 @@ extension Identity.MFA.TOTP.Client {
                     logger.debug("TOTP code validated successfully")
                 }                
                 // Confirm the setup in database
-                guard let totpRecord = try await Database.Identity.TOTP.findByIdentity(identityId) else {
+                guard let totpRecord = try await Identity.MFA.TOTP.Record.findByIdentity(identityId) else {
                     throw ClientError.totpNotEnabled
                 }
                 try await totpRecord.confirm()
@@ -115,7 +115,7 @@ extension Identity.MFA.TOTP.Client {
                 }
                 
                 // Save backup codes to database
-                try await Database.Identity.BackupCode.create(
+                try await Identity.MFA.BackupCodes.Record.create(
                     identityId: identityId,
                     codes: codes
                 )
@@ -125,29 +125,29 @@ extension Identity.MFA.TOTP.Client {
             
             verifyBackupCode: { identityId, code in
                 // Use the existing BackupCode verify method
-                return try await Database.Identity.BackupCode.verify(
+                return try await Identity.MFA.BackupCodes.Record.verify(
                     identityId: identityId,
                     code: code
                 )
             },
             
             remainingBackupCodes: { identityId in
-                return try await Database.Identity.BackupCode.countUnusedByIdentity(identityId)
+                return try await Identity.MFA.BackupCodes.Record.countUnusedByIdentity(identityId)
             },
             
             isEnabled: { identityId in
-                let totp = try await Database.Identity.TOTP.findConfirmedByIdentity(identityId)
+                let totp = try await Identity.MFA.TOTP.Record.findConfirmedByIdentity(identityId)
                 return totp != nil
             },
             
             disable: { identityId in
-                try await Database.Identity.TOTP.deleteForIdentity(identityId)
-                try await Database.Identity.BackupCode.deleteForIdentity(identityId)
+                try await Identity.MFA.TOTP.Record.deleteForIdentity(identityId)
+                try await Identity.MFA.BackupCodes.Record.deleteForIdentity(identityId)
             },
             
             getStatus: { identityId in
-                let totpData = try await Database.Identity.TOTP.findByIdentity(identityId)
-                let backupCodesCount = try await Database.Identity.BackupCode.countUnusedByIdentity(identityId)
+                let totpData = try await Identity.MFA.TOTP.Record.findByIdentity(identityId)
+                let backupCodesCount = try await Identity.MFA.BackupCodes.Record.countUnusedByIdentity(identityId)
                 
                 // Only consider TOTP enabled if it's confirmed
                 let isEnabled = (totpData?.isConfirmed ?? false)
@@ -251,7 +251,7 @@ private func verifyTOTPCode(
     }
     
     // Get TOTP data
-    guard let totpData = try await Database.Identity.TOTP.findByIdentity(identityId) else {
+    guard let totpData = try await Identity.MFA.TOTP.Record.findByIdentity(identityId) else {
         throw Identity.MFA.TOTP.Client.ClientError.totpNotEnabled
     }
     

@@ -5,7 +5,7 @@ import EmailAddress
 
 // MARK: - Database Operations
 
-extension Database.Identity.Email.Change.Request {
+extension Identity.Email.Change.Request.Record {
     
     // Async initializer that creates and persists to database
     package init(
@@ -22,20 +22,20 @@ extension Database.Identity.Email.Change.Request {
         )
         
         _ = try await db.write { [`self` = self] db in
-            try await Database.Identity.Email.Change.Request.insert { `self` }
+            try await Identity.Email.Change.Request.Record.insert { `self` }
                 .execute(db)
         }
     }
     
-    package static func findByToken(_ token: String) async throws -> Database.Identity.Email.Change.Request? {
+    package static func findByToken(_ token: String) async throws -> Identity.Email.Change.Request.Record? {
         @Dependency(\.defaultDatabase) var db
         return try await db.read { db in
-            try await Database.Identity.Email.Change.Request.findByToken(token).valid
+            try await Identity.Email.Change.Request.Record.findByToken(token).valid
                 .fetchOne(db)
         }
     }
     
-    package mutating func confirm() async throws -> Database.Identity? {
+    package mutating func confirm() async throws -> Identity.Record? {
         @Dependency(\.defaultDatabase) var db
         @Dependency(\.date) var date
         
@@ -48,7 +48,7 @@ extension Database.Identity.Email.Change.Request {
         
         try await db.write { db in
             // Update the identity's email
-            try await Database.Identity
+            try await Identity.Record
                 .update { identity in
                     identity.emailString = newEmail
                     identity.updatedAt = updatedAt
@@ -57,7 +57,7 @@ extension Database.Identity.Email.Change.Request {
                 .execute(db)
             
             // Mark request as confirmed
-            try await Database.Identity.Email.Change.Request
+            try await Identity.Email.Change.Request.Record
                 .update { req in
                     req.confirmedAt = confirmedAt
                 }
@@ -66,7 +66,7 @@ extension Database.Identity.Email.Change.Request {
         }
         
         // Return the updated identity
-        return try await Database.Identity.findById(identityId)
+        return try await Identity.Record.findById(identityId)
     }
     
     package mutating func cancel() async throws {
@@ -78,7 +78,7 @@ extension Database.Identity.Email.Change.Request {
         let id = self.id
         
         try await db.write { db in
-            try await Database.Identity.Email.Change.Request
+            try await Identity.Email.Change.Request.Record
                 .update { request in
                     request.cancelledAt = cancelledAt
                 }

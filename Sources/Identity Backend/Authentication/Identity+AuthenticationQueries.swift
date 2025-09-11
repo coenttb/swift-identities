@@ -8,13 +8,13 @@ import Vapor
 
 @Selection
 public struct AuthenticationData: Sendable {
-    public let identity: Database.Identity
+    public let identity: Identity.Record
     public let totpEnabled: Bool
 }
 
 @Selection
 public struct IdentityWithMFAStatus: Sendable {
-    public let identity: Database.Identity
+    public let identity: Identity.Record
     public let totpId: UUID?
     public let totpConfirmed: Bool
     public let backupCodesAvailable: Int
@@ -22,7 +22,7 @@ public struct IdentityWithMFAStatus: Sendable {
 
 // MARK: - Optimized Authentication Queries
 
-extension Database.Identity {
+extension Identity.Record {
     
     /// Single query to get identity with TOTP status for authentication
     /// Replaces: findByEmail + separate TOTP check
@@ -30,9 +30,9 @@ extension Database.Identity {
         @Dependency(\.defaultDatabase) var db
         
         return try await db.read { db in
-            try await Database.Identity
+            try await Identity.Record
                 .where { $0.emailString.eq(email.rawValue) }
-                .leftJoin(Database.Identity.TOTP.all) { identity, totp in
+                .leftJoin(Identity.MFA.TOTP.Record.all) { identity, totp in
                     identity.id.eq(totp.identityId)
                         .and(totp.isConfirmed.eq(true))
                 }
@@ -53,13 +53,13 @@ extension Database.Identity {
         @Dependency(\.defaultDatabase) var db
         
         return try await db.read { db in
-            try await Database.Identity
+            try await Identity.Record
                 .where { $0.id.eq(identityId) }
-                .leftJoin(Database.Identity.TOTP.all) { identity, totp in
+                .leftJoin(Identity.MFA.TOTP.Record.all) { identity, totp in
                     identity.id.eq(totp.identityId)
                         .and(totp.isConfirmed.eq(true))
                 }
-                .leftJoin(Database.Identity.BackupCode.all) { identity, _, backupCode in
+                .leftJoin(Identity.MFA.BackupCodes.Record.all) { identity, _, backupCode in
                     identity.id.eq(backupCode.identityId)
                         .and(backupCode.isUsed.eq(false))
                 }
@@ -85,7 +85,7 @@ extension Database.Identity {
         @Dependency(\.date) var date
         
         _ = try await db.write { db in
-            try await Database.Identity
+            try await Identity.Record
                 .where { $0.id.eq(id) }
                 .update { identity in
                     identity.lastLoginAt = date()
@@ -136,7 +136,7 @@ extension Database.Identity {
             var totalUpdated = 0
             
             for identityId in identityIds {
-                try await Database.Identity
+                try await Identity.Record
                     .where { $0.id.eq(identityId) }
                     .update { identity in
                         identity.sessionVersion = identity.sessionVersion + 1
@@ -157,7 +157,7 @@ extension Database.Identity {
         @Dependency(\.defaultDatabase) var db
         
         let count = try await db.read { db in
-            try await Database.Identity
+            try await Identity.Record
                 .where { $0.emailString.eq(email.rawValue) }
                 .fetchCount(db)
         }
@@ -168,14 +168,14 @@ extension Database.Identity {
 
 // MARK: - MFA Optimized Queries
 
-extension Database.Identity.TOTP {
+extension Identity.MFA.TOTP.Record {
     
     /// Check if TOTP is enabled without fetching the full record
     package static func isEnabled(for identityId: Identity.ID) async throws -> Bool {
         @Dependency(\.defaultDatabase) var db
         
         let count = try await db.read { db in
-            try await Database.Identity.TOTP
+            try await Identity.MFA.TOTP.Record
                 .where { 
                     $0.identityId.eq(identityId)
                         .and($0.isConfirmed.eq(true))
@@ -192,7 +192,7 @@ extension Database.Identity.TOTP {
         @Dependency(\.date) var date
         
         _ = try await db.write { db in
-            try await Database.Identity.TOTP
+            try await Identity.MFA.TOTP.Record
                 .where { $0.id.eq(id) }
                 .update { totp in
                     totp.lastUsedAt = date()
@@ -205,14 +205,14 @@ extension Database.Identity.TOTP {
 
 // MARK: - Backup Codes Optimized Queries
 
-extension Database.Identity.BackupCode {
+extension Identity.MFA.BackupCodes.Record {
     
     /// Get count of unused backup codes without fetching them all
     package static func unusedCount(for identityId: Identity.ID) async throws -> Int {
         @Dependency(\.defaultDatabase) var db
         
         return try await db.read { db in
-            try await Database.Identity.BackupCode
+            try await Identity.MFA.BackupCodes.Record
                 .where { 
                     $0.identityId.eq(identityId)
                         .and($0.isUsed.eq(false))
@@ -228,10 +228,10 @@ extension Database.Identity.BackupCode {
         @Dependency(\.date) var date
         
         // Hash the code to compare with stored hash
-        let codeHash = try Database.Identity.BackupCode.hashCode(code)
+        let codeHash = try Identity.MFA.BackupCodes.Record.hashCode(code)
         
 //        let updatedCount: Int = try await db.write { db in
-//            try await Database.Identity.BackupCode
+//            try await Identity.MFA.BackupCodes.Record
 //                .where { 
 //                    $0.identityId.eq(identityId)
 //                        .and($0.codeHash.eq(codeHash))

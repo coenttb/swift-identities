@@ -63,7 +63,7 @@ extension Identity.Token.Client {
                 
                 // Try to fetch the profile's displayName (but don't fail if not found)
                 if let profile = try? await database.read { db in
-                    try await Database.Identity.Profile.findByIdentity(identityId).fetchOne(db)
+                    try await Identity.Profile.Record.findByIdentity(identityId).fetchOne(db)
                 },
                    let displayName = profile.displayName {
                     additionalClaims["displayName"] = displayName
@@ -139,7 +139,7 @@ extension Identity.Token.Client {
                 
                 // Try to fetch the profile's displayName
                 if let profile = try? await database.read { db in
-                    try await Database.Identity.Profile.findByIdentity(identityId).fetchOne(db)
+                    try await Identity.Profile.Record.findByIdentity(identityId).fetchOne(db)
                 },
                    let displayName = profile.displayName {
                     additionalClaims["displayName"] = displayName
@@ -210,7 +210,7 @@ extension Identity.Token.Client {
                 
                 // Try to fetch the profile's displayName
                 if let profile = try? await database.read ({ db in
-                    try await Database.Identity.Profile.findByIdentity(identityId).fetchOne(db)
+                    try await Identity.Profile.Record.findByIdentity(identityId).fetchOne(db)
                 }),
                    let displayName = profile.displayName {
                     additionalClaims["displayName"] = displayName

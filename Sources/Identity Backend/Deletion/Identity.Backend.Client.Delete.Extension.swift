@@ -42,10 +42,10 @@ extension Identity.Deletion.Client {
     /// 
     /// - Returns: A `DeletionStatus` if a deletion is pending, or `nil` if no deletion request exists
     package func status() async throws -> DeletionStatus? {
-        let identity = try await Database.Identity.get(by: .auth)
+        let identity = try await Identity.Record.get(by: .auth)
         
         // Check for pending deletion
-        guard let deletion = try await Database.Identity.Deletion.findPendingForIdentity(identity.id) else {
+        guard let deletion = try await Identity.Deletion.Record.findPendingForIdentity(identity.id) else {
             return nil
         }
         

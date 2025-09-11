@@ -2,11 +2,12 @@ import Foundation
 import Records
 import Dependencies
 import Crypto
+import IdentitiesTypes
 
-extension Database.Identity {
+extension Identity.Authentication.Token {
     @Table("identity_tokens")
-    package struct Token: Codable, Equatable, Identifiable, Sendable {
-        package let id: UUID
+    public struct Record: Codable, Equatable, Identifiable, Sendable {
+        public let id: UUID
         package var value: String
         package var validUntil: Date
         package var identityId: Identity.ID
@@ -14,14 +15,14 @@ extension Database.Identity {
         package var createdAt: Date = Date()
         package var lastUsedAt: Date?
         
-        package struct TokenType: RawRepresentable, Codable, Hashable, QueryBindable, Sendable, ExpressibleByStringLiteral {
-            package let rawValue: String
+        public struct TokenType: RawRepresentable, Codable, Hashable, QueryBindable, Sendable, ExpressibleByStringLiteral {
+            public let rawValue: String
             
-            package init(rawValue: String) {
+            public init(rawValue: String) {
                 self.rawValue = rawValue
             }
             
-            package init(stringLiteral value: StringLiteralType) {
+            public init(stringLiteral value: StringLiteralType) {
                 self = .init(rawValue: value)
             }
         }
@@ -87,68 +88,71 @@ extension Database.Identity {
 
 // MARK: - Query Helpers
 
-extension Database.Identity.Token {
-    package static func findByValue(_ value: String) -> Where<Database.Identity.Token> {
+extension Identity.Authentication.Token.Record {
+    package static func findByValue(_ value: String) -> Where<Identity.Authentication.Token.Record> {
         Self.where { $0.value.eq(value) }
     }
     
-    package static func findByIdentity(_ identityId: Identity.ID) -> Where<Database.Identity.Token> {
+    package static func findByIdentity(_ identityId: Identity.ID) -> Where<Identity.Authentication.Token.Record> {
         Self.where { $0.identityId.eq(identityId) }
     }
     
-    package static func findByType(_ type: TokenType) -> Where<Database.Identity.Token> {
+    package static func findByType(_ type: TokenType) -> Where<Identity.Authentication.Token.Record> {
         Self.where { $0.type.eq(type) }
     }
     
-    package static var valid: Where<Database.Identity.Token> {
+    package static func findByIdentityAndType(_ identityId: Identity.ID, _ type: TokenType) -> Where<Identity.Authentication.Token.Record> {
+        Self.where { 
+            $0.identityId.eq(identityId)
+                .and($0.type.eq(type))
+        }
+    }
+    
+    package static var valid: Where<Identity.Authentication.Token.Record> {
         Self.where { token in
             #sql("\(token.validUntil) > CURRENT_TIMESTAMP")
         }
     }
     
-    package static var expired: Where<Database.Identity.Token> {
+    package static var expired: Where<Identity.Authentication.Token.Record> {
         Self.where { token in
             #sql("\(token.validUntil) <= CURRENT_TIMESTAMP")
         }
     }
     
-    package static func validTokenOfType(_ type: TokenType) -> Where<Database.Identity.Token> {
+    package static func findValid(value: String, type: TokenType) -> Where<Identity.Authentication.Token.Record> {
         Self.where { token in
-            token.type.eq(type) && #sql("\(token.validUntil) > CURRENT_TIMESTAMP")
+            token.value.eq(value)
+                .and(token.type.eq(type))
+                .and(#sql("\(token.validUntil) > CURRENT_TIMESTAMP"))
         }
     }
 }
 
-extension Database.Identity.Token.TokenType {
-    static let emailVerification: Self = "email-verification"
-    static let passwordReset: Self = "password-reset"
-    static let accountActivation: Self = "account-activation"
-    static let twoFactorAuthentication: Self = "two-factor-authentication"
-    static let apiAccess: Self = "api-access"
-    static let refreshToken: Self = "refresh-token"
-    static let sessionToken: Self = "session-token"
-    static let rememberMeToken: Self = "remember-me-token"
-    static let invitationToken: Self = "invitation-token"
-    static let passwordlessLogin: Self = "passwordless-login"
-    static let accountDeletion: Self = "account-deletion"
-    static let emailChange: Self = "email-change"
-    static let phoneNumberVerification: Self = "phone-number-verification"
-    static let termsAcceptance: Self = "terms-acceptance"
-    static let consentToken: Self = "consent-token"
-    static let temporaryAccess: Self = "temporary-access"
-    static let reauthenticationToken: Self = "reauthentication-token"
+// MARK: - Token Type Extensions
+
+extension Identity.Authentication.Token.Record.TokenType {
+    package static let emailVerification: Self = "email_verification"
+    package static let passwordReset: Self = "password_reset"
+    package static let emailChange: Self = "email_change"
+    package static let accountDeletion: Self = "account_deletion"
+    package static let apiAccess: Self = "api_access"
+    package static let mfaSession: Self = "mfa_session"
+    package static let reauthorization: Self = "reauthorization"
+    package static let reauthentication: Self = "reauthentication"
 }
 
-// MARK: - Token Validation
+// MARK: - Validation & Usage
 
-extension Database.Identity.Token {
+extension Identity.Authentication.Token.Record {
     package var isValid: Bool {
         @Dependency(\.date) var date
         return validUntil > date()
     }
     
     package var isExpired: Bool {
-        !isValid
+        @Dependency(\.date) var date
+        return validUntil <= date()
     }
     
     package mutating func markAsUsed() {

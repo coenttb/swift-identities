@@ -4,7 +4,7 @@ import Dependencies
 
 // MARK: - Database Operations
 
-extension Database.Identity.Deletion {
+extension Identity.Deletion.Record {
     
     // Async initializer that creates and persists to database
     package init(
@@ -25,15 +25,15 @@ extension Database.Identity.Deletion {
         let `self` = self
         
         _ = try await db.write { db in
-            try await Database.Identity.Deletion.insert { `self` }
+            try await Identity.Deletion.Record.insert { `self` }
                 .execute(db)
         }
     }
     
-    package static func findPendingForIdentity(_ identityId: Identity.ID) async throws -> Database.Identity.Deletion? {
+    package static func findPendingForIdentity(_ identityId: Identity.ID) async throws -> Identity.Deletion.Record? {
         @Dependency(\.defaultDatabase) var db
         return try await db.read { db in
-            try await Database.Identity.Deletion.findByIdentity(identityId).pending
+            try await Identity.Deletion.Record.findByIdentity(identityId).pending
                 .fetchOne(db)
         }
     }
@@ -47,7 +47,7 @@ extension Database.Identity.Deletion {
         let id = self.id
         
         try await db.write { db in
-            try await Database.Identity.Deletion
+            try await Identity.Deletion.Record
                 .update { deletion in
                     deletion.confirmedAt = confirmedAt
                 }
@@ -65,7 +65,7 @@ extension Database.Identity.Deletion {
         let id = self.id
         
         try await db.write { db in
-            try await Database.Identity.Deletion
+            try await Identity.Deletion.Record
                 .update { deletion in
                     deletion.cancelledAt = cancelledAt
                 }
@@ -74,10 +74,10 @@ extension Database.Identity.Deletion {
         }
     }
     
-    package static func getReadyForDeletion() async throws -> [Database.Identity.Deletion] {
+    package static func getReadyForDeletion() async throws -> [Identity.Deletion.Record] {
         @Dependency(\.defaultDatabase) var db
         return try await db.read { db in
-            try await Database.Identity.Deletion.readyForDeletion
+            try await Identity.Deletion.Record.readyForDeletion
                 .fetchAll(db)
         }
     }

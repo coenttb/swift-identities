@@ -5,14 +5,11 @@ import Vapor
 import Dependencies
 import EnvironmentVariables
 
-public typealias IdentityID = Identity.ID
 
-public enum Database {}
-
-extension Database {
+extension Identity {
     @Table("identities")
-    public struct Identity: Codable, Equatable, Identifiable, Sendable {
-        public let id: IdentityID
+    public struct Record: Codable, Equatable, Identifiable, Sendable {
+        public let id: Identity.ID
         @Column("email")
         package var emailString: String
         package var passwordHash: String
@@ -39,7 +36,7 @@ extension Database {
         }
 //        
         package init(
-            id: IdentityID,
+            id: Identity.ID,
             email: EmailAddress,
             passwordHash: String,
             emailVerificationStatus: EmailVerificationStatus = .unverified,
@@ -63,7 +60,7 @@ extension Database {
 
 // MARK: - Password Management
 
-extension Database.Identity {
+extension Identity.Record {
     package mutating func setPassword(_ password: String) async throws {
         @Dependency(\.envVars) var envVars
         @Dependency(\.application) var application
@@ -87,24 +84,24 @@ extension Database.Identity {
 
 // MARK: - Query Helpers
 
-extension Database.Identity {
-    package static func findByEmail(_ email: String) -> Where<Database.Identity> {
+extension Identity.Record {
+    package static func findByEmail(_ email: String) -> Where<Identity.Record> {
         Self.where { $0.emailString.eq(email) }
     }
     
-    package static func findByEmail(_ email: EmailAddress) -> Where<Database.Identity> {
+    package static func findByEmail(_ email: EmailAddress) -> Where<Identity.Record> {
         Self.where { $0.emailString.eq(email.rawValue) }
     }
     
-    package static var verified: Where<Database.Identity> {
+    package static var verified: Where<Identity.Record> {
         Self.where { $0.emailVerificationStatus.eq(EmailVerificationStatus.verified) }
     }
     
-    package static var unverified: Where<Database.Identity> {
+    package static var unverified: Where<Identity.Record> {
         Self.where { $0.emailVerificationStatus.eq(EmailVerificationStatus.unverified) }
     }
     
-    package static var pending: Where<Database.Identity> {
+    package static var pending: Where<Identity.Record> {
         Self.where { $0.emailVerificationStatus.eq(EmailVerificationStatus.pending) }
     }
 }

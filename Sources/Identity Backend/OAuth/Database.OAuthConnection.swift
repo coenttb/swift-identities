@@ -1,5 +1,5 @@
 //
-//  Database.OAuthConnection.swift
+//  Identity.OAuth.Connection.Record.swift
 //  swift-identities
 //
 //  Created by Coen ten Thije Boonkkamp on 10/09/2025.
@@ -10,9 +10,9 @@ import Records
 import IdentitiesTypes
 import Dependencies
 
-extension Database {
+extension Identity.OAuth.Connection {
     @Table("oauth_connections")
-    public struct OAuthConnection: Sendable {
+    public struct Record: Sendable {
         public var id: UUID
         
         @Column("identity_id")
@@ -85,12 +85,12 @@ extension Database {
 
 // MARK: - Queries
 
-extension Database.OAuthConnection {
+extension Identity.OAuth.Connection.Record {
     /// Find connection by provider and provider user ID
     public static func find(
         provider: String,
         providerUserId: String
-    ) async throws -> Database.OAuthConnection? {
+    ) async throws -> Identity.OAuth.Connection.Record? {
         @Dependency(\.defaultDatabase) var db
         
         return try await db.read { db in
@@ -106,7 +106,7 @@ extension Database.OAuthConnection {
     /// Find all connections for an identity
     public static func findAll(
         identityId: Identity.ID
-    ) async throws -> [Database.OAuthConnection] {
+    ) async throws -> [Identity.OAuth.Connection.Record] {
         @Dependency(\.defaultDatabase) var db
         
         return try await db.read { db in
@@ -120,7 +120,7 @@ extension Database.OAuthConnection {
     public static func find(
         identityId: Identity.ID,
         provider: String
-    ) async throws -> Database.OAuthConnection? {
+    ) async throws -> Identity.OAuth.Connection.Record? {
         @Dependency(\.defaultDatabase) var db
         
         return try await db.read { db in
@@ -173,7 +173,7 @@ extension Database.OAuthConnection {
 }
 
 extension Identity.OAuth.Connection {
-    public init(from oauthConnection: Database.OAuthConnection) {
+    public init(from oauthConnection: Identity.OAuth.Connection.Record) {
         self = Identity.OAuth.Connection(
             provider: oauthConnection.provider,
             providerUserId: oauthConnection.providerUserId,

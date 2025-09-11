@@ -19,12 +19,12 @@ extension Identity.API.Profile {
     ) async throws -> any AsyncResponseEncodable {
         
         // Get authenticated identity
-        let identity = try await Database.Identity.get(by: .auth)
+        let identity = try await Identity.Record.get(by: .auth)
         
         switch profile {
         case .get:
             // Get or create profile
-            let profile = try await Database.Identity.Profile.getOrCreate(for: identity.id)
+            let profile = try await Identity.Profile.Record.getOrCreate(for: identity.id)
             
             let profileResponse = Response(
                 id: profile.id,
@@ -42,7 +42,7 @@ extension Identity.API.Profile {
             @Dependency(\.tokenClient) var tokenClient
             
             // Get or create profile
-            var profile = try await Database.Identity.Profile.getOrCreate(for: identity.id)
+            var profile = try await Identity.Profile.Record.getOrCreate(for: identity.id)
             
             // Update display name
             try await profile.updateDisplayName(request.displayName)

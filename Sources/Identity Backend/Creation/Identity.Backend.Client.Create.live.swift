@@ -26,26 +26,26 @@ extension Identity.Creation.Client {
                     let emailAddress = try EmailAddress(email)
 
                     // Check if email already exists
-                    guard try await Database.Identity.findByEmail(emailAddress) == nil else {
+                    guard try await Identity.Record.findByEmail(emailAddress) == nil else {
                         throw Identity.Backend.ValidationError.invalidInput("Email already in use")
                     }
 
                     // Create the identity
-                    let identity = try await Database.Identity(
+                    let identity = try await Identity.Record(
                         email: emailAddress,
                         password: password,
                         emailVerificationStatus: .unverified
                     )
 
                     // Invalidate any existing verification tokens
-                    try await Database.Identity.Token.invalidateAllForIdentity(identity.id, type: .emailVerification)
+                    try await Identity.Authentication.Token.Record.invalidateAllForIdentity(identity.id, type: .emailVerification)
 
 //                     guard try await identity.canGenerateToken() else {
 //                         throw Abort(.tooManyRequests, reason: "Token generation limit exceeded")
 //                     }
 
                     // Create verification token
-                    let verificationToken = try await Database.Identity.Token(
+                    let verificationToken = try await Identity.Authentication.Token.Record(
                         identityId: identity.id,
                         type: .emailVerification,
                         validityHours: 24 // 24 hours
@@ -77,12 +77,12 @@ extension Identity.Creation.Client {
                     let emailAddress = try EmailAddress(email)
                     
                     // Find valid verification token
-                    guard let identityToken = try await Database.Identity.Token.findValid(value: token, type: .emailVerification) else {
+                    guard let identityToken = try await Identity.Authentication.Token.Record.findValid(value: token, type: .emailVerification) else {
                         throw Abort(.notFound, reason: "Invalid or expired token")
                     }
 
                     // Get the associated identity
-                    guard var identity = try await Database.Identity.findById(identityToken.identityId) else {
+                    guard var identity = try await Identity.Record.findById(identityToken.identityId) else {
                         throw Abort(.notFound, reason: "Identity not found")
                     }
 
@@ -95,7 +95,7 @@ extension Identity.Creation.Client {
                     try await identity.updateEmailVerificationStatus(.verified)
 
                     // Invalidate the token
-                    try await Database.Identity.Token.invalidateAllForIdentity(identity.id, type: .emailVerification)
+                    try await Identity.Authentication.Token.Record.invalidateAllForIdentity(identity.id, type: .emailVerification)
 
                     @Dependency(\.fireAndForget) var fireAndForget
                     let identityId = identity.id

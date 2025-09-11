@@ -24,7 +24,7 @@ extension Identity.Password.Client {
                 request: { email in
                     let emailAddress = try EmailAddress(email)
 
-                    guard let identity = try await Database.Identity.findByEmail(emailAddress) else {
+                    guard let identity = try await Identity.Record.findByEmail(emailAddress) else {
                         // Don't reveal if email exists or not
                         logger.debug("Password reset requested for non-existent email", metadata: [
                             "component": "Backend.Password",
@@ -35,10 +35,10 @@ extension Identity.Password.Client {
                     }
 
                     // Invalidate existing reset tokens
-                    try await Database.Identity.Token.invalidateAllForIdentity(identity.id, type: .passwordReset)
+                    try await Identity.Authentication.Token.Record.invalidateAllForIdentity(identity.id, type: .passwordReset)
 
                     // Create new reset token
-                    let resetToken = try await Database.Identity.Token(
+                    let resetToken = try await Identity.Authentication.Token.Record(
                         identityId: identity.id,
                         type: .passwordReset,
                         validityHours: 1
@@ -62,12 +62,12 @@ extension Identity.Password.Client {
                         let _ = try validatePassword(newPassword)
 
                         // Find and validate token
-                        guard let resetToken = try await Database.Identity.Token.findValid(value: token, type: .passwordReset) else {
+                        guard let resetToken = try await Identity.Authentication.Token.Record.findValid(value: token, type: .passwordReset) else {
                             throw Identity.Backend.ValidationError.invalidToken
                         }
 
                         // Get the identity
-                        guard var identity = try await Database.Identity.findById(resetToken.identityId) else {
+                        guard var identity = try await Identity.Record.findById(resetToken.identityId) else {
                             throw Abort(.internalServerError, reason: "Identity not found")
                         }
 
@@ -77,7 +77,7 @@ extension Identity.Password.Client {
                         try await identity.save()
 
                         // Invalidate the token
-                        try await Database.Identity.Token.invalidateAllForIdentity(identity.id, type: .passwordReset)
+                        try await Identity.Authentication.Token.Record.invalidateAllForIdentity(identity.id, type: .passwordReset)
 
                         let emailAddress = identity.email
 
@@ -104,7 +104,7 @@ extension Identity.Password.Client {
             ),
             change: .init(
                 request: { currentPassword, newPassword in
-                    var identity = try await Database.Identity.get(by: .auth)
+                    var identity = try await Identity.Record.get(by: .auth)
 
                     guard try await identity.verifyPassword(currentPassword) else {
                         throw Identity.Backend.AuthenticationError.invalidCredentials

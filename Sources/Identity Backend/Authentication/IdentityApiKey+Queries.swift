@@ -4,7 +4,7 @@ import Dependencies
 
 // MARK: - Database Operations
 
-extension IdentityApiKey {
+extension Identity.Authentication.ApiKey.Record {
     
     // Async initializer that creates and persists to database
     package init(
@@ -25,14 +25,14 @@ extension IdentityApiKey {
         )
         
         try await db.write { [`self` = self] db in
-            try await IdentityApiKey.insert { `self` }.execute(db)
+            try await Identity.Authentication.ApiKey.Record.insert { `self` }.execute(db)
         }
     }
     
-    package static func findByKey(_ key: String) async throws -> IdentityApiKey? {
+    package static func findByKey(_ key: String) async throws -> Identity.Authentication.ApiKey.Record? {
         @Dependency(\.defaultDatabase) var db
         return try await db.read { db in
-            try await IdentityApiKey.findByKey(key).where { $0.isActive }.fetchOne(db)
+            try await Identity.Authentication.ApiKey.Record.findByKey(key).where { $0.isActive }.fetchOne(db)
         }
     }
     
@@ -45,7 +45,7 @@ extension IdentityApiKey {
         let id = self.id
         
         try await db.write { db in
-            try await IdentityApiKey
+            try await Identity.Authentication.ApiKey.Record
                 .update { apiKey in
                     apiKey.lastUsedAt = lastUsedAt
                 }
@@ -61,7 +61,7 @@ extension IdentityApiKey {
         let id = self.id
         
         try await db.write { db in
-            try await IdentityApiKey
+            try await Identity.Authentication.ApiKey.Record
                 .update { apiKey in
                     apiKey.isActive = false
                 }
@@ -70,10 +70,10 @@ extension IdentityApiKey {
         }
     }
     
-    package static func listForIdentity(_ identityId: Identity.ID) async throws -> [IdentityApiKey] {
+    package static func listForIdentity(_ identityId: Identity.ID) async throws -> [Identity.Authentication.ApiKey.Record] {
         @Dependency(\.defaultDatabase) var db
         return try await db.read { db in
-            try await IdentityApiKey.findByIdentity(identityId).fetchAll(db)
+            try await Identity.Authentication.ApiKey.Record.findByIdentity(identityId).fetchAll(db)
         }
     }
 }

@@ -6,21 +6,21 @@ import Crypto
 
 // MARK: - Database Operations
 
-extension Database.Identity.BackupCode {
+extension Identity.MFA.BackupCodes.Record {
     
-    package static func findById(_ id: UUID) async throws -> Database.Identity.BackupCode? {
+    package static func findById(_ id: UUID) async throws -> Identity.MFA.BackupCodes.Record? {
         @Dependency(\.defaultDatabase) var db
         return try await db.read { db in
-            try await Database.Identity.BackupCode
+            try await Identity.MFA.BackupCodes.Record
                 .where { $0.id.eq(id) }
                 .fetchOne(db)
         }
     }
     
-    package static func findUnusedByIdentity(_ identityId: Identity.ID) async throws -> [Database.Identity.BackupCode] {
+    package static func findUnusedByIdentity(_ identityId: Identity.ID) async throws -> [Identity.MFA.BackupCodes.Record] {
         @Dependency(\.defaultDatabase) var db
         return try await db.read { db in
-            try await Database.Identity.BackupCode.findUnusedByIdentity(identityId)
+            try await Identity.MFA.BackupCodes.Record.findUnusedByIdentity(identityId)
                 .fetchAll(db)
         }
     }
@@ -28,7 +28,7 @@ extension Database.Identity.BackupCode {
     package static func countUnusedByIdentity(_ identityId: Identity.ID) async throws -> Int {
         @Dependency(\.defaultDatabase) var db
         let codes = try await db.read { db in
-            try await Database.Identity.BackupCode.findUnusedByIdentity(identityId)
+            try await Identity.MFA.BackupCodes.Record.findUnusedByIdentity(identityId)
                 .fetchAll(db)
         }
         return codes.count
@@ -43,20 +43,20 @@ extension Database.Identity.BackupCode {
         
         try await db.write { db in
             // Delete existing unused codes first
-            _ = try await Database.Identity.BackupCode
+            _ = try await Identity.MFA.BackupCodes.Record
                 .delete()
                 .where { $0.identityId.eq(identityId) }
                 .execute(db)
             
             // Create new backup codes
             for code in codes {
-                let backupCode = Database.Identity.BackupCode(
+                let backupCode = Identity.MFA.BackupCodes.Record(
                     id: uuid(),
                     identityId: identityId,
                     codeHash: try hashCode(code)
                 )
                 
-                _ = try await Database.Identity.BackupCode.insert { backupCode }
+                _ = try await Identity.MFA.BackupCodes.Record.insert { backupCode }
                     .execute(db)
             }
         }
@@ -84,7 +84,7 @@ extension Database.Identity.BackupCode {
         
         let now = Date()
         _ = try await db.write { db in
-            try await Database.Identity.BackupCode
+            try await Identity.MFA.BackupCodes.Record
                 .update { code in
                     code.isUsed = true
                     code.usedAt = now
@@ -97,7 +97,7 @@ extension Database.Identity.BackupCode {
     package static func deleteForIdentity(_ identityId: Identity.ID) async throws {
         @Dependency(\.defaultDatabase) var db
         _ = try await db.write { db in
-            try await Database.Identity.BackupCode
+            try await Identity.MFA.BackupCodes.Record
                 .delete()
                 .where { $0.identityId.eq(identityId) }
                 .execute(db)
@@ -107,7 +107,7 @@ extension Database.Identity.BackupCode {
 
 // MARK: - Helper Functions
 
-extension Database.Identity.BackupCode {
+extension Identity.MFA.BackupCodes.Record {
     /// Hash a backup code for storage
     package static func hashCode(_ code: String) throws -> String {
         // Use Bcrypt like passwords for secure hashing
