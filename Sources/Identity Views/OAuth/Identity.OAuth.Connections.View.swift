@@ -14,14 +14,14 @@ import Language
 
 extension Identity.OAuth.Connections {
     public struct View: HTML {
-        let connections: [Identity.Client.OAuth.OAuthConnection]
+        let connections: [Identity.OAuth.Connection]
         let availableProviders: [Identity.OAuth.Provider]
         let connectAction: (String) -> URL
         let disconnectAction: (String) -> URL
         let dashboardHref: URL
         
         public init(
-            connections: [Identity.Client.OAuth.OAuthConnection],
+            connections: [Identity.OAuth.Connection],
             availableProviders: [Identity.OAuth.Provider],
             connectAction: @escaping (String) -> URL,
             disconnectAction: @escaping (String) -> URL,
@@ -127,7 +127,7 @@ extension Identity.OAuth.Connections {
         }
         
         @HTMLBuilder
-        private func connectionCard(for connection: Identity.Client.OAuth.OAuthConnection) -> some HTML {
+        private func connectionCard(for connection: Identity.OAuth.Connection) -> some HTML {
             div {
                 HStack(alignment: .center) {
                     // Provider info

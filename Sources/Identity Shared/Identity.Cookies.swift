@@ -85,7 +85,7 @@ extension Identity {
                 using router: Router
             ) -> String where Router.Input == URLRequestData, Router.Output == Identity.Route {
                 return router.url(
-                    for: .reauthorize(.init(password: ""))
+                    for: .reauthorize(.api(.init(password: "")))
                 ).path
             }
             
