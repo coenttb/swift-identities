@@ -269,7 +269,7 @@ extension Identity.Backend {
                     refresh_token TEXT,
                     token_type VARCHAR(50),
                     expires_at TIMESTAMP,
-                    scopes TEXT[],
+                    scopes JSONB,
                     user_info BYTEA,
                     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
                     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,

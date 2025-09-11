@@ -343,9 +343,13 @@ extension Identity.Frontend {
                 sameSite: cookies.refreshToken.sameSitePolicy
             )
             
-            let response = Response(
+            let jwt = try JWT.parse(from: authResponse.accessToken)
+            let accessToken = try Identity.Token.Access(jwt: jwt)
+            let identityId = accessToken.identityId
+            
+            let response = try await Response(
                 status: .seeOther,
-                headers: ["Location": "/dashboard"] // Or redirect to intended destination
+                headers: ["Location": "\(config.redirect.loginSuccess(identityId))"] // Or redirect to intended destination
             )
             response.cookies[Identity.Cookies.Names.accessToken] = accessCookieValue
             response.cookies[Identity.Cookies.Names.refreshToken] = refreshCookieValue

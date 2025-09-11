@@ -32,8 +32,8 @@ extension Identity.OAuth {
         case .login:
             return try await handleLogin(configuration: configuration)
             
-        case .callback(let credentials):
-            return try await handleCallback(credentials: credentials, configuration: configuration)
+        case .callback(let callbackRequest):
+            return try await handleCallback(callbackRequest: callbackRequest, configuration: configuration)
             
         case .connections:
             return try await handleConnections(configuration: configuration)
@@ -91,19 +91,19 @@ extension Identity.OAuth {
     
     /// Handles OAuth callback processing.
     private static func handleCallback(
-        credentials: Identity.OAuth.Credentials,
+        callbackRequest: Identity.OAuth.CallbackRequest,
         configuration: Identity.Frontend.Configuration
     ) async throws -> any AsyncResponseEncodable {
         // The callback is typically handled by the API endpoint
         // This view can show a processing state or error
         return try await Identity.Frontend.htmlDocument(
-            for: .oauth(.callback(credentials)),
+            for: .oauth(.callback(callbackRequest)),
             title: "Processing OAuth Login",
             description: "Processing your OAuth login",
             configuration: configuration
         ) {
             Identity.OAuth.Callback.View(
-                provider: credentials.provider,
+                provider: callbackRequest.provider,
                 redirectUrl: configuration.redirect.loginSuccess
             )
         }

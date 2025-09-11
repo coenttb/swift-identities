@@ -87,23 +87,30 @@ private func authorizationURLImplementation(
 private func callbackImplementation(
     registry: OAuthProviderRegistry,
     stateManager: OAuthStateManager
-) -> @Sendable (Identity.OAuth.Credentials) async throws -> Identity.Authentication.Response {
-    return { credentials in
+) -> @Sendable (Identity.OAuth.CallbackRequest) async throws -> Identity.Authentication.Response {
+    return { callbackRequest in
         // 1. Validate state
-        let stateData = try await stateManager.validateState(credentials.state)
+        let stateData = try await stateManager.validateState(callbackRequest.state)
         
         // 2. Get provider
-        guard let provider = await registry.provider(for: credentials.provider) else {
-            throw OAuthError.providerNotFound(credentials.provider)
+        guard let provider = await registry.provider(for: callbackRequest.provider) else {
+            throw OAuthError.providerNotFound(callbackRequest.provider)
         }
         
-        // 3. Exchange code for tokens using redirectURI from state
-        let tokens = try await provider.exchangeCode(
-            credentials.code,
+        // 3. Create internal token exchange request with redirectURI from state
+        let tokenExchangeRequest = Identity.OAuth.TokenExchangeRequest(
+            provider: callbackRequest.provider,
+            code: callbackRequest.code,
             redirectURI: stateData.redirectURI
         )
         
-        // 4. Get user info
+        // 4. Exchange code for tokens using redirectURI from state
+        let tokens = try await provider.exchangeCode(
+            tokenExchangeRequest.code,
+            redirectURI: tokenExchangeRequest.redirectURI
+        )
+        
+        // 5. Get user info
         let userInfo = try await provider.getUserInfo(
             accessToken: tokens.accessToken
         )
@@ -142,11 +149,11 @@ private func callbackImplementation(
             ])
         }
         
-        // 5. Find or create identity
+        // 6. Find or create identity
         let identity: Database.Identity = try await database.write { db in
             // Check if OAuth connection already exists
             if let existingConnection = try await Database.OAuthConnection.find(
-                provider: credentials.provider,
+                provider: callbackRequest.provider,
                 providerUserId: userInfo.id
             ) {
                 // Get the associated identity
@@ -176,7 +183,7 @@ private func callbackImplementation(
                 // Create OAuth connection
                 let connection = Database.OAuthConnection(
                     identityId: identityId,
-                    provider: credentials.provider,
+                    provider: callbackRequest.provider,
                     providerUserId: userInfo.id,
                     accessToken: storedAccessToken,
                     refreshToken: storedRefreshToken,
@@ -201,7 +208,7 @@ private func callbackImplementation(
                 // Link OAuth to existing identity with same email
                 let connection = Database.OAuthConnection(
                     identityId: existingIdentity.id,
-                    provider: credentials.provider,
+                    provider: callbackRequest.provider,
                     providerUserId: userInfo.id,
                     accessToken: storedAccessToken,
                     refreshToken: storedRefreshToken,
@@ -225,7 +232,7 @@ private func callbackImplementation(
             // Create OAuth connection
             let connection = Database.OAuthConnection(
                 identityId: newIdentity.id,
-                provider: credentials.provider,
+                provider: callbackRequest.provider,
                 providerUserId: userInfo.id,
                 accessToken: storedAccessToken,
                 refreshToken: storedRefreshToken,
@@ -240,7 +247,7 @@ private func callbackImplementation(
             return newIdentity
         }
         
-        // 6. Generate authentication tokens
+        // 7. Generate authentication tokens
         @Dependency(Identity.Token.Client.self) var tokenClient
         
         let (accessToken, refreshToken) = try await tokenClient.generateTokenPair(
