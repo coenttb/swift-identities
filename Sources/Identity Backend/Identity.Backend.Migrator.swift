@@ -375,6 +375,55 @@ extension Identity.Backend {
             ])
         }
         
+        // Additional performance optimization indexes
+        migrator.registerMigration("add_performance_indexes_v2") { db in
+            @Dependency(\.logger) var logger
+            
+            logger.info("Adding additional performance indexes for Identity tables", metadata: [
+                "component": "Identity.Database",
+                "migration": "add_performance_indexes_v2"
+            ])
+            
+            // Partial index for verified email lookups (common in authentication)
+            try await db.execute("""
+                CREATE INDEX IF NOT EXISTS idx_identities_email_verified 
+                ON identities(email) 
+                WHERE "emailVerificationStatus" = 'verified'
+            """)
+            
+            // Index for session token lookups with type and validity
+            try await db.execute("""
+                CREATE INDEX IF NOT EXISTS idx_tokens_type_valid 
+                ON identity_tokens(value, type) 
+                WHERE "validUntil" > CURRENT_TIMESTAMP
+            """)
+            
+            // Composite index for OAuth connection lookups
+            try await db.execute("""
+                CREATE INDEX IF NOT EXISTS idx_oauth_connections_provider_identity 
+                ON oauth_connections("providerId", "identityId")
+            """)
+            
+            // Index for email change request token lookups
+            try await db.execute("""
+                CREATE INDEX IF NOT EXISTS idx_email_change_token 
+                ON identity_email_change_requests(token) 
+                WHERE "confirmedAt" IS NULL
+            """)
+            
+            // Index for active sessions by identity (for logout all)
+            try await db.execute("""
+                CREATE INDEX IF NOT EXISTS idx_tokens_identity_active 
+                ON identity_tokens("identityId", type) 
+                WHERE "validUntil" > CURRENT_TIMESTAMP
+            """)
+            
+            logger.info("Additional performance indexes added successfully", metadata: [
+                "component": "Identity.Database",
+                "migration": "add_performance_indexes_v2"
+            ])
+        }
+        
         return migrator
     }
 }

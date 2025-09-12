@@ -229,21 +229,34 @@ extension Identity.MFA.BackupCodes.Record {
         // Hash the code to compare with stored hash
         let codeHash = try Identity.MFA.BackupCodes.Record.hashCode(code)
         
-//        let updatedCount: Int = try await db.write { db in
-//            try await Identity.MFA.BackupCodes.Record
-//                .where { 
-//                    $0.identityId.eq(identityId)
-//                        .and($0.codeHash.eq(codeHash))
-//                        .and($0.isUsed.eq(false))
-//                }
-//                .update { backupCode in
-//                    backupCode.isUsed = true
-//                    backupCode.usedAt = date()
-//                }
-//                .execute(db)
-//        }
-//        
-//        return updatedCount > 0
-        return false
+        // First check if the code exists and is unused
+        let validCode = try await db.read { db in
+            try await Identity.MFA.BackupCodes.Record
+                .where { 
+                    $0.identityId.eq(identityId)
+                        .and($0.codeHash.eq(codeHash))
+                        .and($0.isUsed.eq(false))
+                }
+                .fetchOne(db)
+        }
+        
+        guard validCode != nil else { return false }
+        
+        // Mark it as used
+        try await db.write { db in
+            try await Identity.MFA.BackupCodes.Record
+                .where { 
+                    $0.identityId.eq(identityId)
+                        .and($0.codeHash.eq(codeHash))
+                        .and($0.isUsed.eq(false))
+                }
+                .update { backupCode in
+                    backupCode.isUsed = true
+                    backupCode.usedAt = date()
+                }
+                .execute(db)
+        }
+        
+        return true
     }
 }
