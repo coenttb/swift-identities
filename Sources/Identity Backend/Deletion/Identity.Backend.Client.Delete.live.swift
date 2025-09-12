@@ -31,23 +31,25 @@ extension Identity.Deletion.Client {
                     throw Abort(.unauthorized, reason: "Invalid reauthorization token")
                 }
                 
-                // Check for existing deletion (pending or cancelled)
+                // Single transaction for all deletion operations
                 @Dependency(\.defaultDatabase) var db
-                let existingDeletions = try await db.read { db in
-                    try await Identity.Deletion.Record.findByIdentity(identity.id).fetchAll(db)
-                }
-                if let existingDeletion = existingDeletions.first {
-                    if existingDeletion.status == .pending {
-                        throw Abort(.badRequest, reason: "User is already pending deletion")
-                    } else if existingDeletion.status == .cancelled {
-                        // Reactivate the cancelled deletion
-                        @Dependency(\.date) var date
-                        @Dependency(\.calendar) var calendar
-                        
-                        let now = date()
-                        let scheduledFor = calendar.date(byAdding: .day, value: 7, to: now) ?? now
-                        
-                        try await db.write { db in
+                try await db.write { db in
+                    // Check for existing deletion
+                    let existingDeletion = try await Identity.Deletion.Record
+                        .findByIdentity(identity.id)
+                        .fetchOne(db)
+                    
+                    if let existingDeletion = existingDeletion {
+                        if existingDeletion.status == .pending {
+                            throw Abort(.badRequest, reason: "User is already pending deletion")
+                        } else if existingDeletion.status == .cancelled {
+                            // Reactivate the cancelled deletion
+                            @Dependency(\.date) var date
+                            @Dependency(\.calendar) var calendar
+                            
+                            let now = date()
+                            let scheduledFor = calendar.date(byAdding: .day, value: 7, to: now) ?? now
+                            
                             try await Identity.Deletion.Record
                                 .update { deletion in
                                     deletion.requestedAt = now
@@ -57,18 +59,23 @@ extension Identity.Deletion.Client {
                                 .where { $0.id.eq(existingDeletion.id) }
                                 .execute(db)
                         }
+                    } else {
+                        // Create new deletion request inline
+                        @Dependency(\.uuid) var uuid
+                        
+                        let deletionRecord = Identity.Deletion.Record(
+                            id: uuid(),
+                            identityId: identity.id,
+                            reason: nil,
+                            gracePeriodDays: 7
+                        )
+                        
+                        try await Identity.Deletion.Record
+                            .insert { deletionRecord }
+                            .execute(db)
                     }
-                } else {
-                    // Create new deletion request
-                    _ = try await Identity.Deletion.Record(
-                        identityId: identity.id,
-                        reason: nil,
-                        gracePeriodDays: 7
-                    )
-                }
-                
-                // Invalidate the reauthorization token
-                try await db.write { db in
+                    
+                    // Invalidate the reauthorization token
                     try await Identity.Token.Record
                         .delete()
                         .where { $0.identityId.eq(identity.id) }
@@ -90,15 +97,28 @@ extension Identity.Deletion.Client {
             cancel: {
                 let identity = try await Identity.Record.get(by: .auth)
                 
-                // Find pending deletion request
-                guard let deletion = try await Identity.Deletion.Record.findPendingForIdentity(identity.id),
-                      deletion.status == .pending else {
-                    throw Abort(.badRequest, reason: "User is not pending deletion")
-                }
+                @Dependency(\.defaultDatabase) var db
+                @Dependency(\.date) var date
                 
-                // Cancel the deletion request
-                var mutableDeletion = deletion
-                try await mutableDeletion.cancel()
+                // Find and cancel in single transaction
+                try await db.write { db in
+                    // Find pending deletion
+                    guard let deletion = try await Identity.Deletion.Record
+                        .findByIdentity(identity.id)
+                        .pending
+                        .fetchOne(db),
+                          deletion.status == .pending else {
+                        throw Abort(.badRequest, reason: "User is not pending deletion")
+                    }
+                    
+                    // Cancel the deletion request
+                    try await Identity.Deletion.Record
+                        .update { del in
+                            del.cancelledAt = date()
+                        }
+                        .where { $0.id.eq(deletion.id) }
+                        .execute(db)
+                }
                 
                 logger.info("Deletion cancelled", metadata: [
                     "component": "Backend.Delete",
@@ -109,31 +129,38 @@ extension Identity.Deletion.Client {
             confirm: {
                 let identity = try await Identity.Record.get(by: .auth)
                 
-                // Find pending deletion request
-                guard let deletion = try await Identity.Deletion.Record.findPendingForIdentity(identity.id),
-                      deletion.status == .pending else {
-                    throw Abort(.badRequest, reason: "User is not pending deletion")
-                }
-                
+                @Dependency(\.defaultDatabase) var db
                 @Dependency(\.date) var date
                 
-                // Check grace period has expired
-                let currentDate = date()
-                
-                guard currentDate >= deletion.scheduledFor else {
-                    let remainingTime = deletion.scheduledFor.timeIntervalSince(currentDate)
-                    let secondsPerDay = TimeInterval(24 * 60 * 60)
-                    let remainingDays = Int(ceil(remainingTime / secondsPerDay))
-                    throw Abort(.badRequest, reason: "Grace period has not yet expired. \(remainingDays) days remaining.")
-                }
-                
-                // Confirm the deletion
-                var mutableDeletion = deletion
-                try await mutableDeletion.confirm()
-                
-                @Dependency(\.defaultDatabase) var database
-                
-                try await database.write { db in
+                // Single transaction for confirmation and deletion
+                try await db.write { db in
+                    // Find pending deletion request
+                    guard let deletion = try await Identity.Deletion.Record
+                        .findByIdentity(identity.id)
+                        .pending
+                        .fetchOne(db),
+                          deletion.status == .pending else {
+                        throw Abort(.badRequest, reason: "User is not pending deletion")
+                    }
+                    
+                    // Check grace period has expired
+                    let currentDate = date()
+                    
+                    guard currentDate >= deletion.scheduledFor else {
+                        let remainingTime = deletion.scheduledFor.timeIntervalSince(currentDate)
+                        let secondsPerDay = TimeInterval(24 * 60 * 60)
+                        let remainingDays = Int(ceil(remainingTime / secondsPerDay))
+                        throw Abort(.badRequest, reason: "Grace period has not yet expired. \(remainingDays) days remaining.")
+                    }
+                    
+                    // Confirm the deletion
+                    try await Identity.Deletion.Record
+                        .update { del in
+                            del.confirmedAt = currentDate
+                        }
+                        .where { $0.id.eq(deletion.id) }
+                        .execute(db)
+                    
                     // Actually delete the identity
                     try await Identity.Record
                         .where { $0.id.eq(identity.id) }

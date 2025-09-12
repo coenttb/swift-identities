@@ -110,13 +110,13 @@ extension Identity.Token.Record {
     
     package static var valid: Where<Identity.Token.Record> {
         Self.where { token in
-            #sql("\(token.validUntil) > CURRENT_TIMESTAMP")
+            token.validUntil > Date()
         }
     }
     
     package static var expired: Where<Identity.Token.Record> {
         Self.where { token in
-            #sql("\(token.validUntil) <= CURRENT_TIMESTAMP")
+            token.validUntil <= Date()
         }
     }
     
@@ -124,7 +124,7 @@ extension Identity.Token.Record {
         Self.where { token in
             token.value.eq(value)
                 .and(token.type.eq(type))
-                .and(#sql("\(token.validUntil) > CURRENT_TIMESTAMP"))
+                .and(token.validUntil > Date())
         }
     }
 }
@@ -173,7 +173,7 @@ extension Identity.Token.Record {
                 .where { token in
                     token.value.eq(value)
                         .and(token.type.eq(type))
-                        .and(#sql("\(token.validUntil) > CURRENT_TIMESTAMP"))
+                        .and(token.validUntil > Date())
                 }
                 .join(Identity.Record.all) { token, identity in
                     token.identityId.eq(identity.id)
@@ -196,7 +196,7 @@ extension Identity.Token.Record {
         let count = try await db.read { db in
             try await Identity.Token.Record
                 .where { token in
-                    #sql("\(token.validUntil) <= CURRENT_TIMESTAMP")
+                    token.validUntil <= Date()
                 }
                 .fetchCount(db)
         }
@@ -207,7 +207,7 @@ extension Identity.Token.Record {
                 try await Identity.Token.Record
                     .delete()
                     .where { token in
-                        #sql("\(token.validUntil) <= CURRENT_TIMESTAMP")
+                        token.validUntil <= Date()
                     }
                     .execute(db)
             }

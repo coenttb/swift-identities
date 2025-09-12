@@ -12,6 +12,12 @@ import Dependencies
 import EmailAddress
 import Records
 
+@Selection
+struct EmailVerificationData: Sendable {
+    let token: Identity.Token.Record
+    let identity: Identity.Record
+}
+
 extension Identity.Creation.Client {
     package static func live(
         sendVerificationEmail: @escaping @Sendable (_ email: EmailAddress, _ token: String) async throws -> Void,
@@ -26,56 +32,42 @@ extension Identity.Creation.Client {
                     _ = try validatePassword(password)
                     let emailAddress = try EmailAddress(email)
 
-                    // Check if email already exists
-                    @Dependency(\.defaultDatabase) var db
-                    let existingIdentity = try await db.read { db in
-                        try await Identity.Record
-                            .where { $0.emailString.eq(emailAddress.rawValue) }
-                            .fetchOne(db)
-                    }
-                    guard existingIdentity == nil else {
-                        throw Identity.Authentication.ValidationError.invalidInput("Email already in use")
-                    }
-
-                    // Create the identity
                     @Dependency(\.uuid) var uuid
                     @Dependency(\.date) var date
                     @Dependency(\.envVars) var envVars
                     @Dependency(\.application) var application
+                    @Dependency(\.defaultDatabase) var db
                     
                     let passwordHash: String = try await application.threadPool.runIfActive {
                         try Bcrypt.hash(password, cost: envVars.bcryptCost)
                     }
                     
-                    let identity = Identity.Record(
-                        id: .init(uuid()),
-                        email: emailAddress,
-                        passwordHash: passwordHash,
-                        emailVerificationStatus: .unverified,
-                        sessionVersion: 0,
-                        createdAt: date(),
-                        updatedAt: date(),
-                        lastLoginAt: nil
-                    )
-                    
-                    // Insert the new identity
-                    try await db.write { db in
+                    // Single transaction for EVERYTHING
+                    let (identity, tokenValue) = try await db.write { db in
+                        // Check if email already exists INSIDE transaction
+                        let existingIdentity = try await Identity.Record
+                            .where { $0.emailString.eq(emailAddress.rawValue) }
+                            .fetchOne(db)
+                        
+                        guard existingIdentity == nil else {
+                            throw Identity.Authentication.ValidationError.invalidInput("Email already in use")
+                        }
+                        
+                        // Create and insert identity
+                        let identity = Identity.Record(
+                            id: .init(uuid()),
+                            email: emailAddress,
+                            passwordHash: passwordHash,
+                            emailVerificationStatus: .unverified,
+                            sessionVersion: 0,
+                            createdAt: date(),
+                            updatedAt: date(),
+                            lastLoginAt: nil
+                        )
+                        
                         try await Identity.Record
                             .insert { identity }
                             .execute(db)
-                    }
-
-                    // Single transaction for token creation
-                    let tokenValue = try await db.write { db in
-                        // Invalidate any existing verification tokens
-                        try await Identity.Token.Record
-                            .delete()
-                            .where { $0.identityId.eq(identity.id) }
-                            .where { $0.type.eq(Identity.Token.Record.TokenType.emailVerification) }
-                            .execute(db)
-                        
-                        @Dependency(\.uuid) var uuid
-                        @Dependency(\.date) var date
                         
                         // Create verification token
                         let token = Identity.Token.Record(
@@ -89,7 +81,7 @@ extension Identity.Creation.Client {
                             .insert { token }
                             .execute(db)
                         
-                        return token.value
+                        return (identity, token.value)
                     }
 
                     @Dependency(\.fireAndForget) var fireAndForget
@@ -117,51 +109,49 @@ extension Identity.Creation.Client {
                     
                     @Dependency(\.defaultDatabase) var db
                     
-                    // Find valid verification token
-                    guard let identityToken = try await db.read ({ db in
-                        try await Identity.Token.Record
-                            .where { tokenRecord in
-                                tokenRecord.value.eq(token) &&
-                                tokenRecord.type.eq(Identity.Token.Record.TokenType.emailVerification) &&
-                                #sql("\(tokenRecord.validUntil) > CURRENT_TIMESTAMP")
+                    // Single transaction with JOIN for verification
+                    let identity = try await db.write { db in
+                        // Find token and identity in single JOIN query
+                        let data = try await Identity.Token.Record
+                            .where { $0.value.eq(token) }
+                            .where { $0.type.eq(Identity.Token.Record.TokenType.emailVerification) }
+                            .where { $0.validUntil > Date() }
+                            .join(Identity.Record.all) { token, identity in
+                                token.identityId.eq(identity.id)
+                            }
+                            .select { token, identity in
+                                EmailVerificationData.Columns(
+                                    token: token,
+                                    identity: identity
+                                )
                             }
                             .fetchOne(db)
-                    }) else {
-                        throw Abort(.notFound, reason: "Invalid or expired token")
-                    }
-
-                    // Get the associated identity
-                    guard let identity = try await db.read({ db in
+                        
+                        guard let data else {
+                            throw Abort(.notFound, reason: "Invalid or expired token")
+                        }
+                        
+                        // Verify email matches
+                        guard data.identity.email == emailAddress else {
+                            throw Abort(.badRequest, reason: "Email mismatch")
+                        }
+                        
+                        // Update identity verification status
                         try await Identity.Record
-                            .where { $0.id.eq(identityToken.identityId) }
-                            .fetchOne(db)
-                    }) else {
-                        throw Abort(.notFound, reason: "Identity not found")
-                    }
-
-                    // Verify email matches
-                    guard identity.email == emailAddress else {
-                        throw Abort(.badRequest, reason: "Email mismatch")
-                    }
-
-                    // Update identity verification status
-                    
-                    try await db.write { db in
-                        try await Identity.Record
-                            .where { $0.id.eq(identityToken.identityId) }
+                            .where { $0.id.eq(data.identity.id) }
                             .update {
                                 $0.emailVerificationStatus = .verified
                             }
                             .execute(db)
-                    }
-
-                    // Invalidate the token
-                    try await db.write { db in
+                        
+                        // DELETE the token (cleaner than UPDATE)
                         try await Identity.Token.Record
                             .delete()
-                            .where { $0.identityId.eq(identity.id) }
+                            .where { $0.identityId.eq(data.identity.id) }
                             .where { $0.type.eq(Identity.Token.Record.TokenType.emailVerification) }
                             .execute(db)
+                        
+                        return data.identity
                     }
 
                     @Dependency(\.fireAndForget) var fireAndForget

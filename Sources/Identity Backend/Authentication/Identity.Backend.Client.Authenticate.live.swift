@@ -117,7 +117,7 @@ extension Identity.Authentication.Client {
                             .where { $0.key.eq(apiKeyString) }
                             .where { $0.isActive.eq(true) }
                             .where { apiKey in
-                                #sql("\(apiKey.validUntil) > CURRENT_TIMESTAMP")
+                                apiKey.validUntil > Date()
                             }
                             .join(Identity.Record.all) { apiKey, identity in
                                 apiKey.identityId.eq(identity.id)

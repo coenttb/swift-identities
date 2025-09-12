@@ -43,20 +43,29 @@ extension Identity.Email.Change.Client {
                         let identity = try await Identity.Record.get(by: .auth)
                         let newEmailAddress = try EmailAddress(newEmail)
 
-                        // Check if new email is already in use
                         @Dependency(\.defaultDatabase) var db
-                        let existingIdentity = try await db.read { db in
-                            try await Identity.Record
-                                .where { $0.emailString.eq(newEmailAddress.rawValue) }
-                                .fetchOne(db)
-                        }
-                        if existingIdentity != nil {
-                            throw Identity.Authentication.ValidationError.invalidInput("Email address is already in use")
-                        }
-
-                        // Single transaction for token and request creation
+                        
+                        // Single transaction for EVERYTHING including email availability check
                         let tokenValue = try await db.write { db in
-                            // Invalidate existing email change tokens
+                            // 1. Check email availability INSIDE transaction (prevents race conditions)
+                            let emailTaken = try await Identity.Record
+                                .where { $0.emailString.eq(newEmailAddress.rawValue) }
+                                .fetchCount(db) > 0
+                            
+                            if emailTaken {
+                                throw Identity.Authentication.ValidationError.invalidInput("Email address is already in use")
+                            }
+                            
+                            // 2. Cancel any pending email change requests
+                            try await Identity.Email.Change.Request.Record
+                                .where { $0.identityId.eq(identity.id) }
+                                .where { request in
+                                    request.confirmedAt != nil && request.cancelledAt != nil
+                                }
+                                .update { $0.cancelledAt = Date() }
+                                .execute(db)
+                            
+                            // 3. Delete existing email change tokens
                             try await Identity.Token.Record
                                 .delete()
                                 .where { $0.identityId.eq(identity.id) }
@@ -141,109 +150,103 @@ extension Identity.Email.Change.Client {
                         @Dependency(\.defaultDatabase) var db
                         @Dependency(\.date) var date
                         
-                        // Single transaction for all reads and initial validation
-                        let validationData = try await db.read { db in
-                            // 1. Validate token and get it
-                            let authToken = try await Identity.Token.Record
+                        // Single transaction with JOIN for optimal performance
+                        let result = try await db.write { db in
+                            // Single JOIN query to get everything at once
+                            let `where` = try await Identity.Token.Record
                                 .where { $0.value.eq(token) }
                                 .where { $0.type.eq(Identity.Token.Record.TokenType.emailChange) }
-                                .where { #sql("\($0.validUntil) > CURRENT_TIMESTAMP") }
-                                .fetchOne(db)
+                                .where { $0.validUntil > Date() }
                             
-                            guard let authToken else {
+                            let data = try await `where`
+                                .join(Identity.Email.Change.Request.Record.all) { token, request in
+                                    request.verificationToken.eq(token.value) &&
+                                    request.identityId.eq(token.identityId) &&
+                                    request.confirmedAt == nil &&
+                                    request.cancelledAt == nil &&
+                                    request.expiresAt > Date()
+                                }
+                                .join(Identity.Record.all) { token, _, identity in
+                                    token.identityId.eq(identity.id)
+                                }
+                                .select { token, request, identity in
+                                    EmailChangeValidationData.Columns(
+                                        token: token,
+                                        request: request,
+                                        identity: identity
+                                    )
+                                }
+                                
+                            
+                            guard let data = try await data.fetchOne(db) else {
                                 throw Identity.Authentication.ValidationError.invalidToken
                             }
                             
-                            // 2. Get email change request
-                            let emailChangeRequest = try await Identity.Email.Change.Request.Record
-                                .where { $0.verificationToken.eq(token) }
-                                .where { request in
-                                    #sql("\(request.confirmedAt) IS NULL") &&
-                                    #sql("\(request.cancelledAt) IS NULL") &&
-                                    #sql("\(request.expiresAt) > CURRENT_TIMESTAMP")
-                                }
-                                .fetchOne(db)
+                            let newEmailAddress = try EmailAddress(data.request.newEmail)
                             
-                            guard let emailChangeRequest else {
-                                throw Abort(.notFound, reason: "Email change request not found or expired")
-                            }
-                            
-                            // 3. Get the identity
-                            let identity = try await Identity.Record
-                                .where { $0.id.eq(emailChangeRequest.identityId) }
-                                .fetchOne(db)
-                            
-                            guard let identity else {
-                                throw Abort(.internalServerError, reason: "Identity not found")
-                            }
-                            
-                            let newEmailAddress = try EmailAddress(emailChangeRequest.newEmail)
-                            
-                            // 4. Check if new email is available
-                            let existingIdentity = try await Identity.Record
+                            // Check if new email is still available (in same transaction!)
+                            let emailTaken = try await Identity.Record
                                 .where { $0.emailString.eq(newEmailAddress.rawValue) }
-                                .fetchOne(db)
+                                .where { $0.id.neq(data.identity.id) }
+                                .fetchCount(db) > 0
                             
-                            if let existingIdentity, existingIdentity.id != identity.id {
+                            if emailTaken {
+                                // Cancel the request since email is no longer available
+                                try await Identity.Email.Change.Request.Record
+                                    .where { $0.id.eq(data.request.id) }
+                                    .update { $0.cancelledAt = date() }
+                                    .execute(db)
+                                
                                 throw Identity.Authentication.ValidationError.invalidInput("Email address is already in use")
                             }
                             
-                            return (
-                                authToken: authToken,
-                                emailChangeRequest: emailChangeRequest,
-                                identity: identity,
-                                newEmailAddress: newEmailAddress
-                            )
-                        }
-                        
-                        let oldEmail = validationData.identity.email
-                        let newEmailAddress = validationData.newEmailAddress
-                        let newSessionVersion = validationData.identity.sessionVersion + 1
-                        
-                        // Single write transaction for all updates
-                        try await db.write { db in
-                            let now = date()
-                            
-                            // 1. Update identity
+                            let oldEmail = data.identity.email
+                            let newSessionVersion = data.identity.sessionVersion + 1
+                            // Update identity email and session version
                             try await Identity.Record
-                                .where { $0.id.eq(validationData.identity.id) }
+                                .where { $0.id.eq(data.identity.id) }
                                 .update { record in
                                     record.emailString = newEmailAddress.rawValue
                                     record.sessionVersion = record.sessionVersion + 1
-                                    record.updatedAt = now
+                                    record.updatedAt = date()
                                 }
                                 .execute(db)
                             
-                            // 2. Mark email change request as confirmed
+                            // Mark email change request as confirmed
                             try await Identity.Email.Change.Request.Record
-                                .where { $0.id.eq(validationData.emailChangeRequest.id) }
+                                .where { $0.id.eq(data.request.id) }
                                 .update { request in
-                                    request.confirmedAt = now
+                                    request.confirmedAt = date()
                                 }
                                 .execute(db)
                             
-                            // 3. Invalidate all email change tokens for this identity
+                            // 3. DELETE all email change tokens for this identity (cleaner than UPDATE)
                             try await Identity.Token.Record
-                                .where { $0.identityId.eq(validationData.identity.id) }
+                                .delete()
+                                .where { $0.identityId.eq(data.identity.id) }
                                 .where { $0.type.eq(Identity.Token.Record.TokenType.emailChange) }
-                                .update { token in
-                                    token.validUntil = now  // Set to now to invalidate
-                                }
                                 .execute(db)
+                            
+                            return (
+                                identity: data.identity,
+                                oldEmail: oldEmail,
+                                newEmail: newEmailAddress,
+                                newSessionVersion: newSessionVersion
+                            )
                         }
                         
                         logger.notice("Email change completed", metadata: [
                             "component": "Backend.Email",
                             "operation": "changeConfirm",
-                            "identityId": "\(validationData.identity.id)",
-                            "oldEmailDomain": "\(oldEmail.domain)",
-                            "newEmailDomain": "\(newEmailAddress.domain)"
+                            "identityId": "\(result.identity.id)",
+                            "oldEmailDomain": "\(result.oldEmail.domain)",
+                            "newEmailDomain": "\(result.newEmail.domain)"
                         ])
                         
                         @Dependency(\.fireAndForget) var fireAndForget
                         await fireAndForget {
                             do {
-                                try await onEmailChangeSuccess(oldEmail, newEmailAddress)
+                                try await onEmailChangeSuccess(result.oldEmail, result.newEmail)
                             } catch {
                                 logger.error("Post-email change operation failed", metadata: [
                                     "component": "Backend.Email",
@@ -255,9 +258,9 @@ extension Identity.Email.Change.Client {
                         
                         // Generate new tokens with updated session version
                         let (accessToken, refreshToken) = try await tokenClient.generateTokenPair(
-                            validationData.identity.id,
-                            newEmailAddress,
-                            newSessionVersion
+                            result.identity.id,
+                            result.newEmail,
+                            result.newSessionVersion
                         )
                         
                         return Identity.Authentication.Response(

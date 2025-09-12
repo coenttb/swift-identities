@@ -127,13 +127,13 @@ extension Identity.Authentication.ApiKey.Record {
     
     package static var active: Where<Identity.Authentication.ApiKey.Record> {
         Self.where { apiKey in
-            apiKey.isActive && #sql("\(apiKey.validUntil) > CURRENT_TIMESTAMP")
+            apiKey.isActive && apiKey.validUntil > Date()
         }
     }
     
     package static var inactive: Where<Identity.Authentication.ApiKey.Record> {
         Self.where { apiKey in
-            !apiKey.isActive || #sql("\(apiKey.validUntil) <= CURRENT_TIMESTAMP")
+            !apiKey.isActive || apiKey.validUntil <= Date()
         }
     }
 }

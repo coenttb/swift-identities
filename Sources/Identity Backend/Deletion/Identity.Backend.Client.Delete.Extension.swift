@@ -8,6 +8,8 @@
 import Foundation
 import IdentitiesTypes
 import ServerFoundation
+import Dependencies
+import Records
 
 extension Identity.Deletion.Client {
     /// Represents the current status of an identity deletion request.
@@ -44,8 +46,15 @@ extension Identity.Deletion.Client {
     package func status() async throws -> DeletionStatus? {
         let identity = try await Identity.Record.get(by: .auth)
         
-        // Check for pending deletion
-        guard let deletion = try await Identity.Deletion.Record.findPendingForIdentity(identity.id) else {
+        @Dependency(\.defaultDatabase) var db
+        
+        // Check for pending deletion with explicit query
+        guard let deletion = try await db.read({ db in
+            try await Identity.Deletion.Record
+                .findByIdentity(identity.id)
+                .pending
+                .fetchOne(db)
+        }) else {
             return nil
         }
         

@@ -57,26 +57,8 @@ extension Identity.Record {
     
     // MARK: - Updates
     
-    /// Update password and invalidate all sessions
-    /// Increments sessionVersion to force re-authentication
-    package static func updatePasswordAndInvalidateSessions(
-        id: Identity.ID,
-        newPasswordHash: String
-    ) async throws {
-        @Dependency(\.defaultDatabase) var db
-        @Dependency(\.date) var date
-        
-        try await db.write { db in
-            try await Identity.Record
-                .where { $0.id.eq(id) }
-                .update { record in
-                    record.passwordHash = newPasswordHash
-                    record.sessionVersion = record.sessionVersion + 1  // Invalidate all sessions
-                    record.updatedAt = date()
-                }
-                .execute(db)
-        }
-    }
+    // REMOVED: updatePasswordAndInvalidateSessions helper method
+    // Database updates should be explicit at call sites for clarity
     
     /// Update email verification status
     /// Returns the updated record from database

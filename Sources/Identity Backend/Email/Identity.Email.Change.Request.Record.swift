@@ -163,7 +163,7 @@ extension Identity.Email.Change.Request.Record {
                     request.identityId.eq(tokenEntity.identityId)
                         .and(tokenEntity.value.eq(token))
                         .and(tokenEntity.type.eq(Identity.Token.Record.TokenType.emailChange))
-                        .and(#sql("\(tokenEntity.validUntil) > CURRENT_TIMESTAMP"))
+                        .and(tokenEntity.validUntil > Date())
                 }
                 .join(Identity.Record.all) { request, _, identity in
                     request.identityId.eq(identity.id)
@@ -185,4 +185,11 @@ package struct EmailChangeRequestWithIdentity: Sendable {
     package let emailChangeRequest: Identity.Email.Change.Request.Record
     package let identity: Identity.Record
     package let currentEmail: String
+}
+
+@Selection
+package struct EmailChangeValidationData: Sendable {
+    package let token: Identity.Token.Record
+    package let request: Identity.Email.Change.Request.Record
+    package let identity: Identity.Record
 }

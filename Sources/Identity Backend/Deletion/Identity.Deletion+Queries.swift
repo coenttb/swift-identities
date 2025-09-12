@@ -6,74 +6,16 @@ import Dependencies
 
 extension Identity.Deletion.Record {
     
-    // Async initializer that creates and persists to database
-    package init(
-        identityId: Identity.ID,
-        reason: String? = nil,
-        gracePeriodDays: Int = 30
-    ) async throws {
-        @Dependency(\.defaultDatabase) var db
-        @Dependency(\.uuid) var uuid
-        
-        self.init(
-            id: uuid(),
-            identityId: identityId,
-            reason: reason,
-            gracePeriodDays: gracePeriodDays
-        )
-        
-        let `self` = self
-        
-        _ = try await db.write { db in
-            try await Identity.Deletion.Record.insert { `self` }
-                .execute(db)
-        }
-    }
+    // REMOVED: Async init that auto-saves to database
+    // Create deletion records inline within transactions for proper atomicity
     
-    package static func findPendingForIdentity(_ identityId: Identity.ID) async throws -> Identity.Deletion.Record? {
-        @Dependency(\.defaultDatabase) var db
-        return try await db.read { db in
-            try await Identity.Deletion.Record.findByIdentity(identityId).pending
-                .fetchOne(db)
-        }
-    }
+    // REMOVED: findPendingForIdentity helper method
+    // Use explicit queries at call sites for clarity
     
-    package mutating func confirm() async throws {
-        @Dependency(\.defaultDatabase) var db
-        @Dependency(\.date) var date
-        
-        self.confirmedAt = date()
-        let confirmedAt = self.confirmedAt
-        let id = self.id
-        
-        try await db.write { db in
-            try await Identity.Deletion.Record
-                .update { deletion in
-                    deletion.confirmedAt = confirmedAt
-                }
-                .where { $0.id.eq(id) }
-                .execute(db)
-        }
-    }
+    // REMOVED: mutating confirm() and cancel() methods that hide DB operations
+    // Database updates should be explicit at call sites
     
-    package mutating func cancel() async throws {
-        @Dependency(\.defaultDatabase) var db
-        @Dependency(\.date) var date
-        
-        self.cancelledAt = date()
-        let cancelledAt = self.cancelledAt
-        let id = self.id
-        
-        try await db.write { db in
-            try await Identity.Deletion.Record
-                .update { deletion in
-                    deletion.cancelledAt = cancelledAt
-                }
-                .where { $0.id.eq(id) }
-                .execute(db)
-        }
-    }
-    
+    // Keep this as a standalone maintenance operation
     package static func getReadyForDeletion() async throws -> [Identity.Deletion.Record] {
         @Dependency(\.defaultDatabase) var db
         return try await db.read { db in

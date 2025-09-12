@@ -51,10 +51,17 @@ extension Identity.Backend {
                         
                         // Increment session version to invalidate all tokens
                         @Dependency(\.defaultDatabase) var db
-                        try await Identity.Record.updatePasswordAndInvalidateSessions(
-                            id: identity.id,
-                            newPasswordHash: identity.passwordHash  // Keep same password, just bump version
-                        )
+                        @Dependency(\.date) var date
+                        
+                        try await db.write { db in
+                            try await Identity.Record
+                                .where { $0.id.eq(identity.id) }
+                                .update { record in
+                                    record.sessionVersion = record.sessionVersion + 1
+                                    record.updatedAt = date()
+                                }
+                                .execute(db)
+                        }
                     } catch {
                         // Identity not found - likely database was reset but cookies persist
                         // This is common in development when restarting the server

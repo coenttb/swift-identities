@@ -17,7 +17,7 @@ extension Identity.Token.Record {
             try await Identity.Token.Record
                 .delete()
                 .where { token in
-                    #sql("\(token.validUntil) <= CURRENT_TIMESTAMP")
+                    token.validUntil <= Date()
                 }
                 .execute(db)
         }

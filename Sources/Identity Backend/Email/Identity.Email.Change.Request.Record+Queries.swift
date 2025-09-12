@@ -34,37 +34,37 @@ extension Identity.Email.Change.Request.Record {
     
     package static var pending: Where<Identity.Email.Change.Request.Record> {
         Self.where { request in
-            #sql("\(request.confirmedAt) IS NULL") &&
-            #sql("\(request.cancelledAt) IS NULL") &&
-            #sql("\(request.expiresAt) > CURRENT_TIMESTAMP")
+            request.confirmedAt == nil &&
+            request.cancelledAt == nil &&
+            request.expiresAt > Date()
         }
     }
     
     package static var confirmed: Where<Identity.Email.Change.Request.Record> {
         Self.where { request in
-            #sql("\(request.confirmedAt) IS NOT NULL")
+            request.confirmedAt != nil
         }
     }
     
     package static var cancelled: Where<Identity.Email.Change.Request.Record> {
         Self.where { request in
-            #sql("\(request.cancelledAt) IS NOT NULL")
+            request.cancelledAt != nil
         }
     }
     
     package static var expired: Where<Identity.Email.Change.Request.Record> {
         Self.where { request in
-            #sql("\(request.confirmedAt) IS NULL") &&
-            #sql("\(request.cancelledAt) IS NULL") &&
-            #sql("\(request.expiresAt) <= CURRENT_TIMESTAMP")
+            request.confirmedAt == nil &&
+            request.cancelledAt == nil &&
+            request.expiresAt <= Date()
         }
     }
     
     package static var valid: Where<Identity.Email.Change.Request.Record> {
         Self.where { request in
-            #sql("\(request.confirmedAt) IS NULL") &&
-            #sql("\(request.cancelledAt) IS NULL") &&
-            #sql("\(request.expiresAt) > CURRENT_TIMESTAMP")
+            request.confirmedAt == nil &&
+            request.cancelledAt == nil &&
+            request.expiresAt > Date()
         }
     }
 }

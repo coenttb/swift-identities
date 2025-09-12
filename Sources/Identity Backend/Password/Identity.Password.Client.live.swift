@@ -12,6 +12,12 @@ import Dependencies
 import EmailAddress
 import Records
 
+@Selection
+struct PasswordResetData: Sendable {
+    let token: Identity.Token.Record
+    let identity: Identity.Record
+}
+
 extension Identity.Password.Client {
     package static func live(
         sendPasswordResetEmail: @escaping @Sendable (_ email: EmailAddress, _ token: String) async throws -> Void,
@@ -83,51 +89,56 @@ extension Identity.Password.Client {
                         let _ = try validatePassword(newPassword)
 
                         @Dependency(\.defaultDatabase) var db
-                        
-                        // Find and validate token
-                        guard let resetToken = try await db.read ({ db in
-                            try await Identity.Token.Record
-                                .where { tokenRecord in
-                                    tokenRecord.value.eq(token) &&
-                                    tokenRecord.type.eq(Identity.Token.Record.TokenType.passwordReset) &&
-                                    #sql("\(tokenRecord.validUntil) > CURRENT_TIMESTAMP")
-                                }
-                                .fetchOne(db)
-                        }) else {
-                            throw Identity.Authentication.ValidationError.invalidToken
-                        }
                         @Dependency(\.date) var date
                         
-                        // Perform all updates within a transaction for atomicity
-                        let emailAddress = try await db.write { db in
-                            // Get the identity within transaction
-                            guard var identity = try await Identity.Record
-                                .where ({ $0.id.eq(resetToken.identityId) })
-                                .fetchOne(db)
-                            else {
-                                throw Abort(.internalServerError, reason: "Identity not found")
-                            }
-
-                            // Update password and increment session version atomically
-                            try await identity.setPassword(newPassword)
-                            
-                            try await Identity.Record.updatePasswordAndInvalidateSessions(
-                                id: identity.id,
-                                newPasswordHash: identity.passwordHash
-                            )
-
-                            // Invalidate all password reset tokens for this identity
-                            try await Identity.Token.Record
-                                .where { 
-                                    $0.identityId.eq(identity.id)
-                                        .and($0.type.eq(Identity.Token.Record.TokenType.passwordReset))
+                        // Single transaction with JOIN for optimal performance
+                        let (emailAddress, identityId) = try await db.write { db in
+                            // Find token and identity in single JOIN query
+                            let data = try await Identity.Token.Record
+                                .where { $0.value.eq(token) }
+                                .where { $0.type.eq(Identity.Token.Record.TokenType.passwordReset) }
+                                .where { $0.validUntil > Date() }
+                                .join(Identity.Record.all) { token, identity in
+                                    token.identityId.eq(identity.id)
                                 }
-                                .update { token in
-                                    token.validUntil = date() // Set to now to invalidate
+                                .select { token, identity in
+                                    PasswordResetData.Columns(
+                                        token: token,
+                                        identity: identity
+                                    )
+                                }
+                                .fetchOne(db)
+                            
+                            guard let data else {
+                                throw Identity.Authentication.ValidationError.invalidToken
+                            }
+                            
+                            // Hash the new password
+                            @Dependency(\.envVars) var envVars
+                            @Dependency(\.application) var application
+                            
+                            let passwordHash: String = try await application.threadPool.runIfActive {
+                                try Bcrypt.hash(newPassword, cost: envVars.bcryptCost)
+                            }
+                            
+                            // Update password and increment session version atomically
+                            try await Identity.Record
+                                .where { $0.id.eq(data.identity.id) }
+                                .update { identity in
+                                    identity.passwordHash = passwordHash
+                                    identity.sessionVersion = identity.sessionVersion + 1
+                                    identity.updatedAt = date()
                                 }
                                 .execute(db)
                             
-                            return identity.email
+                            // DELETE all password reset tokens for this identity (cleaner than UPDATE)
+                            try await Identity.Token.Record
+                                .delete()
+                                .where { $0.identityId.eq(data.identity.id) }
+                                .where { $0.type.eq(Identity.Token.Record.TokenType.passwordReset) }
+                                .execute(db)
+                            
+                            return (data.identity.email, data.identity.id)
                         }
 
                         @Dependency(\.fireAndForget) var fireAndForget
@@ -138,7 +149,7 @@ extension Identity.Password.Client {
                         logger.notice("Password reset completed", metadata: [
                             "component": "Backend.Password",
                             "operation": "resetConfirm",
-                            "identityId": "\(resetToken.identityId)"
+                            "identityId": "\(identityId)"
                         ])
 
                     } catch {
@@ -153,7 +164,7 @@ extension Identity.Password.Client {
             ),
             change: .init(
                 request: { currentPassword, newPassword in
-                    var identity = try await Identity.Record.get(by: .auth)
+                    let identity = try await Identity.Record.get(by: .auth)
 
                     guard try await identity.verifyPassword(currentPassword) else {
                         throw Identity.Authentication.Error.invalidCredentials
@@ -161,13 +172,27 @@ extension Identity.Password.Client {
 
                     _ = try validatePassword(newPassword)
 
-                    // Update password and increment session version atomically
-                    try await identity.setPassword(newPassword)
+                    @Dependency(\.defaultDatabase) var db
+                    @Dependency(\.date) var date
+                    @Dependency(\.envVars) var envVars
+                    @Dependency(\.application) var application
                     
-                    try await Identity.Record.updatePasswordAndInvalidateSessions(
-                        id: identity.id,
-                        newPasswordHash: identity.passwordHash
-                    )
+                    // Hash the new password
+                    let passwordHash: String = try await application.threadPool.runIfActive {
+                        try Bcrypt.hash(newPassword, cost: envVars.bcryptCost)
+                    }
+                    
+                    // Update password and increment session version atomically
+                    try await db.write { db in
+                        try await Identity.Record
+                            .where { $0.id.eq(identity.id) }
+                            .update { record in
+                                record.passwordHash = passwordHash
+                                record.sessionVersion = record.sessionVersion + 1
+                                record.updatedAt = date()
+                            }
+                            .execute(db)
+                    }
 
                     let emailAddress = identity.email
                     
