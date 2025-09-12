@@ -1,4 +1,4 @@
-// swift-tools-version:6.0
+// swift-tools-version:6.1
 
 import Foundation
 import PackageDescription
@@ -53,6 +53,11 @@ let package = Package(
     dependencies: [
         .package(url: "https://github.com/coenttb/swift-server-foundation-vapor", from: "0.0.1"),
         .package(url: "https://github.com/coenttb/swift-records", from: "0.0.1"),
+        .package(
+            url: "https://github.com/coenttb/swift-structured-queries-postgres",
+            from: "0.0.1",
+            traits: ["StructuredQueriesPostgresTagged"]
+        ),
         .package(url: "https://github.com/coenttb/swift-identities-types", from: "0.0.1"),
         .package(url: "https://github.com/coenttb/swift-one-time-password", from: "0.0.1"),
         .package(url: "https://github.com/pointfreeco/swift-dependencies", from: "1.9.2"),

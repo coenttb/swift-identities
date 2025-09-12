@@ -22,9 +22,9 @@ extension Identity.OAuth.Client {
     ) -> Identity.OAuth.Client {
         
         return .init(
-            registerProvider: registerProviderImplementation(registry: registry),
-            provider: providerImplementation(registry: registry),
-            providers: providersImplementation(registry: registry),
+            registerProvider: { await registry.register($0) },
+            provider: { await registry.provider(for: $0) },
+            providers: { await registry.allProviders() },
             authorizationURL: authorizationURLImplementation(registry: registry, stateManager: stateManager),
             callback: callbackImplementation(registry: registry, stateManager: stateManager),
             connection: connectionImplementation,
@@ -32,33 +32,6 @@ extension Identity.OAuth.Client {
             getValidToken: getValidTokenImplementation(registry: registry),
             getAllConnections: getAllConnectionsImplementation
         )
-    }
-}
-
-// MARK: - Register Provider
-private func registerProviderImplementation(
-    registry: Identity.OAuth.ProviderRegistry
-) -> @Sendable (Identity.OAuth.Provider) async -> Void {
-    return { provider in
-        await registry.register(provider)
-    }
-}
-
-// MARK: - Get Provider
-private func providerImplementation(
-    registry: Identity.OAuth.ProviderRegistry
-) -> @Sendable (String) async -> Identity.OAuth.Provider? {
-    return { identifier in
-        await registry.provider(for: identifier)
-    }
-}
-
-// MARK: - Get All Providers
-private func providersImplementation(
-    registry: Identity.OAuth.ProviderRegistry
-) -> @Sendable () async -> [Identity.OAuth.Provider] {
-    return {
-        await registry.allProviders()
     }
 }
 
@@ -135,9 +108,11 @@ private func callbackImplementation(
                         .where { $0.id.eq(existingConnection.id) }
                         .update { connection in
                             connection.accessToken = storedAccessToken
-                            connection.refreshToken = storedRefreshToken ?? connection.refreshToken
-                            connection.expiresAt = tokens.expiresIn.map { 
-                                Date().addingTimeInterval(Double($0)) 
+                            if let newRefreshToken = storedRefreshToken {
+                                connection.refreshToken = newRefreshToken
+                            }
+                            connection.expiresAt = tokens.expiresIn.map {
+                                Date().addingTimeInterval(Double($0))
                             }
                             connection.lastUsedAt = now
                             connection.updatedAt = now
@@ -245,8 +220,8 @@ private func prepareTokensForStorage(
 ) throws -> (accessToken: String, refreshToken: String?) {
     if provider.requiresTokenStorage {
         guard Identity.OAuth.Encryption.isEncryptionAvailable else {
-            logger.error("OAuth provider requires token storage but IDENTITIES_ENCRYPTION_KEY not set", 
-                metadata: ["provider": "\(provider.identifier)"])
+            logger.error("OAuth provider requires token storage but IDENTITIES_ENCRYPTION_KEY not set",
+                         metadata: ["provider": "\(provider.identifier)"])
             throw OAuthTokenError.encryptionRequired
         }
         
@@ -255,13 +230,13 @@ private func prepareTokensForStorage(
             try Identity.OAuth.Encryption.encrypt(token: $0)
         }
         
-        logger.debug("OAuth tokens encrypted for storage", 
-            metadata: ["provider": "\(provider.identifier)"])
+        logger.debug("OAuth tokens encrypted for storage",
+                     metadata: ["provider": "\(provider.identifier)"])
         
         return (storedAccessToken, storedRefreshToken)
     } else {
-        logger.debug("OAuth used for authentication only, tokens not stored", 
-            metadata: ["provider": "\(provider.identifier)"])
+        logger.debug("OAuth used for authentication only, tokens not stored",
+                     metadata: ["provider": "\(provider.identifier)"])
         return ("", nil)
     }
 }
@@ -344,7 +319,7 @@ private func getValidTokenImplementation(
             ])
             return nil
         }
-
+        
         guard !connection.accessToken.isEmpty else {
             logger.debug("No access token stored for provider", metadata: [
                 "provider": "\(providerName)"
@@ -366,7 +341,7 @@ private func getValidTokenImplementation(
                 throw error
             }
         }
-
+        
         // Token has expiration date, check if expired
         guard Date() > expiresAt else {
             // Token not expired, return it
@@ -423,8 +398,8 @@ private func getValidTokenImplementation(
             try await connection.updateTokens(
                 accessToken: newAccessToken,
                 refreshToken: newRefreshToken,
-                expiresAt: newTokens.expiresIn.map { 
-                    Date().addingTimeInterval(Double($0)) 
+                expiresAt: newTokens.expiresIn.map {
+                    Date().addingTimeInterval(Double($0))
                 }
             )
             
