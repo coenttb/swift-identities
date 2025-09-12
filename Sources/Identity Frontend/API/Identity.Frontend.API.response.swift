@@ -10,12 +10,12 @@ import IdentitiesTypes
 
 extension Identity.Frontend {
     package static func response(
-        identity: Identity.API,
+        api: Identity.API,
         configuration: Identity.Frontend.Configuration
     ) async throws -> any AsyncResponseEncodable {
         return try await Self.response(
             api: api,
-            client: configuration.client,
+            identity: configuration.identity,
             router: configuration.router,
             cookies: configuration.cookies,
             redirect: configuration.redirect
@@ -27,6 +27,7 @@ extension Identity.Frontend {
     /// This function provides the shared API response logic used by both
     /// Consumer and Standalone.
     package static func response(
+        api: Identity.API,
         identity: Identity,
         router: AnyParserPrinter<URLRequestData, Identity.Route>,
         cookies: Identity.Frontend.Configuration.Cookies,
@@ -35,10 +36,10 @@ extension Identity.Frontend {
         switch api {
         case .authenticate(let authenticate):
             return try await handleAuthenticate(authenticate, client: identity.authenticate.client, loginSuccessRedirect: redirect.loginSuccess)
-        case .create(let create):
-            return try await handleCreate(identity.create.client, client: client)
-        case .delete(let delete):
-            return try await handleDelete(delete, client: identity.delete.client, router: router)
+        case .creation(let creation):
+            return try await handleCreation(creation, client: identity.creation.client)
+        case .deletion(let deletion):
+            return try await handleDeletion(deletion, client: identity.deletion.client, router: router)
         case .email(let email):
             return try await handleEmail(email, client: identity.email.client)
         case .password(let password):
@@ -46,15 +47,15 @@ extension Identity.Frontend {
         case .reauthorize(let reauthorize):
             return try await handleReauthorize(
                 reauthorize,
-                client: client,
+                client: identity.reauthorize.client,
                 router: router,
                 cookies: cookies
             )
         case .logout(.current):
-            try await client.logout.current()
+            try await identity.logout.client.current()
             return Response.success(true)
         case .logout(.all):
-            try await client.logout.all()
+            try await identity.logout.client.all()
             return Response.success(true)
         case .mfa:
             // MFA not yet implemented in Frontend
@@ -62,7 +63,7 @@ extension Identity.Frontend {
         case .oauth(let oauth):
             return try await handleOAuth(
                 oauth,
-                client: client
+                client: identity.oauth?.client
             )
         }
     }
@@ -125,20 +126,20 @@ extension Identity.Frontend {
         }
     }
     
-    private static func handleCreate(
-        _ create: Identity.API.Create,
-        client: Identity.Client
+    private static func handleCreation(
+        _ creation: Identity.Creation.API,
+        client: Identity.Creation.Client
     ) async throws -> any AsyncResponseEncodable {
-        switch create {
+        switch creation {
         case .request(let request):
-            try await client.create.request(
+            try await client.request(
                 email: request.email,
                 password: request.password
             )
             return Response.success(true)
             
         case .verify(let verify):
-            try await client.create.verify(
+            try await client.verify(
                 email: verify.email,
                 token: verify.token
             )
@@ -146,21 +147,21 @@ extension Identity.Frontend {
         }
     }
     
-    private static func handleDelete(
-        _ delete: Identity.API.Delete,
-        client: Identity.Client,
+    private static func handleDeletion(
+        _ deletion: Identity.Deletion.API,
+        client: Identity.Deletion.Client,
         router: AnyParserPrinter<URLRequestData, Identity.Route>
     ) async throws -> any AsyncResponseEncodable {
         
-        switch delete {
+        switch deletion {
         case .request(let request):
-            try await client.delete.request(request.reauthToken)
+            try await client.request(request.reauthToken)
             return Response.success(true)
             
         case .cancel:
-            try await client.delete.cancel()
-            // Redirect to delete view with cancelled query parameter
-            var deleteURL = router.url(for: .delete(.view(.request)))
+            try await client.cancel()
+            // Redirect to deletion view with cancelled query parameter
+            var deleteURL = router.url(for: .deletion(.view(.request)))
             deleteURL.append(queryItems: [.init(name: "status", value: "cancelled")])
             return Response(
                 status: .seeOther,
@@ -168,9 +169,9 @@ extension Identity.Frontend {
             )
             
         case .confirm:
-            try await client.delete.confirm()
-            // Redirect to delete view with confirmed query parameter
-            var deleteURL = router.url(for: .delete(.view(.request)))
+            try await client.confirm()
+            // Redirect to deletion view with confirmed query parameter
+            var deleteURL = router.url(for: .deletion(.view(.request)))
             deleteURL.append(queryItems: [.init(name: "status", value: "confirmed")])
             return Response(
                 status: .seeOther,
@@ -180,14 +181,14 @@ extension Identity.Frontend {
     }
     
     private static func handleEmail(
-        _ email: Identity.API.Email,
-        client: Identity.Client
+        _ email: Identity.Email.API,
+        client: Identity.Email.Client
     ) async throws -> any AsyncResponseEncodable {
         switch email {
         case .change(let change):
             switch change {
             case .request(let request):
-                let result = try await client.email.change.request(request.newEmail)
+                let result = try await client.change.request(request.newEmail)
                 switch result {
                 case .success:
                     return Response.success(true)
@@ -200,7 +201,7 @@ extension Identity.Frontend {
                 }
                 
             case .confirm(let confirm):
-                let authResponse = try await client.email.change.confirm(confirm.token)
+                let authResponse = try await client.change.confirm(confirm.token)
                 // Return success with new tokens (email has changed, so tokens need updating)
                 return Response.success(true)
                     .withTokens(for: authResponse)
@@ -209,18 +210,18 @@ extension Identity.Frontend {
     }
     
     private static func handlePassword(
-        _ password: Identity.API.Password,
-        client: Identity.Client
+        _ password: Identity.Password.API,
+        client: Identity.Password.Client
     ) async throws -> any AsyncResponseEncodable {
         switch password {
         case .reset(let reset):
             switch reset {
             case .request(let request):
-                try await client.password.reset.request(request.email)
+                try await client.reset.request(request.email)
                 return Response.success(true)
                 
             case .confirm(let confirm):
-                try await client.password.reset.confirm(
+                try await client.reset.confirm(
                     newPassword: confirm.newPassword,
                     token: confirm.token
                 )
@@ -230,7 +231,7 @@ extension Identity.Frontend {
         case .change(let change):
             switch change {
             case .request(change: let request):
-                try await client.password.change.request(
+                try await client.change.request(
                     currentPassword: request.currentPassword,
                     newPassword: request.newPassword
                 )
@@ -240,14 +241,14 @@ extension Identity.Frontend {
     }
     
     private static func handleReauthorize(
-        _ reauthorize: Identity.API.Reauthorize,
-        client: Identity.Client,
+        _ reauthorize: Identity.Reauthorization.API,
+        client: Identity.Reauthorization.Client,
         router: AnyParserPrinter<URLRequestData, Identity.Route>,
         cookies: Identity.Frontend.Configuration.Cookies
     ) async throws -> any AsyncResponseEncodable {
         @Dependency(\.request) var request
         
-        let jwt = try await client.reauthorize(reauthorize.password)
+        let jwt = try await client.request(reauthorize.password)
         
         // Set reauthorization cookie
         let cookieValue = HTTPCookies.Value(
@@ -280,17 +281,17 @@ extension Identity.Frontend {
     }
     
     private static func handleOAuth(
-        _ oauth: Identity.API.OAuth,
-        client: Identity.Client
+        _ oauth: Identity.OAuth.API,
+        client: Identity.OAuth.Client?
     ) async throws -> any AsyncResponseEncodable {
-        guard let oauthClient = client.oauth else {
+        guard let client else {
             throw Abort(.notImplemented, reason: "OAuth not configured")
         }
         
         switch oauth {
         case .providers:
             // Return list of available OAuth providers
-            let providers = try await oauthClient.providers()
+            let providers = try await client.providers()
             let providerData = providers.map { provider in
                 ["id": provider.identifier, "name": provider.displayName]
             }
@@ -306,7 +307,7 @@ extension Identity.Frontend {
             let host = request.headers.first(name: .host) ?? "localhost"
             let redirectURI = "\(scheme)://\(host)/api/oauth/callback"
             
-            let authURL = try await oauthClient.authorizationURL(
+            let authURL = try await client.authorizationURL(
                 providerName,
                 redirectURI
             )
@@ -314,7 +315,7 @@ extension Identity.Frontend {
             
         case .callback(let credentials):
             // Handle OAuth callback
-            let authResponse = try await oauthClient.callback(credentials)
+            let authResponse = try await client.callback(credentials)
             
             @Dependency(Identity.Frontend.Configuration.self) var config
             let cookies = config.cookies
@@ -356,12 +357,12 @@ extension Identity.Frontend {
             
         case .connections:
             // Get OAuth connections for current user
-            let connections = try await oauthClient.getAllConnections()
+            let connections = try await client.getAllConnections()
             return Response.json(success: true, data: connections)
             
         case .disconnect(let providerName):
             // Disconnect OAuth provider
-            try await oauthClient.disconnect(providerName)
+            try await client.disconnect(providerName)
             return Response.success(true)
         }
     }

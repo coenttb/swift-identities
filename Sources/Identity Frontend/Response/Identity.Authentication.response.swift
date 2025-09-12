@@ -26,7 +26,7 @@ extension Identity.Authentication {
             return try await Identity.Frontend.htmlDocument(for: .authenticate(.credentials), configuration: configuration) {
                 Identity.Authentication.Credentials.View(
                     passwordResetHref: configuration.router.url(for: .password(.view(.reset(.request)))),
-                    accountCreateHref: configuration.router.url(for: .create(.view(.request))),
+                    accountCreateHref: configuration.router.url(for: .creation(.view(.request))),
                     loginFormAction: configuration.router.url(for: .authenticate(.api(.credentials(.init()))))
                 )
             }

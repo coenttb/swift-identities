@@ -35,10 +35,10 @@ extension Identity.Deletion {
         let router = configuration.router
         let homeHref = configuration.navigation.home
         
-        return try await Identity.Frontend.htmlDocument(for: .delete(.request), configuration: configuration) {
+        return try await Identity.Frontend.htmlDocument(for: .deletion(.request), configuration: configuration) {
             Identity.Deletion.Request.View(
-                deleteRequestAction: router.url(for: .delete(.api(.request(.init())))),
-                cancelAction: router.url(for: .delete(.api(.cancel))),
+                deleteRequestAction: router.url(for: .deletion(.api(.request(.init())))),
+                cancelAction: router.url(for: .deletion(.api(.cancel))),
                 homeHref: homeHref,
                 reauthorizationURL: router.url(for: .reauthorize(.init()))
             )
