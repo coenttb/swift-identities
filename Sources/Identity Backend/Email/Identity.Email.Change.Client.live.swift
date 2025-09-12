@@ -44,7 +44,7 @@ extension Identity.Email.Change.Client {
 
                         // Check if new email is already in use
                         if try await Identity.Record.findByEmail(newEmailAddress) != nil {
-                            throw Identity.Backend.ValidationError.invalidInput("Email address is already in use")
+                            throw Identity.Authentication.ValidationError.invalidInput("Email address is already in use")
                         }
 
                         // Invalidate existing email change tokens
@@ -108,7 +108,7 @@ extension Identity.Email.Change.Client {
                     do {
                         // Find valid email change token
                         guard try await Identity.Authentication.Token.Record.findValid(value: token, type: .emailChange) != nil else {
-                            throw Identity.Backend.ValidationError.invalidToken
+                            throw Identity.Authentication.ValidationError.invalidToken
                         }
 
                         // Find email change request by token
@@ -126,7 +126,7 @@ extension Identity.Email.Change.Client {
                         // Double-check new email is still available
                         if let existingIdentity = try await Identity.Record.findByEmail(newEmailAddress),
                            existingIdentity.id != identity.id {
-                            throw Identity.Backend.ValidationError.invalidInput("Email address is already in use")
+                            throw Identity.Authentication.ValidationError.invalidInput("Email address is already in use")
                         }
 
                         let oldEmail = identity.email

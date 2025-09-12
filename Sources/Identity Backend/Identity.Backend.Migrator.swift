@@ -2,7 +2,7 @@
 //  Identity.Migrator.swift
 //  coenttb-identities
 //
-//  Database migrations for Identity system using Database.Migrator
+//  Database migrations for Identity system using Migrator
 //
 
 import Foundation
@@ -14,7 +14,7 @@ import EmailAddress
 import Vapor
 
 extension Identity.Backend {
-    /// Returns a configured Database.Migrator with all Identity migrations registered.
+    /// Returns a configured Migrator with all Identity migrations registered.
     ///
     /// Usage:
     /// ```swift

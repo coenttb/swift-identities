@@ -27,7 +27,7 @@ extension Identity.MFA.BackupCodes.Client {
                 guard let request else { throw Abort.requestUnavailable }
                 guard let identity = request.auth.get(Identity.Record.self) else {
                     logger.error("Not authenticated for backup code regeneration")
-                    throw Identity.Backend.AuthenticationError.notAuthenticated
+                    throw Identity.Authentication.Error.notAuthenticated
                 }
                 
                 // Check if TOTP is enabled
@@ -63,7 +63,7 @@ extension Identity.MFA.BackupCodes.Client {
                 // Check if token is valid
                 guard mfaToken.isValid else {
                     logger.error("MFA session token is expired or invalid")
-                    throw Identity.Backend.AuthenticationError.tokenExpired
+                    throw Identity.Authentication.Error.tokenExpired
                 }
                 
                 let identityId = mfaToken.identityId
@@ -75,7 +75,7 @@ extension Identity.MFA.BackupCodes.Client {
                         .fetchOne(db)
                 }) else {
                     logger.error("Identity not found: \(identityId)")
-                    throw Identity.Backend.AuthenticationError.accountNotFound
+                    throw Identity.Authentication.Error.accountNotFound
                 }
                 
                 // Verify the backup code
@@ -112,7 +112,7 @@ extension Identity.MFA.BackupCodes.Client {
                 guard let request else { throw Abort.requestUnavailable }
                 guard let identity = request.auth.get(Identity.Record.self) else {
                     logger.error("Not authenticated for backup code count")
-                    throw Identity.Backend.AuthenticationError.notAuthenticated
+                    throw Identity.Authentication.Error.notAuthenticated
                 }
                 
                 let count = try await Identity.MFA.BackupCodes.Record.countUnusedByIdentity(identity.id)

@@ -11,27 +11,6 @@ import Dependencies
 import Foundation
 import JWT
 
-extension Identity.Authentication.Response {
-    /**
-     * Creates an authentication response with access and refresh tokens
-     * for the given identity
-     */
-    package init(_ identity: Identity.Record) async throws {
-        @Dependency(\.tokenClient) var tokenClient
-        
-        let (accessToken, refreshToken) = try await tokenClient.generateTokenPair(
-            identity.id,
-            identity.email,
-            identity.sessionVersion
-        )
-        
-        self = .init(
-            accessToken: accessToken,
-            refreshToken: refreshToken
-        )
-    }
-}
-
 extension Identity.Token.Access {
     /**
      * Creates an access token from an Identity

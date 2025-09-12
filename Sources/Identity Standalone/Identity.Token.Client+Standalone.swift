@@ -159,7 +159,7 @@ extension Identity.Token.Client {
             },
             
             generateMFASession: { identityId, sessionVersion, attemptsRemaining, availableMethods in
-                let token = try Identity.Token.MFASession(
+                let token = try Identity.MFA.Challenge.Token(
                     identityId: identityId,
                     sessionVersion: sessionVersion,
                     attemptsRemaining: attemptsRemaining,
@@ -173,7 +173,7 @@ extension Identity.Token.Client {
             
             verifyMFASession: { tokenString in
                 let jwt = try JWT.parse(from: tokenString)
-                let token = try Identity.Token.MFASession(jwt: jwt)
+                let token = try Identity.MFA.Challenge.Token(jwt: jwt)
                 guard try token.verify(with: verificationKey) else {
                     throw ClientError.verificationFailed
                 }

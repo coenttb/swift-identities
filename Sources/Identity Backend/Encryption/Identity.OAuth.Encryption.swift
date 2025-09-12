@@ -1,5 +1,5 @@
 //
-//  OAuthTokenEncryption.swift
+//  Identity.OAuth.Encryption.swift
 //  swift-identities
 //
 //  Handles OAuth token encryption/decryption following TOTP encryption pattern
@@ -10,21 +10,21 @@ import Crypto
 import Dependencies
 import Logging
 
-extension Identity.Backend {
+extension Identity.OAuth {
     /// Handles OAuth token encryption/decryption
     /// Following the established pattern from TOTP secret encryption
-    public struct OAuthTokenEncryption {
+    public struct Encryption {
         
         /// Encrypt OAuth token for storage
         /// Returns encrypted token with version prefix, or plain token in development
-        public static func encryptToken(_ token: String) throws -> String {
+        public static func encrypt(token: String) throws -> String {
             @Dependency(\.envVars.encryptionKey) var encryptionKey
             @Dependency(\.logger) var logger
             
             // Development mode - no encryption
             guard !encryptionKey.isEmpty else {
                 logger.warning("OAuth tokens stored without encryption - set IDENTITIES_ENCRYPTION_KEY in production", metadata: [
-                    "component": "OAuthTokenEncryption",
+                    "component": "Identity.OAuth.Encryption",
                     "mode": "development"
                 ])
                 return token
@@ -42,7 +42,7 @@ extension Identity.Backend {
         
         /// Decrypt OAuth token for use
         /// Handles both encrypted (v1:) and unencrypted tokens
-        public static func decryptToken(_ encrypted: String) throws -> String {
+        public static func decrypt(token encrypted: String) throws -> String {
             @Dependency(\.envVars.encryptionKey) var encryptionKey
             @Dependency(\.logger) var logger
             
@@ -55,7 +55,7 @@ extension Identity.Backend {
             if encryptionKey.isEmpty {
                 if encrypted.hasPrefix("v1:") {
                     logger.error("Found encrypted token but no encryption key set", metadata: [
-                        "component": "OAuthTokenEncryption"
+                        "component": "Identity.OAuth.Encryption"
                     ])
                     throw OAuthTokenError.encryptionKeyMissing
                 }
@@ -65,7 +65,7 @@ extension Identity.Backend {
             // Not our encrypted format - return as-is (backward compatibility)
             if !encrypted.hasPrefix("v1:") {
                 logger.debug("Token not in encrypted format, returning as-is", metadata: [
-                    "component": "OAuthTokenEncryption"
+                    "component": "Identity.OAuth.Encryption"
                 ])
                 return encrypted
             }
@@ -74,7 +74,7 @@ extension Identity.Backend {
             let encryptedData = String(encrypted.dropFirst(3))
             guard let data = Data(base64Encoded: encryptedData) else {
                 logger.error("Failed to decode base64 token data", metadata: [
-                    "component": "OAuthTokenEncryption"
+                    "component": "Identity.OAuth.Encryption"
                 ])
                 throw OAuthTokenError.invalidTokenFormat
             }
@@ -93,7 +93,7 @@ extension Identity.Backend {
                 return token
             } catch {
                 logger.error("Failed to decrypt OAuth token", metadata: [
-                    "component": "OAuthTokenEncryption",
+                    "component": "Identity.OAuth.Encryption",
                     "error": "\(error)"
                 ])
                 throw OAuthTokenError.decryptionFailed

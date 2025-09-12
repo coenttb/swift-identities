@@ -203,3 +203,40 @@ extension Identity.Email.Change.Request.Record {
         self.expiresAt = date().addingTimeInterval(TimeInterval(hours * 3600))
     }
 }
+
+extension Identity.Email.Change.Request.Record {
+    
+    /// Find email change request by token with identity data
+    /// Replaces: findByToken + separate identity lookup
+    package static func findByTokenWithIdentity(_ token: String) async throws -> EmailChangeRequestWithIdentity? {
+        @Dependency(\.defaultDatabase) var db
+        
+        return try await db.read { db in
+            try await Identity.Email.Change.Request.Record
+                .join(Identity.Authentication.Token.Record.all) { request, tokenEntity in
+                    request.identityId.eq(tokenEntity.identityId)
+                        .and(tokenEntity.value.eq(token))
+                        .and(tokenEntity.type.eq(Identity.Authentication.Token.Record.TokenType.emailChange))
+                        .and(#sql("\(tokenEntity.validUntil) > CURRENT_TIMESTAMP"))
+                }
+                .join(Identity.Record.all) { request, _, identity in
+                    request.identityId.eq(identity.id)
+                }
+                .select { request, _, identity in
+                    EmailChangeRequestWithIdentity.Columns(
+                        emailChangeRequest: request,
+                        identity: identity,
+                        currentEmail: identity.emailString
+                    )
+                }
+                .fetchOne(db)
+        }
+    }
+}
+
+@Selection
+package struct EmailChangeRequestWithIdentity: Sendable {
+    package let emailChangeRequest: Identity.Email.Change.Request.Record
+    package let identity: Identity.Record
+    package let currentEmail: String
+}

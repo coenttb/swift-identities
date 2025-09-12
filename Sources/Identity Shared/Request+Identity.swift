@@ -60,7 +60,9 @@ extension Identity {
     public static func require() throws -> Identity.Token.Access {
         @Dependency(\.request) var request
         guard let token = request?.identity?.token
-        else { fatalError()}
+        else {
+            throw Abort(.unauthorized, reason: "Authentication required")
+        }
         return token
     }
 }

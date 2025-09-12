@@ -105,3 +105,63 @@ extension Identity.Record {
         Self.where { $0.emailVerificationStatus.eq(EmailVerificationStatus.pending) }
     }
 }
+
+extension Identity.Record {
+    
+//    /// Batch invalidate sessions for multiple identities
+//    /// Returns count of identities updated
+//    package static func invalidateSessionsBatch(identityIds: [UUID]) async throws -> Int {
+//        @Dependency(\.defaultDatabase) var db
+//        @Dependency(\.date) var date
+//
+//        guard !identityIds.isEmpty else { return 0 }
+//
+//        var updatedCount = 0
+//
+//        try await db.write { db in
+//            // TODO: When swift-structured-queries supports WHERE IN, replace with single query
+//            for identityId in identityIds {
+//                try await Identity.Record
+//                    .where { $0.id.eq(identityId) }
+//                    .update { identity in
+//                        identity.sessionVersion = identity.sessionVersion + 1
+//                        identity.updatedAt = date()
+//                    }
+//                    .execute(db)
+//                updatedCount += 1
+//            }
+//        }
+//
+//        return updatedCount
+//    }
+    
+    /// Check multiple emails exist in single query
+    /// Returns dictionary of email -> exists
+    package static func emailsExist(_ emails: [EmailAddress]) async throws -> [EmailAddress: Bool] {
+        @Dependency(\.defaultDatabase) var db
+        
+        guard !emails.isEmpty else { return [:] }
+        
+        // Get all existing emails in one query
+        let existingEmails = try await db.read { db in
+            var results: Set<String> = []
+            for email in emails {
+                let exists = try await Identity.Record
+                    .where { $0.emailString.eq(email.rawValue) }
+                    .fetchCount(db) > 0
+                if exists {
+                    results.insert(email.rawValue)
+                }
+            }
+            return results
+        }
+        
+        // Build result dictionary
+        var result: [EmailAddress: Bool] = [:]
+        for email in emails {
+            result[email] = existingEmails.contains(email.rawValue)
+        }
+        
+        return result
+    }
+}

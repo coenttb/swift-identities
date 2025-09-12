@@ -7,7 +7,6 @@ import Vapor
 // MARK: - Database Operations
 
 extension Identity.Record {
-    
     // Async initializer that creates and persists to database
     package init(
         email: EmailAddress,
@@ -31,7 +30,9 @@ extension Identity.Record {
                 .execute(db)
         }
     }
-    
+}
+ 
+extension Identity.Record {
     package static func findByEmail(_ email: EmailAddress) async throws -> Identity.Record? {
         @Dependency(\.defaultDatabase) var db
         return try await db.read { db in

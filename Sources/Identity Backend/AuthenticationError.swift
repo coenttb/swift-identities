@@ -1,5 +1,5 @@
 //
-//  AuthenticationError.swift
+//  Identity.Authentication.Error.swift
 //  coenttb-identities
 //
 //  Created by Coen ten Thije Boonkkamp on 30/01/2025.
@@ -8,9 +8,9 @@
 import Foundation
 import IdentitiesTypes
 
-extension Identity.Backend {
+extension Identity.Authentication {
     /// Errors that can occur during authentication operations.
-    package enum AuthenticationError: Swift.Error, Sendable {
+    package enum Error: Swift.Error, Sendable {
         case invalidCredentials
         case accountNotFound
         case accountLocked

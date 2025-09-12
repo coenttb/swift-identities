@@ -3,9 +3,9 @@ import Foundation
 import JWT
 import ServerFoundation
 
-extension Identity.Token {
+extension Identity.MFA.Challenge {
     /// MFA session token for multi-factor authentication flow
-    public struct MFASession: Sendable {
+    public struct Token: Sendable {
         /// The underlying JWT token
         public let jwt: JWT
         
@@ -107,7 +107,7 @@ extension Identity.Token {
 
 // MARK: - Errors
 
-extension Identity.Token.MFASession {
+extension Identity.MFA.Challenge.Token {
     public enum TokenError: Swift.Error {
         case invalidTokenType
         case invalidIdentityId

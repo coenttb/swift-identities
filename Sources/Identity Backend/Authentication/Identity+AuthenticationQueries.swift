@@ -39,8 +39,7 @@ extension Identity.Record {
                 .select { identity, totp in
                     AuthenticationData.Columns(
                         identity: identity,
-                        // TODO: THIS SHOULD CHECK MFA STATUS PROPERLY.
-                        totpEnabled: false
+                        totpEnabled: totp.id.isNot(nil)
                     )
                 }
                 .fetchOne(db)

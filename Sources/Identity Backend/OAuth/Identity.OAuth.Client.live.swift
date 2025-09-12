@@ -16,8 +16,8 @@ import Logging
 
 extension Identity.OAuth.Client {
     public static func live(
-        registry: OAuthProviderRegistry,
-        stateManager: OAuthStateManager
+        registry: Identity.OAuth.ProviderRegistry,
+        stateManager: Identity.OAuth.State.Manager
     ) -> Identity.OAuth.Client {
         
         return .init(
@@ -36,7 +36,7 @@ extension Identity.OAuth.Client {
 
 // MARK: - Register Provider
 private func registerProviderImplementation(
-    registry: OAuthProviderRegistry
+    registry: Identity.OAuth.ProviderRegistry
 ) -> @Sendable (Identity.OAuth.Provider) async -> Void {
     return { provider in
         await registry.register(provider)
@@ -45,7 +45,7 @@ private func registerProviderImplementation(
 
 // MARK: - Get Provider
 private func providerImplementation(
-    registry: OAuthProviderRegistry
+    registry: Identity.OAuth.ProviderRegistry
 ) -> @Sendable (String) async -> Identity.OAuth.Provider? {
     return { identifier in
         await registry.provider(for: identifier)
@@ -54,7 +54,7 @@ private func providerImplementation(
 
 // MARK: - Get All Providers
 private func providersImplementation(
-    registry: OAuthProviderRegistry
+    registry: Identity.OAuth.ProviderRegistry
 ) -> @Sendable () async -> [Identity.OAuth.Provider] {
     return {
         await registry.allProviders()
@@ -63,12 +63,12 @@ private func providersImplementation(
 
 // MARK: - Authorization URL
 private func authorizationURLImplementation(
-    registry: OAuthProviderRegistry,
-    stateManager: OAuthStateManager
+    registry: Identity.OAuth.ProviderRegistry,
+    stateManager: Identity.OAuth.State.Manager
 ) -> @Sendable (String, String) async throws -> URL {
     return { providerIdentifier, redirectURI in
         guard let provider = await registry.provider(for: providerIdentifier) else {
-            throw OAuthError.providerNotFound(providerIdentifier)
+            throw Identity.OAuth.Error.providerNotFound(providerIdentifier)
         }
         
         let state = try await stateManager.generateState(
@@ -85,8 +85,8 @@ private func authorizationURLImplementation(
 
 // MARK: - OAuth Callback
 private func callbackImplementation(
-    registry: OAuthProviderRegistry,
-    stateManager: OAuthStateManager
+    registry: Identity.OAuth.ProviderRegistry,
+    stateManager: Identity.OAuth.State.Manager
 ) -> @Sendable (Identity.OAuth.CallbackRequest) async throws -> Identity.Authentication.Response {
     return { callbackRequest in
         // 1. Validate state
@@ -94,7 +94,7 @@ private func callbackImplementation(
         
         // 2. Get provider
         guard let provider = await registry.provider(for: callbackRequest.provider) else {
-            throw OAuthError.providerNotFound(callbackRequest.provider)
+            throw Identity.OAuth.Error.providerNotFound(callbackRequest.provider)
         }
         
         // 3. Create internal token exchange request with redirectURI from state
@@ -124,11 +124,11 @@ private func callbackImplementation(
         
         if provider.requiresTokenStorage {
             // Provider requires token storage for API access
-            if Identity.Backend.OAuthTokenEncryption.isEncryptionAvailable {
+            if Identity.OAuth.Encryption.isEncryptionAvailable {
                 // Encrypt tokens for storage
-                storedAccessToken = try Identity.Backend.OAuthTokenEncryption.encryptToken(tokens.accessToken)
+                storedAccessToken = try Identity.OAuth.Encryption.encrypt(token: tokens.accessToken)
                 storedRefreshToken = try tokens.refreshToken.map {
-                    try Identity.Backend.OAuthTokenEncryption.encryptToken($0)
+                    try Identity.OAuth.Encryption.encrypt(token: $0)
                 }
                 logger.debug("OAuth tokens encrypted for storage", metadata: [
                     "provider": "\(provider.identifier)"
@@ -158,7 +158,7 @@ private func callbackImplementation(
             ) {
                 // Get the associated identity
                 guard let identity = try await Identity.Record.find(existingConnection.identityId).fetchOne(db) else {
-                    throw OAuthError.userInfoExtractionFailed
+                    throw Identity.OAuth.Error.userInfoExtractionFailed
                 }
                 
                 // Update tokens if provider stores them
@@ -177,7 +177,7 @@ private func callbackImplementation(
             if let identityId = stateData.identityId {
                 // Linking OAuth to existing account
                 guard let identity = try await Identity.Record.find(identityId).fetchOne(db) else {
-                    throw OAuthError.userInfoExtractionFailed
+                    throw Identity.OAuth.Error.userInfoExtractionFailed
                 }
                 
                 // Create OAuth connection
@@ -200,7 +200,7 @@ private func callbackImplementation(
             
             // Create new identity from OAuth
             guard let email = userInfo.email else {
-                throw OAuthError.missingEmail
+                throw Identity.OAuth.Error.missingEmail
             }
             
             // Check if email already exists
@@ -298,7 +298,7 @@ private let disconnectImplementation: @Sendable (String) async throws -> Void = 
         identityId: identity.id,
         provider: provider
     ) else {
-        throw OAuthError.providerNotFound(provider)
+        throw Identity.OAuth.Error.providerNotFound(provider)
     }
     
     try await database.write { db in
@@ -311,7 +311,7 @@ private let disconnectImplementation: @Sendable (String) async throws -> Void = 
 
 // MARK: - Get Valid Token
 private func getValidTokenImplementation(
-    registry: OAuthProviderRegistry
+    registry: Identity.OAuth.ProviderRegistry
 ) -> @Sendable (String) async throws -> String? {
     return { providerName in
         @Dependency(\.defaultDatabase) var database
@@ -354,7 +354,7 @@ private func getValidTokenImplementation(
             let expiresAt = connection.expiresAt
         else {
             do {
-                return try Identity.Backend.OAuthTokenEncryption.decryptToken(connection.accessToken)
+                return try Identity.OAuth.Encryption.decrypt(token: connection.accessToken)
             } catch {
                 logger.error("Failed to decrypt OAuth token", metadata: [
                     "provider": "\(providerName)",
@@ -368,7 +368,7 @@ private func getValidTokenImplementation(
         guard Date() > expiresAt else {
             // Token not expired, return it
             do {
-                return try Identity.Backend.OAuthTokenEncryption.decryptToken(connection.accessToken)
+                return try Identity.OAuth.Encryption.decrypt(token: connection.accessToken)
             } catch {
                 logger.error("Failed to decrypt OAuth token", metadata: [
                     "provider": "\(providerName)",
@@ -389,32 +389,32 @@ private func getValidTokenImplementation(
                 "provider": "\(providerName)"
             ])
             
-            throw OAuthError.tokenExpired
+            throw Identity.OAuth.Error.tokenExpired
         }
         
         guard let refreshToken = connection.refreshToken else {
             logger.error("Token expired but no refresh token available", metadata: [
                 "provider": "\(providerName)"
             ])
-            throw OAuthError.tokenExpired
+            throw Identity.OAuth.Error.tokenExpired
         }
         
         do {
             // Decrypt refresh token
-            let decryptedRefresh = try Identity.Backend.OAuthTokenEncryption.decryptToken(refreshToken)
+            let decryptedRefresh = try Identity.OAuth.Encryption.decrypt(token: refreshToken)
             
             // Call provider to refresh
             guard let newTokens = try await provider.refreshToken(decryptedRefresh) else {
                 logger.error("Provider refresh returned nil", metadata: [
                     "provider": "\(providerName)"
                 ])
-                throw OAuthError.tokenExchangeFailed
+                throw Identity.OAuth.Error.tokenExchangeFailed
             }
             
             // Update stored tokens
-            let newAccessToken = try Identity.Backend.OAuthTokenEncryption.encryptToken(newTokens.accessToken)
+            let newAccessToken = try Identity.OAuth.Encryption.encrypt(token: newTokens.accessToken)
             let newRefreshToken = try newTokens.refreshToken.map {
-                try Identity.Backend.OAuthTokenEncryption.encryptToken($0)
+                try Identity.OAuth.Encryption.encrypt(token: $0)
             }
             
             try await connection.updateTokens(

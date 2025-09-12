@@ -38,7 +38,7 @@ let githubProvider = GitHubOAuthProvider(
 )
 
 // Set up OAuth provider registry
-let oauthRegistry = OAuthProviderRegistry()
+let oauthRegistry = Identity.OAuth.ProviderRegistry()
 await oauthRegistry.register(githubProvider)
 
 // Configure Identity Backend Client

@@ -160,3 +160,65 @@ extension Identity.Authentication.Token.Record {
         self.lastUsedAt = date()
     }
 }
+
+extension Identity.Authentication.Token.Record {
+    
+    /// Validate token and get associated identity in single query
+    /// Replaces: findValid + separate identity lookup
+    package static func validateWithIdentity(value: String, type: TokenType) async throws -> TokenWithIdentity? {
+        @Dependency(\.defaultDatabase) var db
+        
+        return try await db.read { db in
+            try await Identity.Authentication.Token.Record
+                .where { token in
+                    token.value.eq(value)
+                        .and(token.type.eq(type))
+                        .and(#sql("\(token.validUntil) > CURRENT_TIMESTAMP"))
+                }
+                .join(Identity.Record.all) { token, identity in
+                    token.identityId.eq(identity.id)
+                }
+                .select { token, identity in
+                    TokenWithIdentity.Columns(
+                        token: token,
+                        identity: identity
+                    )
+                }
+                .fetchOne(db)
+        }
+    }
+    
+    /// Batch cleanup expired tokens with count
+    package static func cleanupExpiredWithCount() async throws -> Int {
+        @Dependency(\.defaultDatabase) var db
+        
+        // First get count of expired tokens
+        let count = try await db.read { db in
+            try await Identity.Authentication.Token.Record
+                .where { token in
+                    #sql("\(token.validUntil) <= CURRENT_TIMESTAMP")
+                }
+                .fetchCount(db)
+        }
+        
+        // Then delete them
+        if count > 0 {
+            try await db.write { db in
+                try await Identity.Authentication.Token.Record
+                    .delete()
+                    .where { token in
+                        #sql("\(token.validUntil) <= CURRENT_TIMESTAMP")
+                    }
+                    .execute(db)
+            }
+        }
+        
+        return count
+    }
+}
+
+@Selection
+package struct TokenWithIdentity: Sendable {
+    package let token: Identity.Authentication.Token.Record
+    package let identity: Identity.Record
+}

@@ -63,7 +63,7 @@ extension Identity.Password.Client {
 
                         // Find and validate token
                         guard let resetToken = try await Identity.Authentication.Token.Record.findValid(value: token, type: .passwordReset) else {
-                            throw Identity.Backend.ValidationError.invalidToken
+                            throw Identity.Authentication.ValidationError.invalidToken
                         }
 
                         // Get the identity
@@ -107,7 +107,7 @@ extension Identity.Password.Client {
                     var identity = try await Identity.Record.get(by: .auth)
 
                     guard try await identity.verifyPassword(currentPassword) else {
-                        throw Identity.Backend.AuthenticationError.invalidCredentials
+                        throw Identity.Authentication.Error.invalidCredentials
                     }
 
                     _ = try validatePassword(newPassword)

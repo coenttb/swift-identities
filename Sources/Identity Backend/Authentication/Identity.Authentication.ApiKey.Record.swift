@@ -177,3 +177,68 @@ extension Identity.Authentication.ApiKey.Record {
     }
 }
 
+
+extension Identity.Authentication.ApiKey.Record {
+    
+    /// Single query to validate API key and get associated identity
+    /// Replaces: findByKey + separate identity lookup
+    package static func authenticateWithKey(_ key: String) async throws -> ApiKeyWithIdentity? {
+        @Dependency(\.defaultDatabase) var db
+        @Dependency(\.date) var date
+        
+        return try await db.write { db in
+            // Get API key with identity in single query
+            let result = try await Identity.Authentication.ApiKey.Record
+                .where { $0.key.eq(key) }
+                .where { $0.isActive.eq(true) }
+                .join(Identity.Record.all) { apiKey, identity in
+                    apiKey.identityId.eq(identity.id)
+                }
+                .select { apiKey, identity in
+                    ApiKeyWithIdentity.Columns(
+                        apiKey: apiKey,
+                        identity: identity
+                    )
+                }
+                .fetchOne(db)
+            
+            // Update last used timestamp atomically if found
+            if let result = result {
+                try await Identity.Authentication.ApiKey.Record
+                    .where { $0.id.eq(result.apiKey.id) }
+                    .update { apiKey in
+                        apiKey.lastUsedAt = date()
+                    }
+                    .execute(db)
+            }
+            
+            return result
+        }
+    }
+    
+    /// Batch deactivate API keys
+    package static func deactivateMultiple(ids: [UUID]) async throws {
+        @Dependency(\.defaultDatabase) var db
+        
+        guard !ids.isEmpty else { return }
+        
+        try await db.write { db in
+            // TODO: When swift-structured-queries supports WHERE IN, replace with:
+            // .where { $0.id.in(ids) }
+            for id in ids {
+                try await Identity.Authentication.ApiKey.Record
+                    .where { $0.id.eq(id) }
+                    .update { apiKey in
+                        apiKey.isActive = false
+                    }
+                    .execute(db)
+            }
+        }
+    }
+}
+
+@Selection
+package struct ApiKeyWithIdentity: Sendable {
+    package let apiKey: Identity.Authentication.ApiKey.Record
+    package let identity: Identity.Record
+}

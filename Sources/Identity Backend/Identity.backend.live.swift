@@ -11,12 +11,13 @@ import IdentitiesTypes
 import JWT
 import EmailAddress
 
-extension Identity {
+extension Identity.Backend {
     /// Creates a live backend Identity with direct database access.
     ///
     /// This implementation provides the core business logic for identity operations,
     /// including database access, token generation, and email sending.
-    public static func backend(
+    public static func live(
+        router: Identity.Authentication.Route.Router = Identity.Authentication.Route.Router(),
         sendVerificationEmail: @escaping @Sendable (_ email: EmailAddress, _ token: String) async throws -> Void,
         sendPasswordResetEmail: @escaping @Sendable (_ email: EmailAddress, _ token: String) async throws -> Void,
         sendPasswordChangeNotification: @escaping @Sendable (_ email: EmailAddress) async throws -> Void,
@@ -27,15 +28,15 @@ extension Identity {
         sendDeletionConfirmationNotification: @escaping @Sendable (_ email: EmailAddress) async throws -> Void,
         onIdentityCreationSuccess: @escaping @Sendable (_ identity: (id: Identity.ID, email: EmailAddress)) async throws -> Void = { _ in },
         mfaConfiguration: Identity.MFA.TOTP.Configuration? = nil,
-        oauthProviderRegistry: OAuthProviderRegistry? = nil
-    ) -> Self {
+        oauthProviderRegistry: Identity.OAuth.ProviderRegistry? = nil
+    ) -> Identity {
         @Dependency(\.logger) var logger
         @Dependency(\.defaultDatabase) var database
 
         return Identity(
             authenticate: Identity.Authentication(
                 client: .live(),
-                router: Identity.Authentication.Route.Router(),
+                router: router,
                 token: .live()
             ),
             logout: Identity.Logout(
@@ -80,7 +81,7 @@ extension Identity {
                     let identity = try await Identity.Record.get(by: .auth)
 
                     guard try await identity.verifyPassword(password)
-                    else { throw Identity.Backend.AuthenticationError.invalidCredentials }
+                    else { throw Identity.Authentication.Error.invalidCredentials }
 
                     @Dependency(\.tokenClient) var tokenClient
                     
@@ -174,7 +175,7 @@ extension Identity {
             oauth: oauthProviderRegistry.map { registry in
                 @Dependency(Identity.Token.Client.self) var encryption
                 
-                let stateManager = OAuthStateManager()
+                let stateManager = Identity.OAuth.State.Manager()
                 return Identity.OAuth(
                     client: Identity.OAuth.Client.live(
                         registry: registry,
@@ -191,9 +192,9 @@ extension Identity.Backend {
     public static func logging(
         router: AnyParserPrinter<URLRequestData, Identity.Route>,
         mfaConfiguration: Identity.MFA.TOTP.Configuration? = nil,
-        oauthProviderRegistry: OAuthProviderRegistry? = nil
+        oauthProviderRegistry: Identity.OAuth.ProviderRegistry? = nil
     ) -> Identity {
-        return Identity.backend(
+        return Identity.Backend.live(
             sendVerificationEmail: { email, token in
                 @Dependency(\.logger) var logger
                 logger.info("Demo: Verification email triggered", metadata: [

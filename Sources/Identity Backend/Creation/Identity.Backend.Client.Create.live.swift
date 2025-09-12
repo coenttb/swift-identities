@@ -27,7 +27,7 @@ extension Identity.Creation.Client {
 
                     // Check if email already exists
                     guard try await Identity.Record.findByEmail(emailAddress) == nil else {
-                        throw Identity.Backend.ValidationError.invalidInput("Email already in use")
+                        throw Identity.Authentication.ValidationError.invalidInput("Email already in use")
                     }
 
                     // Create the identity
