@@ -11,7 +11,7 @@ extension Identity.MFA.TOTP {
         public let identityId: Identity.ID
         public let secret: String // Encrypted base32 secret
         public let isConfirmed: Bool
-        public let algorithm: String
+        public let algorithm: RFC_6238.TOTP.Algorithm
         public let digits: Int // Usually 6
         public let timeStep: Int // Usually 30 seconds
         public let createdAt: Date
@@ -36,7 +36,7 @@ extension Identity.MFA.TOTP {
             self.identityId = identityId
             self.secret = secret
             self.isConfirmed = isConfirmed
-            self.algorithm = algorithm.rawValue
+            self.algorithm = algorithm
             self.digits = digits
             self.timeStep = timeStep
             self.createdAt = createdAt
@@ -46,6 +46,8 @@ extension Identity.MFA.TOTP {
         }
     }
 }
+
+extension RFC_6238.TOTP.Algorithm: @retroactive QueryBindable {}
 
 // MARK: - Query Helpers
 

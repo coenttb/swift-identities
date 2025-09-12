@@ -48,10 +48,6 @@ extension Identity {
     }
 }
 
-extension EmailAddress: @retroactive QueryExpression {}
-extension EmailAddress: @retroactive QueryRepresentable {}
-extension EmailAddress: @retroactive QueryDecodable {}
-extension EmailAddress: @retroactive _OptionalPromotable {}
 extension EmailAddress: @retroactive QueryBindable {}
 
 // MARK: - Password Management

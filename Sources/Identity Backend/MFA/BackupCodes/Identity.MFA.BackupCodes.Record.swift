@@ -16,14 +16,13 @@ extension Identity.MFA.BackupCodes {
 
 extension Identity.MFA.BackupCodes.Record.Draft {
     package init(
-        id: UUID? = nil,
         identityId: Identity.ID,
         codeHash: String,
         isUsed: Bool = false,
         createdAt: Date = Date(),
         usedAt: Date? = nil
     ) {
-        self.id = id
+        self.id = nil
         self.identityId = identityId
         self.codeHash = codeHash
         self.isUsed = isUsed

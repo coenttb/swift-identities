@@ -19,32 +19,29 @@ extension Identity.MFA.TOTP.Client {
         
         // 2. Save initial TOTP record using UPSERT
         @Dependency(\.defaultDatabase) var db
-        @Dependency(\.uuid) var uuid
         @Dependency(\.date) var date
         
         try await db.write { db in
             // Encrypt the secret before storing
             let encryptedSecret = try Identity.MFA.TOTP.Record.encryptSecret(setupData.secret)
             
-            let totpRecord = Identity.MFA.TOTP.Record(
-                id: uuid(),
-                identityId: identity.id,
-                secret: encryptedSecret,
-                isConfirmed: false,
-                algorithm: .sha1,  // Default algorithm, matches configuration
-                digits: 6,
-                timeStep: 30,
-                createdAt: date(),
-                confirmedAt: nil,
-                lastUsedAt: nil,
-                usageCount: 0
-            )
             
             // Use UPSERT to handle re-setup scenarios gracefully
             // This ensures only one TOTP setup per identity
             try await Identity.MFA.TOTP.Record
                 .insert {
-                    totpRecord
+                    Identity.MFA.TOTP.Record.Draft(
+                        identityId: identity.id,
+                        secret: encryptedSecret,
+                        isConfirmed: false,
+                        algorithm: .sha1,  // Default algorithm, matches configuration
+                        digits: 6,
+                        timeStep: 30,
+                        createdAt: date(),
+                        confirmedAt: nil,
+                        lastUsedAt: nil,
+                        usageCount: 0
+                    )
                 } onConflict: { cols in
                     cols.identityId
                 } doUpdate: { updates, excluded in
@@ -197,24 +194,23 @@ extension Identity.MFA.TOTP.Client {
                         .delete()
                         .where { $0.identityId.eq(identityId) }
                         .execute(db)
+
+                    let codes = try codes.map { try Identity.MFA.BackupCodes.Record.hashCode($0) }
                     
-                    // Create new codes
-                    for code in codes {
-                        let backupCode = Identity.MFA.BackupCodes.Record(
-                            id: uuid(),
-                            identityId: identityId,
-                            codeHash: try Identity.MFA.BackupCodes.Record.hashCode(code)
-                        )
-                        
-                        try await Identity.MFA.BackupCodes.Record
-                            .insert { backupCode }
-                            .execute(db)
-                    }
+                    try await Identity.MFA.BackupCodes.Record
+                        .insert {
+                            for code in codes {
+                                Identity.MFA.BackupCodes.Record.Draft(
+                                    identityId: identityId,
+                                    codeHash: try! Identity.MFA.BackupCodes.Record.hashCode(code)
+                                )
+                            }
+                        }
+                        .execute(db)
                 }
-                
+
                 return codes
             },
-            
             verifyBackupCode: { identityId, code in
                 // Implement atomic verify and mark as used
                 @Dependency(\.defaultDatabase) var db
