@@ -167,7 +167,7 @@ extension Identity.API {
                 let response = try await handleMFAAPI(
                     mfaAPI,
                     client: client,
-                    router: configuration.router
+                    router: configuration.identity.router
                 )
                 
                 // Record rate limit success
@@ -195,7 +195,7 @@ extension Identity.API {
             let response = try await Identity.Frontend.response(
                 api: api,
                 client: client,
-                router: configuration.router,
+                router: configuration.identity.router,
                 cookies: configuration.cookies,
                 redirect: configuration.redirect
             )

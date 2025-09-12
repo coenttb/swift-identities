@@ -24,7 +24,7 @@ extension Identity.Creation {
         case .request:
             return try await handleCreateRequest(configuration: configuration)
         case .verify(let verify):
-            let router = configuration.router
+            let router = configuration.identity.router
             let redirect = configuration.redirect
             
             return try await Identity.Frontend.htmlDocument(for: .create(.verify), configuration: configuration) {
@@ -44,7 +44,7 @@ extension Identity.Creation {
     public static func handleCreateRequest(
         configuration: Identity.Frontend.Configuration
     ) async throws -> any AsyncResponseEncodable {
-        let router = configuration.router
+        let router = configuration.identity.router
         
         return try await Identity.Frontend.htmlDocument(for: .create(.request), configuration: configuration) {
             Identity.Creation.Request.View(

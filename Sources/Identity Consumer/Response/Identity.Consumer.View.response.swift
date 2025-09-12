@@ -23,7 +23,7 @@ extension Identity.View {
         // Check authentication requirements
         try await Identity.Frontend.protect(
             view: view,
-            router: configuration.router
+            router: configuration.identity.router
         )
         
         // Dispatch to appropriate handler

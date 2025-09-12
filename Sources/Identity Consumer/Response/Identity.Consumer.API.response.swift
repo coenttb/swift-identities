@@ -64,7 +64,7 @@ extension Identity.Consumer.API {
             let response = try await Identity.Frontend.response(
                 api: api,
                 client: client,
-                router: configuration.router,
+                router: configuration.identity.router,
                 cookies: configuration.cookies
             )
             

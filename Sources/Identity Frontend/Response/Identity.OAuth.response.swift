@@ -21,7 +21,7 @@ extension Identity.OAuth {
         view: Identity.View.OAuth,
         configuration: Identity.Frontend.Configuration
     ) async throws -> any AsyncResponseEncodable {
-        let router = configuration.router
+        let router = configuration.identity.router
         
         // Check if OAuth is configured
         guard configuration.identity.oauth != nil else {
@@ -127,7 +127,7 @@ extension Identity.OAuth {
         let connectedProviders = Set(connections.map { $0.provider })
         let availableProviders = allProviders.filter { !connectedProviders.contains($0.identifier) }
         
-        let router = configuration.router
+        let router = configuration.identity.router
         
         return try await Identity.Frontend.htmlDocument(
             for: .oauth(.connections),
@@ -162,7 +162,7 @@ extension Identity.OAuth {
         ) {
             Identity.OAuth.Error.View(
                 errorMessage: message,
-                retryHref: configuration.router.url(for: .view(.oauth(.login))),
+                retryHref: configuration.identity.router.url(for: .view(.oauth(.login))),
                 cancelHref: configuration.navigation.home
             )
         }

@@ -43,7 +43,7 @@ extension Identity.Email {
     public static func handleChangeRequest(
         configuration: Identity.Frontend.Configuration
     ) async throws -> any AsyncResponseEncodable {
-        let router = configuration.router
+        let router = configuration.identity.router
         let homeHref = configuration.navigation.home
         
         return try await Identity.Frontend.htmlDocument(for: .email(.change(.request)), configuration: configuration) {
@@ -72,7 +72,7 @@ extension Identity.Email {
     public static func handleChangeReauthorization(
         configuration: Identity.Frontend.Configuration
     ) async throws -> any AsyncResponseEncodable {
-        let router = configuration.router
+        let router = configuration.identity.router
         
         @Dependency(\.request) var request
         guard let request else { throw Abort.requestUnavailable }

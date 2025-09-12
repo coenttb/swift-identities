@@ -21,7 +21,7 @@ extension Identity.Password {
         view: Identity.Password.View,
         configuration: Identity.Frontend.Configuration
     ) async throws -> any AsyncResponseEncodable {
-        let router = configuration.router
+        let router = configuration.identity.router
         
         switch view {
         case .reset(let reset):
@@ -58,7 +58,7 @@ extension Identity.Password {
         @Dependency(\.request) var req
         
         let token = req?.parameters.get("token") ?? ""
-        let router = configuration.router
+        let router = configuration.identity.router
         
         return try await Identity.Frontend.htmlDocument(
             for: .password(.reset(.confirm(.init()))),
@@ -110,7 +110,7 @@ extension Identity.Password {
     public static func handleChangeRequest(
         configuration: Identity.Frontend.Configuration
     ) async throws -> any AsyncResponseEncodable {
-        let router = configuration.router
+        let router = configuration.identity.router
         
         @Dependency(\.request?.identity?.email.description) var email
                 

@@ -22,7 +22,6 @@ extension Identity.Frontend {
     /// and Standalone must provide when using Frontend functionality.
     public struct Configuration: Sendable {
         public var baseURL: URL
-        public var router: AnyParserPrinter<URLRequestData, Identity.Route>
         public var identity: Identity
         public var jwt: Identity.Token.Client
         public var cookies: Identity.Frontend.Configuration.Cookies
@@ -36,7 +35,6 @@ extension Identity.Frontend {
         
         package init(
             baseURL: URL,
-            router: AnyParserPrinter<URLRequestData, Identity.Route>,
             identity: Identity,
             jwt: Identity.Token.Client,
             cookies: Identity.Frontend.Configuration.Cookies,
@@ -48,7 +46,6 @@ extension Identity.Frontend {
             canonicalHref: (@Sendable (Identity.View) -> URL?)? = nil,
             hreflang: ( @Sendable (Identity.View, Language) -> URL)? = nil
         ) {
-            self.router = router
             self.cookies = cookies
             self.identity = identity
             self.jwt = jwt
@@ -68,11 +65,11 @@ extension Identity.Frontend {
             
             // Use provided closures or create defaults using the passed router
             self.canonicalHref = canonicalHref ?? { view in
-                router.url(for: .view(view))
+                identity.router.url(for: .view(view))
             }
             
             self.hreflang = hreflang ?? { view, _ in
-                router.url(for: .view(view))
+                identity.router.url(for: .view(view))
             }
         }
         
@@ -148,7 +145,6 @@ extension Identity.Frontend.Configuration: TestDependencyKey {
         
         return .init(
             baseURL: baseURL,
-            router: router,
             identity: .testValue,
             jwt: .live(
                 configuration: .init(

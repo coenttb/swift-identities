@@ -16,7 +16,6 @@ extension Identity.Frontend {
         return try await Self.response(
             api: api,
             identity: configuration.identity,
-            router: configuration.router,
             cookies: configuration.cookies,
             redirect: configuration.redirect
         )
@@ -29,7 +28,6 @@ extension Identity.Frontend {
     package static func response(
         api: Identity.API,
         identity: Identity,
-        router: AnyParserPrinter<URLRequestData, Identity.Route>,
         cookies: Identity.Frontend.Configuration.Cookies,
         redirect: Identity.Frontend.Configuration.Redirect
     ) async throws -> any AsyncResponseEncodable {
@@ -39,7 +37,7 @@ extension Identity.Frontend {
         case .create(let create):
             return try await handleCreate(create, client: identity.create.client)
         case .delete(let delete):
-            return try await handleDelete(delete, client: identity.delete.client, router: router)
+            return try await handleDelete(delete, client: identity.delete.client, router: identity.router)
         case .email(let email):
             return try await handleEmail(email, client: identity.email.change.client)
         case .password(let password):
@@ -48,7 +46,7 @@ extension Identity.Frontend {
             return try await handleReauthorize(
                 reauthorize,
                 client: identity.reauthorize.client,
-                router: router,
+                router: identity.router,
                 cookies: cookies
             )
         case .logout(.current):
@@ -150,7 +148,7 @@ extension Identity.Frontend {
     private static func handleDelete(
         _ delete: Identity.Deletion.API,
         client: Identity.Deletion.Client,
-        router: AnyParserPrinter<URLRequestData, Identity.Route>
+        router: any ParserPrinter<URLRequestData, Identity.Route>
     ) async throws -> any AsyncResponseEncodable {
         
         switch delete {
@@ -243,7 +241,7 @@ extension Identity.Frontend {
     private static func handleReauthorize(
         _ reauthorize: Identity.Reauthorization.API,
         client: Identity.Reauthorization.Client,
-        router: AnyParserPrinter<URLRequestData, Identity.Route>,
+        router: any ParserPrinter<URLRequestData, Identity.Route>,
         cookies: Identity.Frontend.Configuration.Cookies
     ) async throws -> any AsyncResponseEncodable {
         @Dependency(\.request) var request

@@ -32,7 +32,7 @@ extension Identity.Deletion {
     public static func handleRequest(
         configuration: Identity.Frontend.Configuration
     ) async throws -> any AsyncResponseEncodable {
-        let router = configuration.router
+        let router = configuration.identity.router
         let homeHref = configuration.navigation.home
         
         return try await Identity.Frontend.htmlDocument(for: .delete(.request), configuration: configuration) {
