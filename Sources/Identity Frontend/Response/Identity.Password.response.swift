@@ -120,7 +120,7 @@ extension Identity.Password {
         ) {
             try await Identity.Password.Change.Request.View(
                 currentUserName: email ?? "...",
-                formActionURL: router.url(for: .password(.api(.change(.request(change: .init()))))),
+                formActionURL: router.url(for: .password(.api(.change(.request(.init()))))),
                 redirectOnSuccess: configuration.redirect.logoutSuccess()
             )
         }

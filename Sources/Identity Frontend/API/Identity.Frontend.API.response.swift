@@ -36,10 +36,10 @@ extension Identity.Frontend {
         switch api {
         case .authenticate(let authenticate):
             return try await handleAuthenticate(authenticate, client: identity.authenticate.client, loginSuccessRedirect: redirect.loginSuccess)
-        case .creation(let creation):
-            return try await handleCreation(creation, client: identity.creation.client)
-        case .deletion(let deletion):
-            return try await handleDeletion(deletion, client: identity.deletion.client, router: router)
+        case .create(let create):
+            return try await handleCreate(create, client: identity.create.client)
+        case .delete(let delete):
+            return try await handleDelete(delete, client: identity.delete.client, router: router)
         case .email(let email):
             return try await handleEmail(email, client: identity.email.client)
         case .password(let password):
@@ -126,11 +126,11 @@ extension Identity.Frontend {
         }
     }
     
-    private static func handleCreation(
-        _ creation: Identity.Creation.API,
+    private static func handleCreate(
+        _ create: Identity.Creation.API,
         client: Identity.Creation.Client
     ) async throws -> any AsyncResponseEncodable {
-        switch creation {
+        switch create {
         case .request(let request):
             try await client.request(
                 email: request.email,
@@ -147,21 +147,21 @@ extension Identity.Frontend {
         }
     }
     
-    private static func handleDeletion(
-        _ deletion: Identity.Deletion.API,
+    private static func handleDelete(
+        _ delete: Identity.Deletion.API,
         client: Identity.Deletion.Client,
         router: AnyParserPrinter<URLRequestData, Identity.Route>
     ) async throws -> any AsyncResponseEncodable {
         
-        switch deletion {
+        switch delete {
         case .request(let request):
             try await client.request(request.reauthToken)
             return Response.success(true)
             
         case .cancel:
             try await client.cancel()
-            // Redirect to deletion view with cancelled query parameter
-            var deleteURL = router.url(for: .deletion(.view(.request)))
+            // Redirect to delete view with cancelled query parameter
+            var deleteURL = router.url(for: .delete(.view(.request)))
             deleteURL.append(queryItems: [.init(name: "status", value: "cancelled")])
             return Response(
                 status: .seeOther,
@@ -170,8 +170,8 @@ extension Identity.Frontend {
             
         case .confirm:
             try await client.confirm()
-            // Redirect to deletion view with confirmed query parameter
-            var deleteURL = router.url(for: .deletion(.view(.request)))
+            // Redirect to delete view with confirmed query parameter
+            var deleteURL = router.url(for: .delete(.view(.request)))
             deleteURL.append(queryItems: [.init(name: "status", value: "confirmed")])
             return Response(
                 status: .seeOther,

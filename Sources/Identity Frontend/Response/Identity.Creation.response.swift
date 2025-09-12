@@ -27,9 +27,9 @@ extension Identity.Creation {
             let router = configuration.router
             let redirect = configuration.redirect
             
-            return try await Identity.Frontend.htmlDocument(for: .creation(.verify), configuration: configuration) {
+            return try await Identity.Frontend.htmlDocument(for: .create(.verify), configuration: configuration) {
                 try await Identity.Creation.Verification.View(
-                    verificationAction: router.url(for: .creation(.api(.verify(verify)))),
+                    verificationAction: router.url(for: .create(.api(.verify(verify)))),
                     redirectURL: redirect.createVerificationSuccess()
                 )
             }
@@ -46,11 +46,11 @@ extension Identity.Creation {
     ) async throws -> any AsyncResponseEncodable {
         let router = configuration.router
         
-        return try await Identity.Frontend.htmlDocument(for: .creation(.request), configuration: configuration) {
+        return try await Identity.Frontend.htmlDocument(for: .create(.request), configuration: configuration) {
             Identity.Creation.Request.View(
                 loginHref: router.url(for: .login),
-                accountCreateHref: router.url(for: .creation(.view(.request))),
-                createFormAction: router.url(for: .creation(.api(.request(.init()))))
+                accountCreateHref: router.url(for: .create(.view(.request))),
+                createFormAction: router.url(for: .create(.api(.request(.init()))))
             )
         }
     }

@@ -86,7 +86,7 @@ extension Identity.Email {
             Identity.Reauthorization.View(
                 currentUserName: token.email.description,
                 passwordResetHref: router.url(for: .view(.password(.reset(.request)))),
-                confirmFormAction: router.url(for: .reauthorize(.init())),
+                confirmFormAction: router.url(for: .reauthorize(.api(.init()))),
                 redirectOnSuccess: router.url(for: .view(.email(.change(.request))))
             )
         }

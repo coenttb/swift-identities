@@ -24,7 +24,7 @@ extension Identity.OAuth {
         let router = configuration.router
         
         // Check if OAuth is configured
-        guard configuration.client.oauth != nil else {
+        guard configuration.identity.oauth != nil else {
             throw Abort(.notImplemented, reason: "OAuth is not configured")
         }
         
@@ -52,12 +52,12 @@ extension Identity.OAuth {
     private static func handleLogin(
         configuration: Identity.Frontend.Configuration
     ) async throws -> any AsyncResponseEncodable {
-        guard let oauthClient = configuration.client.oauth else {
+        guard let oauth = configuration.identity.oauth else {
             throw Abort(.notImplemented, reason: "OAuth is not configured")
         }
         
         // Get available providers
-        let providers = try await oauthClient.providers()
+        let providers = try await oauth.client.providers()
         
         // Generate authorization URLs for each provider
         @Dependency(\.request) var request
@@ -69,7 +69,7 @@ extension Identity.OAuth {
         
         var providerUrls: [(provider: Identity.OAuth.Provider, url: URL)] = []
         for provider in providers {
-            let authURL = try await oauthClient.authorizationURL(
+            let authURL = try await oauth.client.authorizationURL(
                 provider.identifier,
                 redirectURI
             )
@@ -113,15 +113,15 @@ extension Identity.OAuth {
     private static func handleConnections(
         configuration: Identity.Frontend.Configuration
     ) async throws -> any AsyncResponseEncodable {
-        guard let oauthClient = configuration.client.oauth else {
+        guard let oauth = configuration.identity.oauth else {
             throw Abort(.notImplemented, reason: "OAuth is not configured")
         }
         
         // Get current connections
-        let connections = try await oauthClient.getAllConnections()
+        let connections = try await oauth.client.getAllConnections()
         
         // Get available providers
-        let allProviders = try await oauthClient.providers()
+        let allProviders = try await oauth.client.providers()
         
         // Determine which providers are connected
         let connectedProviders = Set(connections.map { $0.provider })

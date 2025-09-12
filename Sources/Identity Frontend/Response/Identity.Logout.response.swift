@@ -15,10 +15,10 @@ import Vapor
 extension Identity.Logout {
     /// Handles the logout process.
     public static func response(
-        client: Identity.Client,
+        client: Identity.Logout.Client,
         redirect: Identity.Frontend.Configuration.Redirect
     ) async throws -> any AsyncResponseEncodable {
-        try? await client.logout()
+        try? await client.current()
         
         @Dependency(\.request) var request
         guard let request else { throw Abort.requestUnavailable }
