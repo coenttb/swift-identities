@@ -35,15 +35,15 @@ extension Identity.Frontend {
     ) async throws -> any AsyncResponseEncodable {
         switch api {
         case .authenticate(let authenticate):
-            return try await handleAuthenticate(authenticate, client: identity.authenticate.client, loginSuccessRedirect: redirect.loginSuccess)
+            return try await handleAuthenticate(authenticate, authentication: identity.authenticate, loginSuccessRedirect: redirect.loginSuccess)
         case .create(let create):
             return try await handleCreate(create, client: identity.create.client)
         case .delete(let delete):
             return try await handleDelete(delete, client: identity.delete.client, router: router)
         case .email(let email):
-            return try await handleEmail(email, client: identity.email.client)
+            return try await handleEmail(email, client: identity.email.change.client)
         case .password(let password):
-            return try await handlePassword(password, client: identity.password.client)
+            return try await handlePassword(password, client: (identity.password.change.client, identity.password.reset.client))
         case .reauthorize(let reauthorize):
             return try await handleReauthorize(
                 reauthorize,
@@ -70,13 +70,13 @@ extension Identity.Frontend {
     
     private static func handleAuthenticate(
         _ authenticate: Identity.Authentication.API,
-        client: Identity.Authentication.Client,
+        authentication: Identity.Authentication,
         loginSuccessRedirect: (Identity.ID) async throws -> URL
     ) async throws -> any AsyncResponseEncodable {
         switch authenticate {
         case .credentials(let credentials):
             do {
-                let response = try await client.credentials(
+                let response = try await authentication.client.credentials(
                     username: credentials.username,
                     password: credentials.password
                 )
@@ -111,10 +111,10 @@ extension Identity.Frontend {
         case .token(let token):
             switch token {
             case .access(let jwt):
-                try await client.token.access(jwt)
+                try await authentication.token.access(jwt)
                 return Response.success(true)
             case .refresh(let jwt):
-                let response = try await client.token.refresh(jwt)
+                let response = try await authentication.token.refresh(jwt)
                 return Response.success(true)
                     .withTokens(for: response)
                     
@@ -182,13 +182,13 @@ extension Identity.Frontend {
     
     private static func handleEmail(
         _ email: Identity.Email.API,
-        client: Identity.Email.Client
+        client: Identity.Email.Change.Client
     ) async throws -> any AsyncResponseEncodable {
         switch email {
         case .change(let change):
             switch change {
             case .request(let request):
-                let result = try await client.change.request(request.newEmail)
+                let result = try await client.request(request.newEmail)
                 switch result {
                 case .success:
                     return Response.success(true)
@@ -201,7 +201,7 @@ extension Identity.Frontend {
                 }
                 
             case .confirm(let confirm):
-                let authResponse = try await client.change.confirm(confirm.token)
+                let authResponse = try await client.confirm(confirm.token)
                 // Return success with new tokens (email has changed, so tokens need updating)
                 return Response.success(true)
                     .withTokens(for: authResponse)
@@ -211,7 +211,7 @@ extension Identity.Frontend {
     
     private static func handlePassword(
         _ password: Identity.Password.API,
-        client: Identity.Password.Client
+        client: (change: Identity.Password.Change.Client, reset: Identity.Password.Reset.Client)
     ) async throws -> any AsyncResponseEncodable {
         switch password {
         case .reset(let reset):
@@ -248,7 +248,7 @@ extension Identity.Frontend {
     ) async throws -> any AsyncResponseEncodable {
         @Dependency(\.request) var request
         
-        let jwt = try await client.request(reauthorize.password)
+        let jwt = try await client.reauthorize(reauthorize.password)
         
         // Set reauthorization cookie
         let cookieValue = HTTPCookies.Value(

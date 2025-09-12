@@ -23,7 +23,7 @@ extension Identity.Frontend {
     public struct Configuration: Sendable {
         public var baseURL: URL
         public var router: AnyParserPrinter<URLRequestData, Identity.Route>
-        public var client: Identity
+        public var identity: Identity
         public var jwt: Identity.Token.Client
         public var cookies: Identity.Frontend.Configuration.Cookies
         public var branding: Branding
@@ -37,7 +37,7 @@ extension Identity.Frontend {
         package init(
             baseURL: URL,
             router: AnyParserPrinter<URLRequestData, Identity.Route>,
-            client: Identity,
+            identity: Identity,
             jwt: Identity.Token.Client,
             cookies: Identity.Frontend.Configuration.Cookies,
             branding: Branding,
@@ -50,7 +50,7 @@ extension Identity.Frontend {
         ) {
             self.router = router
             self.cookies = cookies
-            self.client = client
+            self.identity = identity
             self.jwt = jwt
             self.baseURL = baseURL
             self.branding = branding
@@ -149,7 +149,7 @@ extension Identity.Frontend.Configuration: TestDependencyKey {
         return .init(
             baseURL: baseURL,
             router: router,
-            client: .testValue,
+            identity: .testValue,
             jwt: .live(
                 configuration: .init(
                     issuer: "identity-test",
