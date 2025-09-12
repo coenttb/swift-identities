@@ -6,17 +6,6 @@ import Crypto
 import TOTP
 import RFC_6238
 
-// MARK: - Database Operations
-
-extension Identity.MFA.TOTP.Record {
-    
-    // REMOVED: findByIdentity() - Use explicit queries at call sites
-    // REMOVED: findConfirmedByIdentity() - Use explicit queries at call sites
-    // REMOVED: create() that auto-saves - Create records inline within transactions
-    // REMOVED: confirm() - Make DB updates explicit at call sites
-    // REMOVED: recordUsage() - Make DB updates explicit at call sites
-    // REMOVED: deleteForIdentity() - Make DB deletes explicit at call sites
-}
 
 // MARK: - Helper Functions
 

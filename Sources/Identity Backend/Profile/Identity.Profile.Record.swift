@@ -88,77 +88,23 @@ extension Identity.Profile.Record {
     }
 }
 
+// MARK: - UPSERT Operations
+
 extension Identity.Profile.Record {
-    
-    /// Get or create profile with identity data and API key status
-    /// Useful for profile management pages
-    package static func getOrCreateWithIdentity(for identityId: Identity.ID) async throws -> ProfileWithIdentity {
-        @Dependency(\.defaultDatabase) var db
-        @Dependency(\.uuid) var uuid
-        
-        // First try to get existing profile with identity
-        if let existing = try await db.read({ db in
-            try await Identity.Profile.Record
-                .where { $0.identityId.eq(identityId) }
-                .join(Identity.Record.all) { profile, identity in
-                    profile.identityId.eq(identity.id)
-                }
-                .leftJoin(Identity.Authentication.ApiKey.Record.all) { profile, _, apiKey in
-                    profile.identityId.eq(apiKey.identityId)
-                        .and(apiKey.isActive.eq(true))
-                }
-                .group { profile, identity, _ in
-                    (profile.id, identity.id)
-                }
-                .select { profile, identity, apiKey in
-                    ProfileWithIdentity.Columns(
-                        profile: profile,
-                        identity: identity,
-                        hasApiKeys: apiKey.id.count() > 0
-                    )
-                }
-                .fetchOne(db)
-        }) {
-            return existing
-        }
-        
-        // Create new profile
-        let newProfile = Identity.Profile.Record(
-            id: uuid(),
-            identityId: identityId,
-            displayName: nil
-        )
-        
-        try await db.write { [newProfile] db in
-            try await Identity.Profile.Record.insert { newProfile }.execute(db)
-        }
-        
-        // Fetch with identity data
-        guard let result = try await db.read({ db in
-            try await Identity.Profile.Record
-                .where { $0.id.eq(newProfile.id) }
-                .join(Identity.Record.all) { profile, identity in
-                    profile.identityId.eq(identity.id)
-                }
-                .select { profile, identity in
-                    ProfileWithIdentity.Columns(
-                        profile: profile,
-                        identity: identity,
-                        hasApiKeys: false
-                    )
-                }
-                .fetchOne(db)
-        }) else {
-            throw Identity.Authentication.ValidationError.internalError/*("Failed to create profile")*/
-        }
-        
-        return result
+    /// Upsert based on identityId (create if doesn't exist, update if exists)
+    /// Uses the UNIQUE constraint on identityId for conflict detection
+    package static func upsertByIdentityId(
+        _ profile: Identity.Profile.Record
+    ) -> InsertOf<Identity.Profile.Record> {
+        return Self
+            .insert {
+                profile
+            } onConflict: { cols in
+                cols.identityId
+            } doUpdate: { updates, excluded in
+                updates.displayName = excluded.displayName
+                updates.updatedAt = excluded.updatedAt
+            }
     }
 }
 
-@Selection
-package struct ProfileWithIdentity: Sendable {
-    package let profile: Identity.Profile.Record
-    package let identity: Identity.Record
-    package let hasApiKeys: Bool
-}
