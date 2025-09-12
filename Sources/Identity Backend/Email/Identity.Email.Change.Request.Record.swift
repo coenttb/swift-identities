@@ -9,26 +9,17 @@ extension Identity.Email.Change.Request {
     package struct Record: Codable, Equatable, Identifiable, Sendable {
         package let id: UUID
         package var identityId: Identity.ID
-        internal var newEmail: String
+        internal var newEmail: EmailAddress
         package var verificationToken: String
         package var requestedAt: Date = Date()
         package var expiresAt: Date
         package var confirmedAt: Date?
         package var cancelledAt: Date?
         
-        package var newEmailAddress: EmailAddress {
-            get {
-                try! EmailAddress(newEmail)
-            }
-            set {
-                newEmail = newValue.rawValue
-            }
-        }
-        
         package init(
             id: UUID,
             identityId: Identity.ID,
-            newEmail: String,
+            newEmail: EmailAddress,
             verificationToken: String,
             requestedAt: Date = Date(),
             expiresAt: Date,
@@ -45,23 +36,7 @@ extension Identity.Email.Change.Request {
             self.cancelledAt = cancelledAt
         }
         
-        package init(
-            id: UUID,
-            identityId: Identity.ID,
-            newEmail: EmailAddress,
-            expirationHours: Int = 24
-        ) {
-            @Dependency(\.date) var date
-            
-            self.id = id
-            self.identityId = identityId
-            self.newEmail = newEmail.rawValue
-            self.verificationToken = Self.generateVerificationToken()
-            self.requestedAt = date()
-            self.expiresAt = date().addingTimeInterval(TimeInterval(expirationHours * 3600))
-            self.confirmedAt = nil
-            self.cancelledAt = nil
-        }
+        
         
         private static func generateVerificationToken() -> String {
             SymmetricKey(size: .bits256)
@@ -71,6 +46,26 @@ extension Identity.Email.Change.Request {
                 .replacingOccurrences(of: "/", with: "_")
                 .replacingOccurrences(of: "=", with: "")
         }
+    }
+}
+
+extension Identity.Email.Change.Request.Record.Draft {
+    package init(
+        id: UUID? = nil,
+        identityId: Identity.ID,
+        newEmail: EmailAddress,
+        expirationHours: Int = 24
+    ) {
+        @Dependency(\.date) var date
+        
+        self.id = id
+        self.identityId = identityId
+        self.newEmail = newEmail
+        self.verificationToken = Identity.Email.Change.Request.Record.generateVerificationToken()
+        self.requestedAt = date()
+        self.expiresAt = date().addingTimeInterval(TimeInterval(expirationHours * 3600))
+        self.confirmedAt = nil
+        self.cancelledAt = nil
     }
 }
 
@@ -172,7 +167,7 @@ extension Identity.Email.Change.Request.Record {
                     EmailChangeRequestWithIdentity.Columns(
                         emailChangeRequest: request,
                         identity: identity,
-                        currentEmail: identity.emailString
+                        currentEmail: identity.email
                     )
                 }
                 .fetchOne(db)
@@ -184,7 +179,7 @@ extension Identity.Email.Change.Request.Record {
 package struct EmailChangeRequestWithIdentity: Sendable {
     package let emailChangeRequest: Identity.Email.Change.Request.Record
     package let identity: Identity.Record
-    package let currentEmail: String
+    package let currentEmail: EmailAddress
 }
 
 @Selection
@@ -193,3 +188,4 @@ package struct EmailChangeValidationData: Sendable {
     package let request: Identity.Email.Change.Request.Record
     package let identity: Identity.Record
 }
+

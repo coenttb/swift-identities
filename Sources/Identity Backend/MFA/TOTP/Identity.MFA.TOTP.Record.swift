@@ -69,3 +69,4 @@ extension Identity.MFA.TOTP.Record {
         }
     }
 }
+

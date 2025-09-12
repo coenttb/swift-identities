@@ -34,7 +34,7 @@ extension Identity.Password.Client {
                     @Dependency(\.defaultDatabase) var db
                     guard let identity = try await db.read({ db in
                         try await Identity.Record
-                            .where { $0.emailString.eq(emailAddress.rawValue) }
+                            .where { $0.email.eq(emailAddress) }
                             .fetchOne(db)
                     }) else {
                         // Don't reveal if email exists or not
@@ -47,7 +47,7 @@ extension Identity.Password.Client {
                     }
 
                     // Single transaction for token invalidation and creation
-                    let tokenValue = try await db.write { db in
+                    let tokenValue: String = try await db.write { db in
                         // Invalidate existing reset tokens
                         try await Identity.Token.Record
                             .delete()
@@ -55,22 +55,34 @@ extension Identity.Password.Client {
                             .where { $0.type.eq(Identity.Token.Record.TokenType.passwordReset) }
                             .execute(db)
                         
-                        @Dependency(\.uuid) var uuid
                         @Dependency(\.date) var date
                         
                         // Create new reset token
-                        let token = Identity.Token.Record(
-                            id: uuid(),
-                            identityId: identity.id,
-                            type: .passwordReset,
-                            validUntil: date().addingTimeInterval(3600) // 1 hour
-                        )
                         
-                        try await Identity.Token.Record
-                            .insert { token }
-                            .execute(db)
+                        // Use UPSERT to handle multiple reset requests gracefully
+                        // This ensures only one password reset token per identity
+                        let token = try await Identity.Token.Record
+                            .insert {
+                                Identity.Token.Record.Draft(
+                                    identityId: identity.id,
+                                    type: .passwordReset,
+                                    validUntil: date().addingTimeInterval(3600) // 1 hour
+                                )
+                            } onConflict: { cols in
+                                (cols.identityId, cols.type)
+                            } doUpdate: { updates, excluded in
+                                // Replace the token completely with new one
+                                updates.value = excluded.value
+                                updates.validUntil = excluded.validUntil
+                                updates.createdAt = excluded.createdAt
+                                updates.lastUsedAt = nil  // Reset usage
+                            }
+                            .returning(\.self)
+                            .fetchOne(db)
                         
-                        return token.value
+                        guard let value = token?.value else { fatalError() }
+
+                        return value
                     }
 
                     @Dependency(\.fireAndForget) var fireAndForget

@@ -45,22 +45,7 @@ extension Identity.Token {
             self.lastUsedAt = lastUsedAt
         }
         
-        package init(
-            id: UUID,
-            identityId: Identity.ID,
-            type: TokenType,
-            validUntil: Date? = nil
-        ) {
-            @Dependency(\.date) var date
-            
-            self.id = id
-            self.identityId = identityId
-            self.type = type
-            self.value = Self.generateSecureToken(type: type)
-            self.validUntil = validUntil ?? date().addingTimeInterval(3600) // Default 1 hour validity
-            self.createdAt = date()
-            self.lastUsedAt = nil
-        }
+        
         
         private static func generateSecureToken(type: TokenType) -> String {
             switch type {
@@ -83,6 +68,25 @@ extension Identity.Token {
                     .base64EncodedString()
             }
         }
+    }
+}
+
+extension Identity.Token.Record.Draft {
+    package init(
+        id: UUID? = nil,
+        identityId: Identity.ID,
+        type: Identity.Token.Record.TokenType,
+        validUntil: Date? = nil
+    ) {
+        @Dependency(\.date) var date
+        
+        self.id = id
+        self.identityId = identityId
+        self.type = type
+        self.value = Identity.Token.Record.generateSecureToken(type: type)
+        self.validUntil = validUntil ?? date().addingTimeInterval(3600) // Default 1 hour validity
+        self.createdAt = date()
+        self.lastUsedAt = nil
     }
 }
 
@@ -141,6 +145,7 @@ extension Identity.Token.Record.TokenType {
     package static let reauthorization: Self = "reauthorization"
     package static let reauthentication: Self = "reauthentication"
 }
+
 
 // MARK: - Validation & Usage
 

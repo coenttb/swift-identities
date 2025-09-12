@@ -23,7 +23,7 @@ extension Identity.Record {
         // Single query to get identity
         let identity = try await db.read { db in
             try await Identity.Record
-                .where { $0.emailString.eq(email.rawValue) }
+                .where { $0.email.eq(email) }
                 .fetchOne(db)
         }
         
@@ -106,7 +106,7 @@ extension Identity.Record {
             
             for email in emails {
                 let exists = try await Identity.Record
-                    .where { $0.emailString.eq(email.rawValue) }
+                    .where { $0.email.eq(email) }
                     .fetchCount(db) > 0
                 
                 if exists {
@@ -137,7 +137,7 @@ extension Identity.Record {
             try await Identity.Record
                 .insert {
                     Identity.Record.Draft(
-                        emailString: email.rawValue,
+                        email: email,
                         passwordHash: passwordHash,
                         emailVerificationStatus: emailVerificationStatus,
                         sessionVersion: 0,
@@ -146,7 +146,7 @@ extension Identity.Record {
                         lastLoginAt: nil
                     )
                 }
-                onConflict: { $0.emailString }
+                onConflict: { $0.email }
                 doUpdate: { row, excluded in
                     // Update everything except id and createdAt
                     row.passwordHash = excluded.passwordHash
@@ -159,7 +159,7 @@ extension Identity.Record {
             
             // Fetch the record (either inserted or updated)
             return try await Identity.Record
-                .where { $0.emailString.eq(email.rawValue) }
+                .where { $0.email.eq(email) }
                 .fetchOne(db)
         }
     }

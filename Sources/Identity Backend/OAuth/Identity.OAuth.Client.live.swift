@@ -146,14 +146,14 @@ private func callbackImplementation(
             } else if let email = userInfo.email {
                 // Check for existing identity with same email
                 if let existingIdentity = try await Identity.Record
-                    .where ({ $0.emailString.eq(email) })
+                    .where ({ $0.email.eq(email) })
                     .fetchOne(db)
                 {
                     targetIdentity = existingIdentity
                 } else {
                     // Create new identity with RETURNING clause
                     let newIdentityDraft = Identity.Record.Draft(
-                        emailString: email,
+                        email: email,
                         passwordHash: "",  // OAuth users don't have passwords
                         emailVerificationStatus: userInfo.emailVerified == true ? .verified : .unverified,
                         sessionVersion: 0,
@@ -188,8 +188,25 @@ private func callbackImplementation(
                 storedRefreshToken: storedRefreshToken
             )
             
+            // Use UPSERT to handle reconnecting gracefully
+            // This ensures only one connection per provider per identity
             try await Identity.OAuth.Connection.Record
-                .insert { connection }
+                .insert {
+                    connection
+                } onConflict: { cols in
+                    (cols.identityId, cols.provider)
+                } doUpdate: { updates, excluded in
+                    // Update all connection details when reconnecting
+                    updates.providerUserId = excluded.providerUserId
+                    updates.accessToken = excluded.accessToken
+                    updates.refreshToken = excluded.refreshToken
+                    updates.tokenType = excluded.tokenType
+                    updates.expiresAt = excluded.expiresAt
+                    updates.scopes = excluded.scopes
+                    updates.userInfo = excluded.userInfo
+                    updates.updatedAt = excluded.updatedAt
+                    updates.lastUsedAt = excluded.lastUsedAt
+                }
                 .execute(db)
             
             return targetIdentity
@@ -250,10 +267,13 @@ private let connectionImplementation: @Sendable (String) async throws -> Identit
         let identity = try await Identity.Record.get(by: .auth)
         
         // Find connection for this provider
-        guard let dbConnection = try await Identity.OAuth.Connection.Record.find(
-            identityId: identity.id,
-            provider: provider
-        ) else {
+        @Dependency(\.defaultDatabase) var db
+        
+        guard let dbConnection = try await db.read ({ db in
+            try await Identity.OAuth.Connection.Record
+                .findByIdentityProvider(identity.id, provider)
+                .fetchOne(db)
+        }) else {
             return nil
         }
         
@@ -271,11 +291,11 @@ private let disconnectImplementation: @Sendable (String) async throws -> Void = 
     
     let identity = try await Identity.Record.get(by: .auth)
     
-    // Find and delete the connection
-    guard let connection = try await Identity.OAuth.Connection.Record.find(
-        identityId: identity.id,
-        provider: provider
-    ) else {
+    guard let connection = try await database.read ({ db in
+        try await Identity.OAuth.Connection.Record
+            .findByIdentityProvider(identity.id, provider)
+            .fetchOne(db)
+    }) else {
         throw Identity.OAuth.Error.providerNotFound(provider)
     }
     
@@ -297,10 +317,13 @@ private func getValidTokenImplementation(
         
         let identity = try await Identity.Record.get(by: .auth)
         
-        guard let connection = try await Identity.OAuth.Connection.Record.find(
-            identityId: identity.id,
-            provider: providerName
-        ) else {
+        @Dependency(\.defaultDatabase) var db
+        
+        guard let connection = try await db.read ({ db in
+            try await Identity.OAuth.Connection.Record
+                .findByIdentityProvider(identity.id, providerName)
+                .fetchOne(db)
+        }) else {
             return nil
         }
         
@@ -395,13 +418,25 @@ private func getValidTokenImplementation(
                 try Identity.OAuth.Encryption.encrypt(token: $0)
             }
             
-            try await connection.updateTokens(
-                accessToken: newAccessToken,
-                refreshToken: newRefreshToken,
-                expiresAt: newTokens.expiresIn.map {
-                    Date().addingTimeInterval(Double($0))
-                }
-            )
+            // Update tokens in database
+            @Dependency(\.defaultDatabase) var db
+            @Dependency(\.date) var date
+            
+            try await db.write { db in
+                try await Identity.OAuth.Connection.Record
+                    .where { $0.id.eq(connection.id) }
+                    .update { conn in
+                        conn.accessToken = newAccessToken
+                        if let newRefreshToken {
+                            conn.refreshToken = newRefreshToken
+                        }
+                        conn.expiresAt = newTokens.expiresIn.map {
+                            date().addingTimeInterval(Double($0))
+                        }
+                        conn.updatedAt = date()
+                    }
+                    .execute(db)
+            }
             
             logger.info("OAuth token refreshed successfully", metadata: [
                 "provider": "\(providerName)"
@@ -426,9 +461,12 @@ private let getAllConnectionsImplementation: @Sendable () async throws -> [Ident
     do {
         let identity = try await Identity.Record.get(by: .auth)
         
-        let dbConnections = try await Identity.OAuth.Connection.Record.findAll(
-            identityId: identity.id
-        )
+        // Get all connections for this identity
+        let dbConnections = try await database.read { db in
+            try await Identity.OAuth.Connection.Record
+                .findByIdentity(identity.id)
+                .fetchAll(db)
+        }
         
         return dbConnections.map { dbConnection in
             Identity.OAuth.Connection(from: dbConnection)

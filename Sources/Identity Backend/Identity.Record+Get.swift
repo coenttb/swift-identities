@@ -17,12 +17,8 @@ extension Identity.Record {
     public enum Get {
         public enum Identifier {
             case id(Identity.ID)
-            case email(String)
+            case email(EmailAddress)
             case auth
-            
-            public static func email(_ email: EmailAddress) -> Self {
-                .email(email.rawValue)
-            }
         }
     }
     
@@ -45,7 +41,7 @@ extension Identity.Record {
             @Dependency(\.defaultDatabase) var db
             guard let identity = try await db.read({ db in
                 try await Identity.Record
-                    .where { $0.emailString.eq(email) }
+                    .where { $0.email.eq(email) }
                     .fetchOne(db)
             }) else {
                 throw Abort(.notFound, reason: "Identity not found for email \(email)")

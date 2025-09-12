@@ -24,12 +24,8 @@ extension Identity.Email.Change.Request.Record {
         Self.where { $0.identityId.eq(identityId) }
     }
     
-    package static func findByNewEmail(_ email: String) -> Where<Identity.Email.Change.Request.Record> {
-        Self.where { $0.newEmail.eq(email) }
-    }
-    
     package static func findByNewEmail(_ email: EmailAddress) -> Where<Identity.Email.Change.Request.Record> {
-        Self.where { $0.newEmail.eq(email.rawValue) }
+        Self.where { $0.newEmail.eq(email) }
     }
     
     package static var pending: Where<Identity.Email.Change.Request.Record> {

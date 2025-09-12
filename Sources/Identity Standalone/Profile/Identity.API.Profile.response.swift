@@ -11,6 +11,7 @@ import IdentitiesTypes
 import Identity_Backend
 import Dependencies
 import Vapor
+import Records
 
 extension Identity.API.Profile {
     /// Handles profile API requests for standalone deployments.
@@ -23,8 +24,30 @@ extension Identity.API.Profile {
         
         switch profile {
         case .get:
-            // Get or create profile
-            let profile = try await Identity.Profile.Record.getOrCreate(for: identity.id)
+            @Dependency(\.defaultDatabase) var db
+            @Dependency(\.uuid) var uuid
+            @Dependency(\.date) var date
+            
+            // Use UPSERT to ensure profile exists, then fetch it
+            let profile = try await db.write { db in
+                // Create default profile if doesn't exist
+                let defaultProfile = Identity.Profile.Record(
+                    id: uuid(),
+                    identityId: identity.id,
+                    displayName: nil,
+                    createdAt: date(),
+                    updatedAt: date()
+                )
+                
+                try await Identity.Profile.Record
+                    .upsertByIdentityId(defaultProfile)
+                    .execute(db)
+                
+                // Fetch the profile (guaranteed to exist now)
+                return try await Identity.Profile.Record
+                    .findByIdentity(identity.id)
+                    .fetchOne(db)!
+            }
             
             let profileResponse = Response(
                 id: profile.id,
@@ -40,12 +63,29 @@ extension Identity.API.Profile {
         case .updateDisplayName(let request):
             @Dependency(\.request) var vaporRequest
             @Dependency(\.tokenClient) var tokenClient
+            @Dependency(\.defaultDatabase) var db
+            @Dependency(\.uuid) var uuid
+            @Dependency(\.date) var date
             
-            // Get or create profile
-            var profile = try await Identity.Profile.Record.getOrCreate(for: identity.id)
+            // Validate display name if provided
+            if let displayName = request.displayName {
+                try Identity.Profile.Record.validateDisplayName(displayName)
+            }
             
-            // Update display name
-            try await profile.updateDisplayName(request.displayName)
+            // Use UPSERT to create or update profile atomically
+            try await db.write { db in
+                let profile = Identity.Profile.Record(
+                    id: uuid(),
+                    identityId: identity.id,
+                    displayName: request.displayName,
+                    createdAt: date(),
+                    updatedAt: date()
+                )
+                
+                try await Identity.Profile.Record
+                    .upsertByIdentityId(profile)
+                    .execute(db)
+            }
             
             // Generate new tokens with updated displayName
             let (newAccessToken, newRefreshToken) = try await tokenClient.generateTokenPair(

@@ -63,15 +63,27 @@ extension Identity.Deletion.Client {
                         // Create new deletion request inline
                         @Dependency(\.uuid) var uuid
                         
-                        let deletionRecord = Identity.Deletion.Record(
-                            id: uuid(),
+                        let deletionRecord = Identity.Deletion.Record.Draft(
                             identityId: identity.id,
                             reason: nil,
                             gracePeriodDays: 7
                         )
                         
+                        // Use UPSERT to handle multiple deletion requests gracefully
+                        // This ensures only one deletion request per identity
                         try await Identity.Deletion.Record
-                            .insert { deletionRecord }
+                            .insert {
+                                deletionRecord
+                            } onConflict: { cols in
+                                cols.identityId
+                            } doUpdate: { updates, excluded in
+                                // Replace the entire deletion request with the new one
+                                updates.requestedAt = excluded.requestedAt
+                                updates.reason = excluded.reason
+                                updates.scheduledFor = excluded.scheduledFor
+                                updates.confirmedAt = nil  // Reset confirmation
+                                updates.cancelledAt = nil  // Reset cancellation
+                            }
                             .execute(db)
                     }
                     

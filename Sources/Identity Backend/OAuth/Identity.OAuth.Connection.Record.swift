@@ -83,94 +83,29 @@ extension Identity.OAuth.Connection {
     }
 }
 
-// MARK: - Queries
+// MARK: - Query Helpers
 
 extension Identity.OAuth.Connection.Record {
-    /// Find connection by provider and provider user ID
-    public static func find(
-        provider: String,
-        providerUserId: String
-    ) async throws -> Identity.OAuth.Connection.Record? {
-        @Dependency(\.defaultDatabase) var db
-        
-        return try await db.read { db in
-            try await Self.all
-                .where { connection in
-                    connection.provider.eq(provider)
-                        .and(connection.providerUserId.eq(providerUserId))
-                }
-                .fetchOne(db)
+    /// Query helper to find connection by identity and provider
+    /// This is used multiple times, so keeping it as a composable query helper
+    package static func findByIdentityProvider(
+        _ identityId: Identity.ID,
+        _ provider: String
+    ) -> Where<Identity.OAuth.Connection.Record> {
+        Self.where { connection in
+            connection.identityId.eq(identityId)
+                .and(connection.provider.eq(provider))
         }
     }
     
-    /// Find all connections for an identity
-    public static func findAll(
-        identityId: Identity.ID
-    ) async throws -> [Identity.OAuth.Connection.Record] {
-        @Dependency(\.defaultDatabase) var db
-        
-        return try await db.read { db in
-            try await Self.all
-                .where { $0.identityId.eq(identityId) }
-                .fetchAll(db)
-        }
-    }
-    
-    /// Find connection for identity and provider
-    public static func find(
-        identityId: Identity.ID,
-        provider: String
-    ) async throws -> Identity.OAuth.Connection.Record? {
-        @Dependency(\.defaultDatabase) var db
-        
-        return try await db.read { db in
-            try await Self.all
-                .where { connection in
-                    connection.identityId.eq(identityId)
-                        .and(connection.provider.eq(provider))
-                }
-                .fetchOne(db)
-        }
-    }
-    
-    /// Update last used timestamp
-    public func updateLastUsed() async throws {
-        @Dependency(\.defaultDatabase) var db
-        
-        try await db.write { db in
-            try await Self.all
-                .where { $0.id.eq(self.id) }
-                .update { connection in
-                    connection.lastUsedAt = Date()
-                    connection.updatedAt = Date()
-                }
-                .execute(db)
-        }
-    }
-    
-    /// Update tokens
-    public func updateTokens(
-        accessToken: String,
-        refreshToken: String? = nil,
-        expiresAt: Date? = nil
-    ) async throws {
-        @Dependency(\.defaultDatabase) var db
-        
-        try await db.write { db in
-            try await Self.all
-                .where { $0.id.eq(self.id) }
-                .update { connection in
-                    connection.accessToken = accessToken
-                    if let refreshToken {
-                        connection.refreshToken = refreshToken
-                    }
-                    connection.expiresAt = expiresAt
-                    connection.updatedAt = Date()
-                }
-                .execute(db)
-        }
+    /// Query helper to find all connections for an identity
+    package static func findByIdentity(
+        _ identityId: Identity.ID
+    ) -> Where<Identity.OAuth.Connection.Record> {
+        Self.where { $0.identityId.eq(identityId) }
     }
 }
+
 
 extension Identity.OAuth.Connection {
     public init(from oauthConnection: Identity.OAuth.Connection.Record) {

@@ -208,12 +208,12 @@ extension Identity.Backend {
         @Sendable func createTestUser(using db: any Records.Database.Connection.`Protocol`) async throws {
             @Dependency(\.logger) var logger
             
-            let testEmail = "test@test.com"
+            let testEmail: EmailAddress = try! .init("test@test.com")
             let testPassword = "test"
             
             // Check if test user already exists
             let existingUser = try await Identity.Record
-                .where { $0.emailString == testEmail }
+                .where { $0.email == testEmail }
                 .fetchOne(db)
             
             if existingUser == nil {
@@ -226,7 +226,7 @@ extension Identity.Backend {
                 
                 let testUser = Identity.Record(
                     id: id,
-                    email: try .init(testEmail),
+                    email: testEmail,
                     passwordHash: passwordHash,
                     emailVerificationStatus: .verified,
                     sessionVersion: 0,

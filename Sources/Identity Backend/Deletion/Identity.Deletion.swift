@@ -30,23 +30,25 @@ extension Identity.Deletion {
             self.cancelledAt = cancelledAt
             self.scheduledFor = scheduledFor
         }
+    }
+}
+
+extension Identity.Deletion.Record.Draft {
+    public init(
+        id: UUID? = nil,
+        identityId: Identity.ID,
+        reason: String? = nil,
+        gracePeriodDays: Int = 30
+    ) {
+        @Dependency(\.date) var date
         
-        public init(
-            id: UUID,
-            identityId: Identity.ID,
-            reason: String? = nil,
-            gracePeriodDays: Int = 30
-        ) {
-            @Dependency(\.date) var date
-            
-            self.id = id
-            self.identityId = identityId
-            self.requestedAt = date()
-            self.reason = reason
-            self.confirmedAt = nil
-            self.cancelledAt = nil
-            self.scheduledFor = date().addingTimeInterval(TimeInterval(gracePeriodDays * 24 * 3600))
-        }
+        self.id = id
+        self.identityId = identityId
+        self.requestedAt = date()
+        self.reason = reason
+        self.confirmedAt = nil
+        self.cancelledAt = nil
+        self.scheduledFor = date().addingTimeInterval(TimeInterval(gracePeriodDays * 24 * 3600))
     }
 }
 
@@ -168,3 +170,4 @@ extension Identity.Deletion.Record {
         self.scheduledFor = date().addingTimeInterval(TimeInterval(daysFromNow * 24 * 3600))
     }
 }
+

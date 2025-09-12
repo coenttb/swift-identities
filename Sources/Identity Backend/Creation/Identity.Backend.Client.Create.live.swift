@@ -28,80 +28,87 @@ extension Identity.Creation.Client {
 
         return .init(
             request: { email, password in
-                do {
-                    _ = try validatePassword(password)
-                    let emailAddress = try EmailAddress(email)
-
-                    @Dependency(\.uuid) var uuid
-                    @Dependency(\.date) var date
-                    @Dependency(\.envVars) var envVars
-                    @Dependency(\.application) var application
-                    @Dependency(\.defaultDatabase) var db
-                    
-                    let passwordHash: String = try await application.threadPool.runIfActive {
-                        try Bcrypt.hash(password, cost: envVars.bcryptCost)
-                    }
-                    
-                    // Single transaction for EVERYTHING
-                    let (identity, tokenValue) = try await db.write { db in
-                        // Check if email already exists INSIDE transaction
-                        let existingIdentity = try await Identity.Record
-                            .where { $0.emailString.eq(emailAddress.rawValue) }
-                            .fetchOne(db)
-                        
-                        guard existingIdentity == nil else {
-                            throw Identity.Authentication.ValidationError.invalidInput("Email already in use")
-                        }
-                        
-                        // Create and insert identity
-                        let identity = Identity.Record(
-                            id: .init(uuid()),
-                            email: emailAddress,
-                            passwordHash: passwordHash,
-                            emailVerificationStatus: .unverified,
-                            sessionVersion: 0,
-                            createdAt: date(),
-                            updatedAt: date(),
-                            lastLoginAt: nil
-                        )
-                        
-                        try await Identity.Record
-                            .insert { identity }
-                            .execute(db)
-                        
-                        // Create verification token
-                        let token = Identity.Token.Record(
-                            id: uuid(),
-                            identityId: identity.id,
-                            type: .emailVerification,
-                            validUntil: date().addingTimeInterval(86400) // 24 hours
-                        )
-                        
-                        try await Identity.Token.Record
-                            .insert { token }
-                            .execute(db)
-                        
-                        return (identity, token.value)
-                    }
-
-                    @Dependency(\.fireAndForget) var fireAndForget
-                    await fireAndForget {
-                        try await sendVerificationEmail(emailAddress, tokenValue)
-                    }
-
-                    logger.notice("User created", metadata: [
-                        "component": "Backend.Create",
-                        "operation": "request",
-                        "identityId": "\(identity.id)"
-                    ])
-                } catch {
-                    logger.error("User creation failed", metadata: [
-                        "component": "Backend.Create",
-                        "operation": "request",
-                        "error": "\(error)"
-                    ])
-                    throw error
-                }
+                fatalError()
+//                do {
+//                    _ = try validatePassword(password)
+//                    let emailAddress = try EmailAddress(email)
+//
+//                    @Dependency(\.uuid) var uuid
+//                    @Dependency(\.date) var date
+//                    @Dependency(\.envVars) var envVars
+//                    @Dependency(\.application) var application
+//                    @Dependency(\.defaultDatabase) var db
+//                    
+//                    let passwordHash: String = try await application.threadPool.runIfActive {
+//                        try Bcrypt.hash(password, cost: envVars.bcryptCost)
+//                    }
+//                    
+//                    // Single transaction for EVERYTHING
+//                    let (identity, tokenValue) = try await db.write { db in
+//                        // Check if email already exists INSIDE transaction
+//                        let existingIdentity = try await Identity.Record
+//                            .where { $0.email.eq(emailAddress) }
+//                            .fetchOne(db)
+//                        
+//                        guard existingIdentity == nil else {
+//                            throw Identity.Authentication.ValidationError.invalidInput("Email already in use")
+//                        }
+//
+//                        let identity = try await Identity.Record
+//                            .insert {
+//                                Identity.Record.Draft(
+//                                    email: emailAddress,
+//                                    passwordHash: passwordHash,
+//                                    emailVerificationStatus: .unverified,
+//                                    sessionVersion: 0,
+//                                    createdAt: date(),
+//                                    updatedAt: date(),
+//                                    lastLoginAt: nil
+//                                )
+//                            }
+//                            .returning { $0 }
+//                            .fetchOne(db)
+//                        
+//                        guard let identityId = identity?.id else {
+//                            fatalError()
+//                        }
+//                        
+//                        let token = try await Identity.Token.Record
+//                            .insert {
+//                                Identity.Token.Record.Draft(
+//                                    identityId: identityId,
+//                                    type: .emailVerification,
+//                                    validUntil: date().addingTimeInterval(86400) // 24 hours
+//                                )
+//                            }
+//                            .returning(\.self)
+//                            .fetchOne(db)
+//                        
+//                        guard let value = token?.value else {
+//                            fatalError()
+//                        }
+//                        
+//                        return (identity, value)
+//                    }
+//
+//                    @Dependency(\.fireAndForget) var fireAndForget
+//                    await fireAndForget {
+//                        try await sendVerificationEmail(emailAddress, tokenValue)
+//                    }
+//
+//                    logger.notice("User created", metadata: [
+//                        "component": "Backend.Create",
+//                        "operation": "request",
+//                        "identityId": "\(identity.id)"
+//                    ])
+//                } catch {
+//                    logger.error("User creation failed", metadata: [
+//                        "component": "Backend.Create",
+//                        "operation": "request",
+//                        "error": "\(error)"
+//                    ])
+//                    throw error
+//                }
             },
             verify: { email, token in
                 do {

@@ -31,7 +31,7 @@ extension Identity.Record {
         
         return try await db.read { db in
             try await Identity.Record
-                .where { $0.emailString.eq(email.rawValue) }
+                .where { $0.email.eq(email) }
                 .leftJoin(Identity.MFA.TOTP.Record.all) { identity, totp in
                     identity.id.eq(totp.identityId)
                         .and(totp.isConfirmed.eq(true))
@@ -157,7 +157,7 @@ extension Identity.Record {
         
         let count = try await db.read { db in
             try await Identity.Record
-                .where { $0.emailString.eq(email.rawValue) }
+                .where { $0.email.eq(email) }
                 .fetchCount(db)
         }
         

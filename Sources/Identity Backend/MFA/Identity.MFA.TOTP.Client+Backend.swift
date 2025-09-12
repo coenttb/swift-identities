@@ -8,6 +8,63 @@ import Records
 
 
 extension Identity.MFA.TOTP.Client {
+    /// Convenience method that generates secret AND saves initial TOTP record
+    /// This combines generateSecret with database persistence using UPSERT
+    public func setup() async throws -> SetupData {
+        // Get authenticated identity
+        let identity = try await Identity.Record.get(by: .auth)
+        
+        // 1. Generate the secret
+        let setupData = try await self.generateSecret()
+        
+        // 2. Save initial TOTP record using UPSERT
+        @Dependency(\.defaultDatabase) var db
+        @Dependency(\.uuid) var uuid
+        @Dependency(\.date) var date
+        
+        try await db.write { db in
+            // Encrypt the secret before storing
+            let encryptedSecret = try Identity.MFA.TOTP.Record.encryptSecret(setupData.secret)
+            
+            let totpRecord = Identity.MFA.TOTP.Record(
+                id: uuid(),
+                identityId: identity.id,
+                secret: encryptedSecret,
+                isConfirmed: false,
+                algorithm: .sha1,  // Default algorithm, matches configuration
+                digits: 6,
+                timeStep: 30,
+                createdAt: date(),
+                confirmedAt: nil,
+                lastUsedAt: nil,
+                usageCount: 0
+            )
+            
+            // Use UPSERT to handle re-setup scenarios gracefully
+            // This ensures only one TOTP setup per identity
+            try await Identity.MFA.TOTP.Record
+                .insert {
+                    totpRecord
+                } onConflict: { cols in
+                    cols.identityId
+                } doUpdate: { updates, excluded in
+                    // When re-setting up TOTP, update everything but reset confirmation
+                    updates.secret = excluded.secret
+                    updates.isConfirmed = false  // Reset confirmation on re-setup
+                    updates.confirmedAt = nil
+                    updates.algorithm = excluded.algorithm
+                    updates.digits = excluded.digits
+                    updates.timeStep = excluded.timeStep
+                    updates.createdAt = excluded.createdAt  // Update created time on re-setup
+                    updates.lastUsedAt = nil  // Reset usage tracking
+                    updates.usageCount = 0
+                }
+                .execute(db)
+        }
+        
+        return setupData
+    }
+    
     /// Creates a Backend-specific implementation with direct database access
     package static func backend(
         configuration: Identity.MFA.TOTP.Configuration
@@ -28,7 +85,7 @@ extension Identity.MFA.TOTP.Client {
                 
                 let qrCodeURL = try await generateOTPAuthURL(
                     secret: secret,
-                    email: "pending@example.com", // Will be replaced during setup
+                    email: .init("pending@example.com"), // Will be replaced during setup
                     issuer: configuration.issuer,
                     configuration: configuration
                 )
@@ -252,7 +309,7 @@ extension Identity.MFA.TOTP.Client {
             generateQRCodeURL: { secret, email, issuer in
                 try await generateOTPAuthURL(
                     secret: secret,
-                    email: email,
+                    email: .init(email),
                     issuer: issuer,
                     configuration: configuration
                 )
@@ -284,14 +341,14 @@ private func createTOTP(
 
 private func generateOTPAuthURL(
     secret: String,
-    email: String,
+    email: EmailAddress,
     issuer: String,
     configuration: Identity.MFA.TOTP.Configuration
 ) async throws -> URL {
     var components = URLComponents()
     components.scheme = "otpauth"
     components.host = "totp"
-    components.path = "/\(issuer):\(email)"
+    components.path = "/\(issuer):\(email.rawValue)"
     components.queryItems = [
         URLQueryItem(name: "secret", value: secret),
         URLQueryItem(name: "issuer", value: issuer),

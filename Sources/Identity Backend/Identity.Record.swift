@@ -11,7 +11,7 @@ extension Identity {
     public struct Record: Codable, Equatable, Identifiable, Sendable {
         public let id: Identity.ID
         @Column("email")
-        package var emailString: String
+        package var email: EmailAddress
         package var passwordHash: String
         package var emailVerificationStatus: EmailVerificationStatus = .unverified
         package var sessionVersion: Int = 0
@@ -25,16 +25,7 @@ extension Identity {
             case verified
             case failed
         }
-        
-        package var email: EmailAddress {
-            get {
-                try! EmailAddress(emailString)
-            }
-            set {
-                emailString = newValue.rawValue
-            }
-        }
-//        
+
         package init(
             id: Identity.ID,
             email: EmailAddress,
@@ -46,7 +37,7 @@ extension Identity {
             lastLoginAt: Date? = nil
         ) {
             self.id = id
-            self.emailString = email.rawValue
+            self.email = email
             self.passwordHash = passwordHash
             self.emailVerificationStatus = emailVerificationStatus
             self.sessionVersion = sessionVersion
@@ -54,9 +45,14 @@ extension Identity {
             self.updatedAt = updatedAt
             self.lastLoginAt = lastLoginAt
         }
-
     }
 }
+
+extension EmailAddress: @retroactive QueryExpression {}
+extension EmailAddress: @retroactive QueryRepresentable {}
+extension EmailAddress: @retroactive QueryDecodable {}
+extension EmailAddress: @retroactive _OptionalPromotable {}
+extension EmailAddress: @retroactive QueryBindable {}
 
 // MARK: - Password Management
 
@@ -139,7 +135,7 @@ extension Identity.Record {
             var results: Set<String> = []
             for email in emails {
                 let exists = try await Identity.Record
-                    .where { $0.emailString.eq(email.rawValue) }
+                    .where { $0.email.eq(email) }
                     .fetchCount(db) > 0
                 if exists {
                     results.insert(email.rawValue)
@@ -162,7 +158,7 @@ extension Identity.Record {
 extension Identity.Record {
      static func update(from identity: Identity.Record) -> (inout Updates<Identity.Record>) -> Void {
          return { updates in
-             updates.emailString = identity.emailString
+             updates.email = identity.email
              updates.passwordHash = identity.passwordHash
              updates.emailVerificationStatus = identity.emailVerificationStatus
              updates.sessionVersion = identity.sessionVersion
