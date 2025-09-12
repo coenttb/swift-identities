@@ -7,33 +7,10 @@ import EmailAddress
 
 extension Identity.Email.Change.Request.Record {
     
-    // Async initializer that creates and persists to database
-    package init(
-        identityId: Identity.ID,
-        newEmail: EmailAddress
-    ) async throws {
-        @Dependency(\.defaultDatabase) var db
-        @Dependency(\.uuid) var uuid
-        
-        self.init(
-            id: uuid(),
-            identityId: identityId,
-            newEmail: newEmail
-        )
-        
-        _ = try await db.write { [`self` = self] db in
-            try await Identity.Email.Change.Request.Record.insert { `self` }
-                .execute(db)
-        }
-    }
+    // REMOVED: Async init that auto-saves to database
+    // Create email change requests inline within transactions for proper atomicity
     
-    package static func findByToken2(_ token: String) async throws -> Identity.Email.Change.Request.Record? {
-        @Dependency(\.defaultDatabase) var db
-        return try await db.read { db in
-            try await Identity.Email.Change.Request.Record.findByToken(token).valid
-                .fetchOne(db)
-        }
-    }
+    // REMOVED: findByToken2 - Use direct queries at call site
 }
 
 // MARK: - Query Helpers

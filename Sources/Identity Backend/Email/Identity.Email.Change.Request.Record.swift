@@ -159,10 +159,10 @@ extension Identity.Email.Change.Request.Record {
         
         return try await db.read { db in
             try await Identity.Email.Change.Request.Record
-                .join(Identity.Authentication.Token.Record.all) { request, tokenEntity in
+                .join(Identity.Token.Record.all) { request, tokenEntity in
                     request.identityId.eq(tokenEntity.identityId)
                         .and(tokenEntity.value.eq(token))
-                        .and(tokenEntity.type.eq(Identity.Authentication.Token.Record.TokenType.emailChange))
+                        .and(tokenEntity.type.eq(Identity.Token.Record.TokenType.emailChange))
                         .and(#sql("\(tokenEntity.validUntil) > CURRENT_TIMESTAMP"))
                 }
                 .join(Identity.Record.all) { request, _, identity in

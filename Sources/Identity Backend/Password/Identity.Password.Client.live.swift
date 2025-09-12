@@ -40,17 +40,32 @@ extension Identity.Password.Client {
                         return // Silently succeed to prevent email enumeration
                     }
 
-                    // Invalidate existing reset tokens
-                    try await Identity.Authentication.Token.Record.invalidateAllForIdentity(identity.id, type: .passwordReset)
-
-                    // Create new reset token
-                    let resetToken = try await Identity.Authentication.Token.Record(
-                        identityId: identity.id,
-                        type: .passwordReset,
-                        validityHours: 1
-                    )
-                    
-                    let tokenValue = resetToken.value
+                    // Single transaction for token invalidation and creation
+                    let tokenValue = try await db.write { db in
+                        // Invalidate existing reset tokens
+                        try await Identity.Token.Record
+                            .delete()
+                            .where { $0.identityId.eq(identity.id) }
+                            .where { $0.type.eq(Identity.Token.Record.TokenType.passwordReset) }
+                            .execute(db)
+                        
+                        @Dependency(\.uuid) var uuid
+                        @Dependency(\.date) var date
+                        
+                        // Create new reset token
+                        let token = Identity.Token.Record(
+                            id: uuid(),
+                            identityId: identity.id,
+                            type: .passwordReset,
+                            validUntil: date().addingTimeInterval(3600) // 1 hour
+                        )
+                        
+                        try await Identity.Token.Record
+                            .insert { token }
+                            .execute(db)
+                        
+                        return token.value
+                    }
 
                     @Dependency(\.fireAndForget) var fireAndForget
                     await fireAndForget {
@@ -67,12 +82,20 @@ extension Identity.Password.Client {
                     do {
                         let _ = try validatePassword(newPassword)
 
+                        @Dependency(\.defaultDatabase) var db
+                        
                         // Find and validate token
-                        guard let resetToken = try await Identity.Authentication.Token.Record.findValid(value: token, type: .passwordReset) else {
+                        guard let resetToken = try await db.read ({ db in
+                            try await Identity.Token.Record
+                                .where { tokenRecord in
+                                    tokenRecord.value.eq(token) &&
+                                    tokenRecord.type.eq(Identity.Token.Record.TokenType.passwordReset) &&
+                                    #sql("\(tokenRecord.validUntil) > CURRENT_TIMESTAMP")
+                                }
+                                .fetchOne(db)
+                        }) else {
                             throw Identity.Authentication.ValidationError.invalidToken
                         }
-
-                        @Dependency(\.defaultDatabase) var db
                         @Dependency(\.date) var date
                         
                         // Perform all updates within a transaction for atomicity
@@ -94,10 +117,10 @@ extension Identity.Password.Client {
                             )
 
                             // Invalidate all password reset tokens for this identity
-                            try await Identity.Authentication.Token.Record
+                            try await Identity.Token.Record
                                 .where { 
                                     $0.identityId.eq(identity.id)
-                                        .and($0.type.eq(Identity.Authentication.Token.Record.TokenType.passwordReset))
+                                        .and($0.type.eq(Identity.Token.Record.TokenType.passwordReset))
                                 }
                                 .update { token in
                                     token.validUntil = date() // Set to now to invalidate

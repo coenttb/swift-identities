@@ -4,7 +4,7 @@ import Dependencies
 import Crypto
 import IdentitiesTypes
 
-extension Identity.Authentication.Token {
+extension Identity.Token {
     @Table("identity_tokens")
     public struct Record: Codable, Equatable, Identifiable, Sendable {
         public let id: UUID
@@ -88,39 +88,39 @@ extension Identity.Authentication.Token {
 
 // MARK: - Query Helpers
 
-extension Identity.Authentication.Token.Record {
-    package static func findByValue(_ value: String) -> Where<Identity.Authentication.Token.Record> {
+extension Identity.Token.Record {
+    package static func findByValue(_ value: String) -> Where<Identity.Token.Record> {
         Self.where { $0.value.eq(value) }
     }
     
-    package static func findByIdentity(_ identityId: Identity.ID) -> Where<Identity.Authentication.Token.Record> {
+    package static func findByIdentity(_ identityId: Identity.ID) -> Where<Identity.Token.Record> {
         Self.where { $0.identityId.eq(identityId) }
     }
     
-    package static func findByType(_ type: TokenType) -> Where<Identity.Authentication.Token.Record> {
+    package static func findByType(_ type: TokenType) -> Where<Identity.Token.Record> {
         Self.where { $0.type.eq(type) }
     }
     
-    package static func findByIdentityAndType(_ identityId: Identity.ID, _ type: TokenType) -> Where<Identity.Authentication.Token.Record> {
+    package static func findByIdentityAndType(_ identityId: Identity.ID, _ type: TokenType) -> Where<Identity.Token.Record> {
         Self.where { 
             $0.identityId.eq(identityId)
                 .and($0.type.eq(type))
         }
     }
     
-    package static var valid: Where<Identity.Authentication.Token.Record> {
+    package static var valid: Where<Identity.Token.Record> {
         Self.where { token in
             #sql("\(token.validUntil) > CURRENT_TIMESTAMP")
         }
     }
     
-    package static var expired: Where<Identity.Authentication.Token.Record> {
+    package static var expired: Where<Identity.Token.Record> {
         Self.where { token in
             #sql("\(token.validUntil) <= CURRENT_TIMESTAMP")
         }
     }
     
-    package static func findValid(value: String, type: TokenType) -> Where<Identity.Authentication.Token.Record> {
+    package static func findValid(value: String, type: TokenType) -> Where<Identity.Token.Record> {
         Self.where { token in
             token.value.eq(value)
                 .and(token.type.eq(type))
@@ -131,7 +131,7 @@ extension Identity.Authentication.Token.Record {
 
 // MARK: - Token Type Extensions
 
-extension Identity.Authentication.Token.Record.TokenType {
+extension Identity.Token.Record.TokenType {
     package static let emailVerification: Self = "email_verification"
     package static let passwordReset: Self = "password_reset"
     package static let emailChange: Self = "email_change"
@@ -144,7 +144,7 @@ extension Identity.Authentication.Token.Record.TokenType {
 
 // MARK: - Validation & Usage
 
-extension Identity.Authentication.Token.Record {
+extension Identity.Token.Record {
     package var isValid: Bool {
         @Dependency(\.date) var date
         return validUntil > date()
@@ -161,7 +161,7 @@ extension Identity.Authentication.Token.Record {
     }
 }
 
-extension Identity.Authentication.Token.Record {
+extension Identity.Token.Record {
     
     /// Validate token and get associated identity in single query
     /// Replaces: findValid + separate identity lookup
@@ -169,7 +169,7 @@ extension Identity.Authentication.Token.Record {
         @Dependency(\.defaultDatabase) var db
         
         return try await db.read { db in
-            try await Identity.Authentication.Token.Record
+            try await Identity.Token.Record
                 .where { token in
                     token.value.eq(value)
                         .and(token.type.eq(type))
@@ -194,7 +194,7 @@ extension Identity.Authentication.Token.Record {
         
         // First get count of expired tokens
         let count = try await db.read { db in
-            try await Identity.Authentication.Token.Record
+            try await Identity.Token.Record
                 .where { token in
                     #sql("\(token.validUntil) <= CURRENT_TIMESTAMP")
                 }
@@ -204,7 +204,7 @@ extension Identity.Authentication.Token.Record {
         // Then delete them
         if count > 0 {
             try await db.write { db in
-                try await Identity.Authentication.Token.Record
+                try await Identity.Token.Record
                     .delete()
                     .where { token in
                         #sql("\(token.validUntil) <= CURRENT_TIMESTAMP")
@@ -219,6 +219,6 @@ extension Identity.Authentication.Token.Record {
 
 @Selection
 package struct TokenWithIdentity: Sendable {
-    package let token: Identity.Authentication.Token.Record
+    package let token: Identity.Token.Record
     package let identity: Identity.Record
 }

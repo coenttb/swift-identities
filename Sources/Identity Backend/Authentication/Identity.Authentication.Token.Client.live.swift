@@ -23,6 +23,7 @@ extension Identity.Authentication.Token.Client {
                 guard let request else { throw Abort.requestUnavailable }
                 @Dependency(\.tokenClient) var tokenClient
                 @Dependency(\.date) var date
+                @Dependency(\.defaultDatabase) var db
 
                 do {
                     let payload = try await tokenClient.verifyAccess(token)
@@ -32,25 +33,34 @@ extension Identity.Authentication.Token.Client {
                         "identityId": "\(payload.identityId)"
                     ])
 
-                    @Dependency(\.defaultDatabase) var db
-                    guard let identity = try await db.read({ db in
-                        try await Identity.Record
-                            .where { $0.id.eq(payload.identityId) }
+                    // Single transaction for verification and update
+                    let identity = try await db.write { db in
+                        guard let identity = try await Identity.Record
+                            .where ({ $0.id.eq(payload.identityId) })
                             .fetchOne(db)
-                    }) else {
-                        throw Abort(.unauthorized, reason: "Identity not found")
+                        else {
+                            throw Abort(.unauthorized, reason: "Identity not found")
+                        }
+                        
+                        guard identity.email == payload.email else {
+                            throw Abort(.unauthorized, reason: "Identity details have changed")
+                        }
+                        
+                        guard identity.sessionVersion == payload.sessionVersion else {
+                            throw Abort(.unauthorized, reason: "Session has been invalidated")
+                        }
+                        
+                        // Update last login in same transaction
+                        try await Identity.Record
+                            .where { $0.id.eq(identity.id) }
+                            .update { record in
+                                record.lastLoginAt = date()
+                                record.updatedAt = date()
+                            }
+                            .execute(db)
+                        
+                        return identity
                     }
-
-                    guard identity.email == payload.email else {
-                        throw Abort(.unauthorized, reason: "Identity details have changed")
-                    }
-                    
-                    guard identity.sessionVersion == payload.sessionVersion else {
-                        throw Abort(.unauthorized, reason: "Session has been invalidated")
-                    }
-
-                    // Use optimized update without fetching
-                    try await Identity.Record.updateLastLogin(id: identity.id)
 
                     request.auth.login(identity)
 
@@ -74,21 +84,25 @@ extension Identity.Authentication.Token.Client {
                 @Dependency(\.request) var request
                 guard let request else { throw Abort.requestUnavailable }
                 @Dependency(\.tokenClient) var tokenClient
+                @Dependency(\.defaultDatabase) var db
 
                 do {
                     let payload = try await tokenClient.verifyRefresh(token)
 
-                    @Dependency(\.defaultDatabase) var db
-                    guard let identity = try await db.read({ db in
-                        try await Identity.Record
-                            .where { $0.id.eq(payload.identityId) }
+                    // Single read transaction for identity verification
+                    let identity = try await db.read { db in
+                        guard let identity = try await Identity.Record
+                            .where ({ $0.id.eq(payload.identityId) })
                             .fetchOne(db)
-                    }) else {
-                        throw Abort(.unauthorized, reason: "Identity not found")
-                    }
-
-                    guard identity.sessionVersion == payload.sessionVersion else {
-                        throw Abort(.unauthorized, reason: "Token has been revoked")
+                        else {
+                            throw Abort(.unauthorized, reason: "Identity not found")
+                        }
+                        
+                        guard identity.sessionVersion == payload.sessionVersion else {
+                            throw Abort(.unauthorized, reason: "Token has been revoked")
+                        }
+                        
+                        return identity
                     }
 
                     logger.debug("Refresh token verified", metadata: [

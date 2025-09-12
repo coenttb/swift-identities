@@ -106,10 +106,54 @@ extension Identity.Authentication.Client {
                 @Dependency(\.logger) var logger
                 @Dependency(\.date) var date
                 @Dependency(\.tokenClient) var tokenClient
+                @Dependency(\.defaultDatabase) var db
                 guard let request else { throw Abort.requestUnavailable }
 
                 do {
-                    guard let apiKey = try await Identity.Authentication.ApiKey.Record.findByKey(apiKeyString) else {
+                    // Single transaction for API key authentication with JOIN
+                    let authData = try await db.write { db in
+                        // Get API key with identity in single query
+                        let result = try await Identity.Authentication.ApiKey.Record
+                            .where { $0.key.eq(apiKeyString) }
+                            .where { $0.isActive.eq(true) }
+                            .where { apiKey in
+                                #sql("\(apiKey.validUntil) > CURRENT_TIMESTAMP")
+                            }
+                            .join(Identity.Record.all) { apiKey, identity in
+                                apiKey.identityId.eq(identity.id)
+                            }
+                            .select { apiKey, identity in
+                                ApiKeyWithIdentity.Columns(
+                                    apiKey: apiKey,
+                                    identity: identity
+                                )
+                            }
+                            .fetchOne(db)
+                        
+                        // Update last used atomically in same transaction
+                        if let result = result {
+                            // Update API key last used
+                            try await Identity.Authentication.ApiKey.Record
+                                .where { $0.id.eq(result.apiKey.id) }
+                                .update { apiKey in
+                                    apiKey.lastUsedAt = date()
+                                }
+                                .execute(db)
+                            
+                            // Update identity last login
+                            try await Identity.Record
+                                .where { $0.id.eq(result.identity.id) }
+                                .update { identity in
+                                    identity.lastLoginAt = date()
+                                    identity.updatedAt = date()
+                                }
+                                .execute(db)
+                        }
+                        
+                        return result
+                    }
+                    
+                    guard let authData = authData else {
                         logger.warning("API key authentication failed", metadata: [
                             "component": "Backend.Authenticate",
                             "operation": "apiKeyAuth",
@@ -117,28 +161,22 @@ extension Identity.Authentication.Client {
                         ])
                         throw Abort(.unauthorized, reason: "Invalid API key")
                     }
-
-                    guard !apiKey.isExpired else {
-                        var mutableApiKey = apiKey
-                        try await mutableApiKey.deactivate()
+                    
+                    let identity = authData.identity
+                    
+                    // Check if expired (though we already filtered in query)
+                    if authData.apiKey.isExpired {
+                        // Deactivate expired key
+                        try await db.write { db in
+                            try await Identity.Authentication.ApiKey.Record
+                                .where { $0.id.eq(authData.apiKey.id) }
+                                .update { apiKey in
+                                    apiKey.isActive = false
+                                }
+                                .execute(db)
+                        }
                         throw Abort(.unauthorized, reason: "API key has expired")
                     }
-
-                    @Dependency(\.defaultDatabase) var db
-                    guard let identity = try await db.read({ db in
-                        try await Identity.Record
-                            .where { $0.id.eq(apiKey.identityId) }
-                            .fetchOne(db)
-                    }) else {
-                        throw Abort(.unauthorized, reason: "Associated identity not found")
-                    }
-
-                    // Update API key last used
-                    var mutableApiKey = apiKey
-                    try await mutableApiKey.updateLastUsed()
-                    
-                    // Update identity last login using optimized method
-                    try await Identity.Record.updateLastLogin(id: identity.id)
 
                     let (accessToken, refreshToken) = try await tokenClient.generateTokenPair(
                         identity.id,

@@ -118,7 +118,6 @@ extension Identity.Record {
         
         // For now, we need to check each email individually
         // When swift-records supports IN clause, this can be optimized to a single query
-        var existingEmails = Set<EmailAddress>()
         
         return try await db.read { db in
             var existingEmails = Set<EmailAddress>()

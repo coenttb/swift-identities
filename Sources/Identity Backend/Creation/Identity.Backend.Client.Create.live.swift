@@ -65,21 +65,32 @@ extension Identity.Creation.Client {
                             .execute(db)
                     }
 
-                    // Invalidate any existing verification tokens
-                    try await Identity.Authentication.Token.Record.invalidateAllForIdentity(identity.id, type: .emailVerification)
-
-//                     guard try await identity.canGenerateToken() else {
-//                         throw Abort(.tooManyRequests, reason: "Token generation limit exceeded")
-//                     }
-
-                    // Create verification token
-                    let verificationToken = try await Identity.Authentication.Token.Record(
-                        identityId: identity.id,
-                        type: .emailVerification,
-                        validityHours: 24 // 24 hours
-                    )
-                    
-                    let tokenValue = verificationToken.value
+                    // Single transaction for token creation
+                    let tokenValue = try await db.write { db in
+                        // Invalidate any existing verification tokens
+                        try await Identity.Token.Record
+                            .delete()
+                            .where { $0.identityId.eq(identity.id) }
+                            .where { $0.type.eq(Identity.Token.Record.TokenType.emailVerification) }
+                            .execute(db)
+                        
+                        @Dependency(\.uuid) var uuid
+                        @Dependency(\.date) var date
+                        
+                        // Create verification token
+                        let token = Identity.Token.Record(
+                            id: uuid(),
+                            identityId: identity.id,
+                            type: .emailVerification,
+                            validUntil: date().addingTimeInterval(86400) // 24 hours
+                        )
+                        
+                        try await Identity.Token.Record
+                            .insert { token }
+                            .execute(db)
+                        
+                        return token.value
+                    }
 
                     @Dependency(\.fireAndForget) var fireAndForget
                     await fireAndForget {
@@ -104,13 +115,22 @@ extension Identity.Creation.Client {
                 do {
                     let emailAddress = try EmailAddress(email)
                     
+                    @Dependency(\.defaultDatabase) var db
+                    
                     // Find valid verification token
-                    guard let identityToken = try await Identity.Authentication.Token.Record.findValid(value: token, type: .emailVerification) else {
+                    guard let identityToken = try await db.read ({ db in
+                        try await Identity.Token.Record
+                            .where { tokenRecord in
+                                tokenRecord.value.eq(token) &&
+                                tokenRecord.type.eq(Identity.Token.Record.TokenType.emailVerification) &&
+                                #sql("\(tokenRecord.validUntil) > CURRENT_TIMESTAMP")
+                            }
+                            .fetchOne(db)
+                    }) else {
                         throw Abort(.notFound, reason: "Invalid or expired token")
                     }
 
                     // Get the associated identity
-                    @Dependency(\.defaultDatabase) var db
                     guard let identity = try await db.read({ db in
                         try await Identity.Record
                             .where { $0.id.eq(identityToken.identityId) }
@@ -136,7 +156,13 @@ extension Identity.Creation.Client {
                     }
 
                     // Invalidate the token
-                    try await Identity.Authentication.Token.Record.invalidateAllForIdentity(identity.id, type: .emailVerification)
+                    try await db.write { db in
+                        try await Identity.Token.Record
+                            .delete()
+                            .where { $0.identityId.eq(identity.id) }
+                            .where { $0.type.eq(Identity.Token.Record.TokenType.emailVerification) }
+                            .execute(db)
+                    }
 
                     @Dependency(\.fireAndForget) var fireAndForget
                     let identityId = identity.id

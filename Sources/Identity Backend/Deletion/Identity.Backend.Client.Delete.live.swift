@@ -68,7 +68,13 @@ extension Identity.Deletion.Client {
                 }
                 
                 // Invalidate the reauthorization token
-                try await Identity.Authentication.Token.Record.invalidateAllForIdentity(identity.id, type: .reauthentication)
+                try await db.write { db in
+                    try await Identity.Token.Record
+                        .delete()
+                        .where { $0.identityId.eq(identity.id) }
+                        .where { $0.type.eq(Identity.Token.Record.TokenType.reauthentication) }
+                        .execute(db)
+                }
                 
                 logger.notice("Deletion requested", metadata: [
                     "component": "Backend.Delete",

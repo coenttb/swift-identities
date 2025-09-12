@@ -92,7 +92,7 @@ func setupMockIdentity(app: Application) async throws -> (email: String, passwor
     #expect(identity.emailVerificationStatus == .unverified, "Expected email verification status to be pending")
 
     // Retrieve the verification token
-    guard let tokenRecord = try await Identity.Authentication.Token.Record.query(on: app.db)
+    guard let tokenRecord = try await Identity.Token.Record.query(on: app.db)
         .filter(\.$identity.$id == identity.id!)
         .filter(\.$type == .emailVerification)
         .first()

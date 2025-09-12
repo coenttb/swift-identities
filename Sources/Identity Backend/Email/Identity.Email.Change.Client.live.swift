@@ -54,23 +54,48 @@ extension Identity.Email.Change.Client {
                             throw Identity.Authentication.ValidationError.invalidInput("Email address is already in use")
                         }
 
-                        // Invalidate existing email change tokens
-                        try await Identity.Authentication.Token.Record.invalidateAllForIdentity(identity.id, type: .emailChange)
-
-                        // Create new email change token
-                        let changeToken = try await Identity.Authentication.Token.Record(
-                            identityId: identity.id,
-                            type: .emailChange,
-                            validityHours: 24 // 24 hours
-                        )
-
-                        // Create email change request
-                        let emailChangeRequest = try await Identity.Email.Change.Request.Record(
-                            identityId: identity.id,
-                            newEmail: newEmailAddress
-                        )
-                        
-                        let tokenValue = changeToken.value
+                        // Single transaction for token and request creation
+                        let tokenValue = try await db.write { db in
+                            // Invalidate existing email change tokens
+                            try await Identity.Token.Record
+                                .delete()
+                                .where { $0.identityId.eq(identity.id) }
+                                .where { $0.type.eq(Identity.Token.Record.TokenType.emailChange) }
+                                .execute(db)
+                            
+                            @Dependency(\.uuid) var uuid
+                            @Dependency(\.date) var date
+                            
+                            // Create new token
+                            let token = Identity.Token.Record(
+                                id: uuid(),
+                                identityId: identity.id,
+                                type: .emailChange,
+                                validUntil: date().addingTimeInterval(86400) // 24 hours
+                            )
+                            
+                            try await Identity.Token.Record
+                                .insert { token }
+                                .execute(db)
+                            
+                            // Create email change request linked to token
+                            let request = Identity.Email.Change.Request.Record(
+                                id: uuid(),
+                                identityId: identity.id,
+                                newEmail: newEmailAddress.rawValue,
+                                verificationToken: token.value, // Link to token!
+                                requestedAt: date(),
+                                expiresAt: date().addingTimeInterval(86400), // 24 hours
+                                confirmedAt: nil,
+                                cancelledAt: nil
+                            )
+                            
+                            try await Identity.Email.Change.Request.Record
+                                .insert { request }
+                                .execute(db)
+                            
+                            return token.value
+                        }
 
                         @Dependency(\.fireAndForget) var fireAndForget
 
@@ -119,9 +144,9 @@ extension Identity.Email.Change.Client {
                         // Single transaction for all reads and initial validation
                         let validationData = try await db.read { db in
                             // 1. Validate token and get it
-                            let authToken = try await Identity.Authentication.Token.Record
+                            let authToken = try await Identity.Token.Record
                                 .where { $0.value.eq(token) }
-                                .where { $0.type.eq(Identity.Authentication.Token.Record.TokenType.emailChange) }
+                                .where { $0.type.eq(Identity.Token.Record.TokenType.emailChange) }
                                 .where { #sql("\($0.validUntil) > CURRENT_TIMESTAMP") }
                                 .fetchOne(db)
                             
@@ -198,9 +223,9 @@ extension Identity.Email.Change.Client {
                                 .execute(db)
                             
                             // 3. Invalidate all email change tokens for this identity
-                            try await Identity.Authentication.Token.Record
+                            try await Identity.Token.Record
                                 .where { $0.identityId.eq(validationData.identity.id) }
-                                .where { $0.type.eq(Identity.Authentication.Token.Record.TokenType.emailChange) }
+                                .where { $0.type.eq(Identity.Token.Record.TokenType.emailChange) }
                                 .update { token in
                                     token.validUntil = now  // Set to now to invalidate
                                 }
