@@ -52,7 +52,7 @@ extension Identity.OAuth.Connection {
         public var lastUsedAt: Date?
         
         public init(
-            id: UUID = UUID(),
+            id: UUID,
             identityId: Identity.ID,
             provider: String,
             providerUserId: String,

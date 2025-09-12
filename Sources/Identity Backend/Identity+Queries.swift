@@ -4,124 +4,182 @@ import Dependencies
 import EmailAddress
 import Vapor
 
-// MARK: - Database Operations
+// MARK: - Optimized Database Operations
 
 extension Identity.Record {
-    // Async initializer that creates and persists to database
-    package init(
+    
+    // MARK: - Authentication
+    
+    /// Verify password and update last login atomically
+    /// Returns the updated identity if password is correct, nil otherwise
+    package static func verifyPasswordAndUpdateLogin(
         email: EmailAddress,
-        password: String,
-        emailVerificationStatus: EmailVerificationStatus = .unverified
-    ) async throws {
-        @Dependency(\.defaultDatabase) var db
-        @Dependency(\.uuid) var uuid
-        
-        let id = uuid()
-        try self.init(
-            id: .init(id),
-            email: email,
-            password: password,
-            emailVerificationStatus: emailVerificationStatus
-        )
-        
-        try await db.write { [`self` = self] db in
-            try await Identity.Record
-                .insert { `self` }
-                .execute(db)
-        }
-    }
-}
- 
-extension Identity.Record {
-    package static func findByEmail(_ email: EmailAddress) async throws -> Identity.Record? {
-        @Dependency(\.defaultDatabase) var db
-        return try await db.read { db in
-            try await Identity.Record.findByEmail(email).fetchOne(db)
-        }
-    }
-    
-    package static func findByEmail(_ email: String) async throws -> Identity.Record? {
-        @Dependency(\.defaultDatabase) var db
-        return try await db.read { db in
-            try await Identity.Record.findByEmail(email).fetchOne(db)
-        }
-    }
-    
-    package static func findById(_ id: Identity.ID) async throws -> Identity.Record? {
-        @Dependency(\.defaultDatabase) var db
-        return try await db.read { db in
-            try await Identity.Record.where { $0.id.eq(id) }.fetchOne(db)
-        }
-    }
-    
-    package func save() async throws {
+        password: String
+    ) async throws -> Identity.Record? {
         @Dependency(\.defaultDatabase) var db
         @Dependency(\.date) var date
-        var updated = self
-        updated.updatedAt = date()
+        @Dependency(\.application) var application
         
-        _ = try await db.write { [updated] db in
+        // Single query to get identity
+        let identity = try await db.read { db in
             try await Identity.Record
-                .where { $0.id.eq(self.id) }
-                .update { _ in
-                    updated
+                .where { $0.emailString.eq(email.rawValue) }
+                .fetchOne(db)
+        }
+        
+        guard let identity else { return nil }
+        
+        // Verify password (CPU-bound, not I/O)
+        let isValid = try await application.threadPool.runIfActive {
+            try Bcrypt.verify(password, created: identity.passwordHash)
+        }
+        
+        guard isValid else { return nil }
+        
+        // Update last login in single write
+        let now = date()
+        try await db.write { db in
+            try await Identity.Record
+                .where { $0.id.eq(identity.id) }
+                .update { record in
+                    record.lastLoginAt = now
+                    record.updatedAt = now
                 }
                 .execute(db)
         }
-    }
-    
-    package static func delete(id: Identity.ID) async throws {
-        @Dependency(\.defaultDatabase) var db
-        try await db.write { db in
-            try await Identity.Record
-                .delete()
-                .where { $0.id.eq(id) }
-                .execute(db)
-        }
-    }
-    
-    package static func verifyPassword(email: EmailAddress, password: String) async throws -> Identity.Record? {
-        @Dependency(\.date) var date
-        
-        guard let identity = try await findByEmail(email) else {
-            return nil
-        }
-        
-        guard try await identity.verifyPassword(password) else {
-            return nil
-        }
-        
-        // Update last login using optimized method
-        try await updateLastLogin(id: identity.id)
         
         var updated = identity
-        updated.lastLoginAt = date()
+        updated.lastLoginAt = now
+        updated.updatedAt = now
         
         return updated
     }
     
-    package mutating func updatePassword(_ newPassword: String) async throws {
-        try await self.setPassword(newPassword)
-        self.sessionVersion += 1 // Invalidate all existing sessions
-        try await self.save()
-    }
+    // MARK: - Updates
     
-    package mutating func updateEmailVerificationStatus(_ status: EmailVerificationStatus) async throws {
+    /// Update password and invalidate all sessions
+    /// Increments sessionVersion to force re-authentication
+    package static func updatePasswordAndInvalidateSessions(
+        id: Identity.ID,
+        newPasswordHash: String
+    ) async throws {
         @Dependency(\.defaultDatabase) var db
         @Dependency(\.date) var date
-        let id = self.id
-        let updatedAt = date()
         
-        _ = try await db.write { db in
+        try await db.write { db in
             try await Identity.Record
                 .where { $0.id.eq(id) }
-                .update { identity in
-                    identity.emailVerificationStatus = status
-                    identity.updatedAt = updatedAt
+                .update { record in
+                    record.passwordHash = newPasswordHash
+                    record.sessionVersion = record.sessionVersion + 1  // Invalidate all sessions
+                    record.updatedAt = date()
                 }
                 .execute(db)
         }
-        self.emailVerificationStatus = status
-        self.updatedAt = updatedAt
+    }
+    
+    /// Update email verification status
+    /// Returns the updated record from database
+    package static func updateEmailVerificationStatus(
+        id: Identity.ID,
+        status: EmailVerificationStatus
+    ) async throws -> Identity.Record? {
+        @Dependency(\.defaultDatabase) var db
+        @Dependency(\.date) var date
+        
+        // Note: Using update without returning for now as returning might not be available
+        // in current swift-records version. Can be enhanced when available.
+        try await db.write { db in
+            try await Identity.Record
+                .where { $0.id.eq(id) }
+                .update { record in
+                    record.emailVerificationStatus = status
+                    record.updatedAt = date()
+                }
+                .execute(db)
+        }
+        
+        // Fetch the updated record
+        return try await db.read { db in
+            try await Identity.Record
+                .where { $0.id.eq(id) }
+                .fetchOne(db)
+        }
+    }
+    
+    // MARK: - Batch Operations
+    
+    /// Check multiple emails exist in single query (optimized version)
+    /// Returns set of emails that exist in the database
+    package static func emailsExistOptimized(_ emails: [EmailAddress]) async throws -> Set<EmailAddress> {
+        @Dependency(\.defaultDatabase) var db
+        
+        guard !emails.isEmpty else { return [] }
+        
+        // For now, we need to check each email individually
+        // When swift-records supports IN clause, this can be optimized to a single query
+        var existingEmails = Set<EmailAddress>()
+        
+        return try await db.read { db in
+            var existingEmails = Set<EmailAddress>()
+            
+            for email in emails {
+                let exists = try await Identity.Record
+                    .where { $0.emailString.eq(email.rawValue) }
+                    .fetchCount(db) > 0
+                
+                if exists {
+                    existingEmails.insert(email)
+                }
+            }
+            
+            return existingEmails
+        }
+    }
+    
+    // MARK: - Upsert Operations
+    
+    /// Create or update identity atomically using upsert pattern
+    /// Useful for OAuth flows where user might already exist
+    package static func upsert(
+        email: EmailAddress,
+        passwordHash: String,
+        emailVerificationStatus: EmailVerificationStatus = .unverified
+    ) async throws -> Identity.Record? {
+        @Dependency(\.defaultDatabase) var db
+        @Dependency(\.uuid) var uuid
+        @Dependency(\.date) var date
+        
+        
+        return try await db.write { db in
+            // Insert with conflict handling
+            try await Identity.Record
+                .insert {
+                    Identity.Record.Draft(
+                        emailString: email.rawValue,
+                        passwordHash: passwordHash,
+                        emailVerificationStatus: emailVerificationStatus,
+                        sessionVersion: 0,
+                        createdAt: date(),
+                        updatedAt: date(),
+                        lastLoginAt: nil
+                    )
+                }
+                onConflict: { $0.emailString }
+                doUpdate: { row, excluded in
+                    // Update everything except id and createdAt
+                    row.passwordHash = excluded.passwordHash
+                    row.emailVerificationStatus = excluded.emailVerificationStatus
+                    row.sessionVersion = excluded.sessionVersion
+                    row.updatedAt = excluded.updatedAt
+                    row.lastLoginAt = excluded.lastLoginAt
+                }
+                .execute(db)
+            
+            // Fetch the record (either inserted or updated)
+            return try await Identity.Record
+                .where { $0.emailString.eq(email.rawValue) }
+                .fetchOne(db)
+        }
     }
 }

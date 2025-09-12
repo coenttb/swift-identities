@@ -10,6 +10,7 @@ import Dependencies
 import IdentitiesTypes
 import JWT
 import EmailAddress
+import Records
 
 extension Identity.Authentication.Token.Client {
     package static func live() -> Self {
@@ -31,7 +32,12 @@ extension Identity.Authentication.Token.Client {
                         "identityId": "\(payload.identityId)"
                     ])
 
-                    guard let identity = try await Identity.Record.findById(payload.identityId) else {
+                    @Dependency(\.defaultDatabase) var db
+                    guard let identity = try await db.read({ db in
+                        try await Identity.Record
+                            .where { $0.id.eq(payload.identityId) }
+                            .fetchOne(db)
+                    }) else {
                         throw Abort(.unauthorized, reason: "Identity not found")
                     }
 
@@ -72,7 +78,12 @@ extension Identity.Authentication.Token.Client {
                 do {
                     let payload = try await tokenClient.verifyRefresh(token)
 
-                    guard let identity = try await Identity.Record.findById(payload.identityId) else {
+                    @Dependency(\.defaultDatabase) var db
+                    guard let identity = try await db.read({ db in
+                        try await Identity.Record
+                            .where { $0.id.eq(payload.identityId) }
+                            .fetchOne(db)
+                    }) else {
                         throw Abort(.unauthorized, reason: "Identity not found")
                     }
 

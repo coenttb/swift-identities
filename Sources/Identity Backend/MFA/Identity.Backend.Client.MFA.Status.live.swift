@@ -22,11 +22,11 @@ extension Identity.MFA.Status.Client {
                 // Get current identity
                 let identity = try await Identity.Record.get(by: .auth)
                 
-                // Check TOTP status  
-                let totpEnabled = await (try? Identity.MFA.TOTP.Record.findByIdentity(identity.id)) != nil
+                // Check TOTP status and backup codes in parallel
+                async let totpCheck = Identity.MFA.TOTP.Record.isEnabled(for: identity.id)
+                async let backupCodesCheck = Identity.MFA.BackupCodes.Record.unusedCount(for: identity.id)
                 
-                // Check backup codes remaining
-                let backupCodesRemaining = (try? await Identity.MFA.BackupCodes.Record.countUnusedByIdentity(identity.id)) ?? 0
+                let (totpEnabled, backupCodesRemaining) = try await (totpCheck, backupCodesCheck)
                 
                 let configuredMethods = Identity.MFA.Status.ConfiguredMethods(
                     totp: totpEnabled,
@@ -51,15 +51,16 @@ extension Identity.MFA.Status.Client {
                 // Get current identity
                 let identity = try await Identity.Record.get(by: .auth)
                 
-                // Check configured methods
-                var methods = Set<Identity.MFA.Method>()
+                // Check configured methods in parallel
+                async let totpCheck = Identity.MFA.TOTP.Record.isEnabled(for: identity.id)
+                async let backupCodesCheck = Identity.MFA.BackupCodes.Record.unusedCount(for: identity.id)
                 
-                let totpEnabled = await (try? Identity.MFA.TOTP.Record.findByIdentity(identity.id)) != nil
+                let (totpEnabled, backupCodesRemaining) = try await (totpCheck, backupCodesCheck)
+                
+                var methods = Set<Identity.MFA.Method>()
                 if totpEnabled {
                     methods.insert(.totp)
                 }
-                
-                let backupCodesRemaining = (try? await Identity.MFA.BackupCodes.Record.countUnusedByIdentity(identity.id)) ?? 0
                 if backupCodesRemaining > 0 {
                     methods.insert(.backupCode)
                 }

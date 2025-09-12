@@ -18,6 +18,7 @@ import IdentitiesTypes
 import JWT
 import Dependencies
 import EmailAddress
+import Records
 
 extension Identity.Authentication.Client {
     package static func live(
@@ -123,7 +124,12 @@ extension Identity.Authentication.Client {
                         throw Abort(.unauthorized, reason: "API key has expired")
                     }
 
-                    guard let identity = try await Identity.Record.findById(apiKey.identityId) else {
+                    @Dependency(\.defaultDatabase) var db
+                    guard let identity = try await db.read({ db in
+                        try await Identity.Record
+                            .where { $0.id.eq(apiKey.identityId) }
+                            .fetchOne(db)
+                    }) else {
                         throw Abort(.unauthorized, reason: "Associated identity not found")
                     }
 

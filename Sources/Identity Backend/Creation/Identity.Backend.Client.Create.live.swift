@@ -10,6 +10,7 @@ import IdentitiesTypes
 import Vapor
 import Dependencies
 import EmailAddress
+import Records
 
 extension Identity.Creation.Client {
     package static func live(
@@ -26,16 +27,43 @@ extension Identity.Creation.Client {
                     let emailAddress = try EmailAddress(email)
 
                     // Check if email already exists
-                    guard try await Identity.Record.findByEmail(emailAddress) == nil else {
+                    @Dependency(\.defaultDatabase) var db
+                    let existingIdentity = try await db.read { db in
+                        try await Identity.Record
+                            .where { $0.emailString.eq(emailAddress.rawValue) }
+                            .fetchOne(db)
+                    }
+                    guard existingIdentity == nil else {
                         throw Identity.Authentication.ValidationError.invalidInput("Email already in use")
                     }
 
                     // Create the identity
-                    let identity = try await Identity.Record(
+                    @Dependency(\.uuid) var uuid
+                    @Dependency(\.date) var date
+                    @Dependency(\.envVars) var envVars
+                    @Dependency(\.application) var application
+                    
+                    let passwordHash: String = try await application.threadPool.runIfActive {
+                        try Bcrypt.hash(password, cost: envVars.bcryptCost)
+                    }
+                    
+                    let identity = Identity.Record(
+                        id: .init(uuid()),
                         email: emailAddress,
-                        password: password,
-                        emailVerificationStatus: .unverified
+                        passwordHash: passwordHash,
+                        emailVerificationStatus: .unverified,
+                        sessionVersion: 0,
+                        createdAt: date(),
+                        updatedAt: date(),
+                        lastLoginAt: nil
                     )
+                    
+                    // Insert the new identity
+                    try await db.write { db in
+                        try await Identity.Record
+                            .insert { identity }
+                            .execute(db)
+                    }
 
                     // Invalidate any existing verification tokens
                     try await Identity.Authentication.Token.Record.invalidateAllForIdentity(identity.id, type: .emailVerification)
@@ -82,7 +110,12 @@ extension Identity.Creation.Client {
                     }
 
                     // Get the associated identity
-                    guard var identity = try await Identity.Record.findById(identityToken.identityId) else {
+                    @Dependency(\.defaultDatabase) var db
+                    guard let identity = try await db.read({ db in
+                        try await Identity.Record
+                            .where { $0.id.eq(identityToken.identityId) }
+                            .fetchOne(db)
+                    }) else {
                         throw Abort(.notFound, reason: "Identity not found")
                     }
 
@@ -92,7 +125,15 @@ extension Identity.Creation.Client {
                     }
 
                     // Update identity verification status
-                    try await identity.updateEmailVerificationStatus(.verified)
+                    
+                    try await db.write { db in
+                        try await Identity.Record
+                            .where { $0.id.eq(identityToken.identityId) }
+                            .update {
+                                $0.emailVerificationStatus = .verified
+                            }
+                            .execute(db)
+                    }
 
                     // Invalidate the token
                     try await Identity.Authentication.Token.Record.invalidateAllForIdentity(identity.id, type: .emailVerification)

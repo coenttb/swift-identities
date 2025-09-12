@@ -10,6 +10,7 @@ import Dependencies
 import IdentitiesTypes
 import JWT
 import EmailAddress
+import Records
 
 extension Identity.Backend {
     /// Creates a live backend Identity with direct database access.
@@ -46,9 +47,14 @@ extension Identity.Backend {
                     guard let request else { throw Abort.requestUnavailable }
                     
                     do {
-                        var identity = try await Identity.Record.get(by: .auth)
-                        identity.sessionVersion += 1
-                        try await identity.save()
+                        let identity = try await Identity.Record.get(by: .auth)
+                        
+                        // Increment session version to invalidate all tokens
+                        @Dependency(\.defaultDatabase) var db
+                        try await Identity.Record.updatePasswordAndInvalidateSessions(
+                            id: identity.id,
+                            newPasswordHash: identity.passwordHash  // Keep same password, just bump version
+                        )
                     } catch {
                         // Identity not found - likely database was reset but cookies persist
                         // This is common in development when restarting the server
@@ -61,9 +67,19 @@ extension Identity.Backend {
                 all: {
                     do {
                         // Increment session version to invalidate all existing tokens
-                        var identity = try await Identity.Record.get(by: .auth)
-                        identity.sessionVersion += 1
-                        try await identity.save()
+                        let identity = try await Identity.Record.get(by: .auth)
+                        
+                        @Dependency(\.defaultDatabase) var db
+                        @Dependency(\.date) var date
+                        try await db.write { db in
+                            try await Identity.Record
+                                .where { $0.id.eq(identity.id) }
+                                .update { record in
+                                    record.sessionVersion = record.sessionVersion + 1
+                                    record.updatedAt = date()
+                                }
+                                .execute(db)
+                        }
                         logger.notice("Logout all sessions for identity: \(identity.id)")
                     } catch {
                         // Identity not found - likely database was reset but cookies persist

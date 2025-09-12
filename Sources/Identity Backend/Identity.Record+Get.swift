@@ -11,6 +11,7 @@ import EmailAddress
 import IdentitiesTypes
 import Vapor
 import ServerFoundationVapor
+import Records
 
 extension Identity.Record {
     public enum Get {
@@ -30,13 +31,23 @@ extension Identity.Record {
     ) async throws -> Identity.Record {
         switch identifier {
         case .id(let id):
-            guard let identity = try await Identity.Record.findById(id) else {
+            @Dependency(\.defaultDatabase) var db
+            guard let identity = try await db.read({ db in
+                try await Identity.Record
+                    .where { $0.id.eq(id) }
+                    .fetchOne(db)
+            }) else {
                 throw Abort(.notFound, reason: "Identity not found for id \(id)")
             }
             return identity
             
         case .email(let email):
-            guard let identity = try await Identity.Record.findByEmail(email) else {
+            @Dependency(\.defaultDatabase) var db
+            guard let identity = try await db.read({ db in
+                try await Identity.Record
+                    .where { $0.emailString.eq(email) }
+                    .fetchOne(db)
+            }) else {
                 throw Abort(.notFound, reason: "Identity not found for email \(email)")
             }
             return identity

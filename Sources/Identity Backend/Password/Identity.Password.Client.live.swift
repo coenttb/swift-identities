@@ -10,6 +10,7 @@ import IdentitiesTypes
 import Vapor
 import Dependencies
 import EmailAddress
+import Records
 
 extension Identity.Password.Client {
     package static func live(
@@ -24,7 +25,12 @@ extension Identity.Password.Client {
                 request: { email in
                     let emailAddress = try EmailAddress(email)
 
-                    guard let identity = try await Identity.Record.findByEmail(emailAddress) else {
+                    @Dependency(\.defaultDatabase) var db
+                    guard let identity = try await db.read({ db in
+                        try await Identity.Record
+                            .where { $0.emailString.eq(emailAddress.rawValue) }
+                            .fetchOne(db)
+                    }) else {
                         // Don't reveal if email exists or not
                         logger.debug("Password reset requested for non-existent email", metadata: [
                             "component": "Backend.Password",
@@ -66,20 +72,40 @@ extension Identity.Password.Client {
                             throw Identity.Authentication.ValidationError.invalidToken
                         }
 
-                        // Get the identity
-                        guard var identity = try await Identity.Record.findById(resetToken.identityId) else {
-                            throw Abort(.internalServerError, reason: "Identity not found")
+                        @Dependency(\.defaultDatabase) var db
+                        @Dependency(\.date) var date
+                        
+                        // Perform all updates within a transaction for atomicity
+                        let emailAddress = try await db.write { db in
+                            // Get the identity within transaction
+                            guard var identity = try await Identity.Record
+                                .where ({ $0.id.eq(resetToken.identityId) })
+                                .fetchOne(db)
+                            else {
+                                throw Abort(.internalServerError, reason: "Identity not found")
+                            }
+
+                            // Update password and increment session version atomically
+                            try await identity.setPassword(newPassword)
+                            
+                            try await Identity.Record.updatePasswordAndInvalidateSessions(
+                                id: identity.id,
+                                newPasswordHash: identity.passwordHash
+                            )
+
+                            // Invalidate all password reset tokens for this identity
+                            try await Identity.Authentication.Token.Record
+                                .where { 
+                                    $0.identityId.eq(identity.id)
+                                        .and($0.type.eq(Identity.Authentication.Token.Record.TokenType.passwordReset))
+                                }
+                                .update { token in
+                                    token.validUntil = date() // Set to now to invalidate
+                                }
+                                .execute(db)
+                            
+                            return identity.email
                         }
-
-                        // Update password and increment session version
-                        try await identity.setPassword(newPassword)
-                        identity.sessionVersion += 1
-                        try await identity.save()
-
-                        // Invalidate the token
-                        try await Identity.Authentication.Token.Record.invalidateAllForIdentity(identity.id, type: .passwordReset)
-
-                        let emailAddress = identity.email
 
                         @Dependency(\.fireAndForget) var fireAndForget
                         await fireAndForget {
@@ -89,7 +115,7 @@ extension Identity.Password.Client {
                         logger.notice("Password reset completed", metadata: [
                             "component": "Backend.Password",
                             "operation": "resetConfirm",
-                            "identityId": "\(identity.id)"
+                            "identityId": "\(resetToken.identityId)"
                         ])
 
                     } catch {
@@ -112,10 +138,13 @@ extension Identity.Password.Client {
 
                     _ = try validatePassword(newPassword)
 
-                    // Update password and increment session version
+                    // Update password and increment session version atomically
                     try await identity.setPassword(newPassword)
-                    identity.sessionVersion += 1
-                    try await identity.save()
+                    
+                    try await Identity.Record.updatePasswordAndInvalidateSessions(
+                        id: identity.id,
+                        newPasswordHash: identity.passwordHash
+                    )
 
                     let emailAddress = identity.email
                     

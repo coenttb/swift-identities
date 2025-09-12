@@ -13,6 +13,7 @@ import ServerFoundation
 import ServerFoundationVapor
 import JWT
 import Logging
+import EmailAddress
 
 extension Identity.OAuth.Client {
     public static func live(
@@ -89,166 +90,137 @@ private func callbackImplementation(
     stateManager: Identity.OAuth.State.Manager
 ) -> @Sendable (Identity.OAuth.CallbackRequest) async throws -> Identity.Authentication.Response {
     return { callbackRequest in
-        // 1. Validate state
+        @Dependency(\.defaultDatabase) var database
+        @Dependency(\.logger) var logger
+        @Dependency(\.date) var date
+        @Dependency(Identity.Token.Client.self) var tokenClient
+        
+        // 1. Validate state and get provider
         let stateData = try await stateManager.validateState(callbackRequest.state)
         
-        // 2. Get provider
         guard let provider = await registry.provider(for: callbackRequest.provider) else {
             throw Identity.OAuth.Error.providerNotFound(callbackRequest.provider)
         }
         
-        // 3. Create internal token exchange request with redirectURI from state
-        let tokenExchangeRequest = Identity.OAuth.TokenExchangeRequest(
-            provider: callbackRequest.provider,
-            code: callbackRequest.code,
+        // 2. Exchange code for tokens and get user info (can't avoid these external calls)
+        let tokens = try await provider.exchangeCode(
+            callbackRequest.code,
             redirectURI: stateData.redirectURI
         )
         
-        // 4. Exchange code for tokens using redirectURI from state
-        let tokens = try await provider.exchangeCode(
-            tokenExchangeRequest.code,
-            redirectURI: tokenExchangeRequest.redirectURI
-        )
-        
-        // 5. Get user info
         let userInfo = try await provider.getUserInfo(
             accessToken: tokens.accessToken
         )
         
-        @Dependency(\.defaultDatabase) var database
-        @Dependency(\.logger) var logger
+        // 3. Prepare stored tokens based on provider requirements
+        let (storedAccessToken, storedRefreshToken) = try prepareTokensForStorage(
+            tokens: tokens,
+            provider: provider,
+            logger: logger
+        )
         
-        // Determine token storage strategy based on provider configuration
-        let storedAccessToken: String
-        let storedRefreshToken: String?
-        
-        if provider.requiresTokenStorage {
-            // Provider requires token storage for API access
-            if Identity.OAuth.Encryption.isEncryptionAvailable {
-                // Encrypt tokens for storage
-                storedAccessToken = try Identity.OAuth.Encryption.encrypt(token: tokens.accessToken)
-                storedRefreshToken = try tokens.refreshToken.map {
-                    try Identity.OAuth.Encryption.encrypt(token: $0)
-                }
-                logger.debug("OAuth tokens encrypted for storage", metadata: [
-                    "provider": "\(provider.identifier)"
-                ])
-            } else {
-                // Provider requires tokens but no encryption key configured
-                logger.error("OAuth provider requires token storage but IDENTITIES_ENCRYPTION_KEY not set", metadata: [
-                    "provider": "\(provider.identifier)"
-                ])
-                throw OAuthTokenError.encryptionRequired
-            }
-        } else {
-            // Authentication only - don't store tokens
-            storedAccessToken = ""
-            storedRefreshToken = nil
-            logger.debug("OAuth used for authentication only, tokens not stored", metadata: [
-                "provider": "\(provider.identifier)"
-            ])
-        }
-        
-        // 6. Find or create identity
-        let identity: Identity.Record = try await database.write { db in
-            // Check if OAuth connection already exists
-            if let existingConnection = try await Identity.OAuth.Connection.Record.find(
-                provider: callbackRequest.provider,
-                providerUserId: userInfo.id
-            ) {
-                // Get the associated identity
-                guard let identity = try await Identity.Record.find(existingConnection.identityId).fetchOne(db) else {
-                    throw Identity.OAuth.Error.userInfoExtractionFailed
-                }
-                
-                // Update tokens if provider stores them
+        // 4. Single database transaction for all operations
+        let identity = try await database.write { db in
+            // First, check for existing OAuth connection
+            let existingConnection = try await Identity.OAuth.Connection.Record
+                .where { $0.provider.eq(callbackRequest.provider) }
+                .where { $0.providerUserId.eq(userInfo.id) }
+                .fetchOne(db)
+            
+            if let existingConnection {
+                // Update tokens if needed and return associated identity
                 if provider.requiresTokenStorage {
-                    try await existingConnection.updateTokens(
-                        accessToken: storedAccessToken,
-                        refreshToken: storedRefreshToken,
-                        expiresAt: tokens.expiresIn.map { Date().addingTimeInterval(Double($0)) }
-                    )
+                    let now = date()
+                    try await Identity.OAuth.Connection.Record
+                        .where { $0.id.eq(existingConnection.id) }
+                        .update { connection in
+                            connection.accessToken = storedAccessToken
+                            connection.refreshToken = storedRefreshToken ?? connection.refreshToken
+                            connection.expiresAt = tokens.expiresIn.map { 
+                                Date().addingTimeInterval(Double($0)) 
+                            }
+                            connection.lastUsedAt = now
+                            connection.updatedAt = now
+                        }
+                        .execute(db)
                 }
                 
-                return identity
-            }
-            
-            // Check if we're linking to an existing identity
-            if let identityId = stateData.identityId {
-                // Linking OAuth to existing account
-                guard let identity = try await Identity.Record.find(identityId).fetchOne(db) else {
+                guard let identity = try await Identity.Record
+                    .where ({ $0.id.eq(existingConnection.identityId) })
+                    .fetchOne(db)
+                else {
                     throw Identity.OAuth.Error.userInfoExtractionFailed
                 }
                 
-                // Create OAuth connection
-                let connection = Identity.OAuth.Connection.Record(
-                    identityId: identityId,
-                    provider: callbackRequest.provider,
-                    providerUserId: userInfo.id,
-                    accessToken: storedAccessToken,
-                    refreshToken: storedRefreshToken,
-                    tokenType: tokens.tokenType,
-                    expiresAt: tokens.expiresIn.map { Date().addingTimeInterval(Double($0)) },
-                    scopes: tokens.scope?.components(separatedBy: " "),
-                    userInfo: userInfo.rawData
-                )
-                
-                try await Identity.OAuth.Connection.Record.insert { connection }.execute(db)
-                
                 return identity
             }
             
-            // Create new identity from OAuth
-            guard let email = userInfo.email else {
+            // Determine target identity
+            let targetIdentity: Identity.Record
+            
+            if let linkToIdentityId = stateData.identityId {
+                // Linking to existing identity (user explicitly requested)
+                guard let identity = try await Identity.Record
+                    .where ({ $0.id.eq(linkToIdentityId) })
+                    .fetchOne(db)
+                else {
+                    throw Identity.OAuth.Error.userInfoExtractionFailed
+                }
+                targetIdentity = identity
+                
+            } else if let email = userInfo.email {
+                // Check for existing identity with same email
+                if let existingIdentity = try await Identity.Record
+                    .where ({ $0.emailString.eq(email) })
+                    .fetchOne(db)
+                {
+                    targetIdentity = existingIdentity
+                } else {
+                    // Create new identity with RETURNING clause
+                    let newIdentityDraft = Identity.Record.Draft(
+                        emailString: email,
+                        passwordHash: "",  // OAuth users don't have passwords
+                        emailVerificationStatus: userInfo.emailVerified == true ? .verified : .unverified,
+                        sessionVersion: 0,
+                        createdAt: date(),
+                        updatedAt: date(),
+                        lastLoginAt: date()
+                    )
+                    
+                    // Use RETURNING to get the created identity in one operation
+                    let createdIdentity = try await Identity.Record
+                        .insert { newIdentityDraft }
+                        .returning { $0 }
+                        .fetchOne(db)
+                    
+                    guard let createdIdentity else {
+                        throw Identity.OAuth.Error.userInfoExtractionFailed
+                    }
+                    
+                    targetIdentity = createdIdentity
+                }
+            } else {
                 throw Identity.OAuth.Error.missingEmail
             }
             
-            // Check if email already exists
-            if let existingIdentity = try await Identity.Record.findByEmail(email) {
-                // Link OAuth to existing identity with same email
-                let connection = Identity.OAuth.Connection.Record(
-                    identityId: existingIdentity.id,
-                    provider: callbackRequest.provider,
-                    providerUserId: userInfo.id,
-                    accessToken: storedAccessToken,
-                    refreshToken: storedRefreshToken,
-                    tokenType: tokens.tokenType,
-                    expiresAt: tokens.expiresIn.map { Date().addingTimeInterval(Double($0)) },
-                    scopes: tokens.scope?.components(separatedBy: " "),
-                    userInfo: userInfo.rawData
-                )
-                
-                try await Identity.OAuth.Connection.Record.insert { connection }.execute(db)
-                return existingIdentity
-            }
-            
-            // Create new identity
-            let newIdentity = try await Identity.Record.init(
-                email: try .init(email),
-                password: "",
-                emailVerificationStatus: userInfo.emailVerified == true ? .verified : .unverified
-            )
-            
-            // Create OAuth connection
-            let connection = Identity.OAuth.Connection.Record(
-                identityId: newIdentity.id,
+            // Create OAuth connection for the target identity
+            let connection = Identity.OAuth.Connection.Record.Draft(
+                identityId: targetIdentity.id,
                 provider: callbackRequest.provider,
-                providerUserId: userInfo.id,
-                accessToken: storedAccessToken,
-                refreshToken: storedRefreshToken,
-                tokenType: tokens.tokenType,
-                expiresAt: tokens.expiresIn.map { Date().addingTimeInterval(Double($0)) },
-                scopes: tokens.scope?.components(separatedBy: " "),
-                userInfo: userInfo.rawData
+                userInfo: userInfo,
+                tokens: tokens,
+                storedAccessToken: storedAccessToken,
+                storedRefreshToken: storedRefreshToken
             )
             
-            try await Identity.OAuth.Connection.Record.insert { connection }.execute(db)
+            try await Identity.OAuth.Connection.Record
+                .insert { connection }
+                .execute(db)
             
-            return newIdentity
+            return targetIdentity
         }
         
-        // 7. Generate authentication tokens
-        @Dependency(Identity.Token.Client.self) var tokenClient
+        // 5. Generate authentication tokens
         
         let (accessToken, refreshToken) = try await tokenClient.generateTokenPair(
             identity.id,
@@ -260,6 +232,37 @@ private func callbackImplementation(
             accessToken: accessToken,
             refreshToken: refreshToken
         )
+    }
+}
+
+// MARK: - Helper Functions
+
+/// Prepare OAuth tokens for storage based on provider requirements
+private func prepareTokensForStorage(
+    tokens: Identity.OAuth.TokenResponse,
+    provider: Identity.OAuth.Provider,
+    logger: Logger
+) throws -> (accessToken: String, refreshToken: String?) {
+    if provider.requiresTokenStorage {
+        guard Identity.OAuth.Encryption.isEncryptionAvailable else {
+            logger.error("OAuth provider requires token storage but IDENTITIES_ENCRYPTION_KEY not set", 
+                metadata: ["provider": "\(provider.identifier)"])
+            throw OAuthTokenError.encryptionRequired
+        }
+        
+        let storedAccessToken = try Identity.OAuth.Encryption.encrypt(token: tokens.accessToken)
+        let storedRefreshToken = try tokens.refreshToken.map {
+            try Identity.OAuth.Encryption.encrypt(token: $0)
+        }
+        
+        logger.debug("OAuth tokens encrypted for storage", 
+            metadata: ["provider": "\(provider.identifier)"])
+        
+        return (storedAccessToken, storedRefreshToken)
+    } else {
+        logger.debug("OAuth used for authentication only, tokens not stored", 
+            metadata: ["provider": "\(provider.identifier)"])
+        return ("", nil)
     }
 }
 
@@ -460,5 +463,36 @@ private let getAllConnectionsImplementation: @Sendable () async throws -> [Ident
             "error": "\(error)"
         ])
         return []
+    }
+}
+
+extension Identity.OAuth.Connection.Record.Draft {
+    /// Convenience initializer that creates a Draft from OAuth response objects
+    /// Extracts common patterns like expiration calculation and scope parsing
+    init(
+        identityId: Identity.ID,
+        provider: String,
+        userInfo: Identity.OAuth.UserInfo,
+        tokens: Identity.OAuth.TokenResponse,
+        storedAccessToken: String,
+        storedRefreshToken: String?
+    ) {
+        @Dependency(\.date) var date
+        let now = date()
+        
+        self.init(
+            identityId: identityId,
+            provider: provider,
+            providerUserId: userInfo.id,
+            accessToken: storedAccessToken,
+            refreshToken: storedRefreshToken,
+            tokenType: tokens.tokenType,
+            expiresAt: tokens.expiresIn.map { Date().addingTimeInterval(Double($0)) },
+            scopes: tokens.scope?.components(separatedBy: " "),
+            userInfo: userInfo.rawData,
+            createdAt: now,
+            updatedAt: now,
+            lastUsedAt: now
+        )
     }
 }

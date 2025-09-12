@@ -85,14 +85,6 @@ extension Identity.Record {
 // MARK: - Query Helpers
 
 extension Identity.Record {
-    package static func findByEmail(_ email: String) -> Where<Identity.Record> {
-        Self.where { $0.emailString.eq(email) }
-    }
-    
-    package static func findByEmail(_ email: EmailAddress) -> Where<Identity.Record> {
-        Self.where { $0.emailString.eq(email.rawValue) }
-    }
-    
     package static var verified: Where<Identity.Record> {
         Self.where { $0.emailVerificationStatus.eq(EmailVerificationStatus.verified) }
     }
@@ -165,3 +157,17 @@ extension Identity.Record {
         return result
     }
 }
+
+
+extension Identity.Record {
+     static func update(from identity: Identity.Record) -> (inout Updates<Identity.Record>) -> Void {
+         return { updates in
+             updates.emailString = identity.emailString
+             updates.passwordHash = identity.passwordHash
+             updates.emailVerificationStatus = identity.emailVerificationStatus
+             updates.sessionVersion = identity.sessionVersion
+             updates.updatedAt = identity.updatedAt
+             updates.lastLoginAt = identity.lastLoginAt
+         }
+     }
+ }

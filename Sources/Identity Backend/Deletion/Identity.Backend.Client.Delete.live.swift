@@ -125,8 +125,15 @@ extension Identity.Deletion.Client {
                 var mutableDeletion = deletion
                 try await mutableDeletion.confirm()
                 
-                // Actually delete the identity
-                try await Identity.Record.delete(id: identity.id)
+                @Dependency(\.defaultDatabase) var database
+                
+                try await database.write { db in
+                    // Actually delete the identity
+                    try await Identity.Record
+                        .where { $0.id.eq(identity.id) }
+                        .delete()
+                        .execute(db)
+                }
                 
                 logger.notice("Identity deleted", metadata: [
                     "component": "Backend.Delete",

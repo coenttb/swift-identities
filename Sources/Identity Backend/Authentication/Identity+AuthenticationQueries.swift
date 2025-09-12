@@ -7,17 +7,17 @@ import Vapor
 // MARK: - Selection Types for Combined Queries
 
 @Selection
-public struct AuthenticationData: Sendable {
-    public let identity: Identity.Record
-    public let totpEnabled: Bool
+package struct AuthenticationData: Sendable {
+    package let identity: Identity.Record
+    package let totpEnabled: Bool
 }
 
 @Selection
-public struct IdentityWithMFAStatus: Sendable {
-    public let identity: Identity.Record
-    public let totpId: UUID?
-    public let totpConfirmed: Bool
-    public let backupCodesAvailable: Int
+package struct IdentityWithMFAStatus: Sendable {
+    package let identity: Identity.Record
+    package let totpId: UUID?
+    package let totpConfirmed: Bool
+    package let backupCodesAvailable: Int
 }
 
 // MARK: - Optimized Authentication Queries
@@ -229,21 +229,20 @@ extension Identity.MFA.BackupCodes.Record {
         // Hash the code to compare with stored hash
         let codeHash = try Identity.MFA.BackupCodes.Record.hashCode(code)
         
-        // First check if the code exists and is unused
-        let validCode = try await db.read { db in
-            try await Identity.MFA.BackupCodes.Record
+        // Atomic check-and-update within a single transaction
+        return try await db.write { db in
+            // First check if the code exists and is unused within the transaction
+            let validCode = try await Identity.MFA.BackupCodes.Record
                 .where { 
                     $0.identityId.eq(identityId)
                         .and($0.codeHash.eq(codeHash))
                         .and($0.isUsed.eq(false))
                 }
                 .fetchOne(db)
-        }
-        
-        guard validCode != nil else { return false }
-        
-        // Mark it as used
-        try await db.write { db in
+            
+            guard validCode != nil else { return false }
+            
+            // Mark it as used within the same transaction
             try await Identity.MFA.BackupCodes.Record
                 .where { 
                     $0.identityId.eq(identityId)
@@ -255,8 +254,8 @@ extension Identity.MFA.BackupCodes.Record {
                     backupCode.usedAt = date()
                 }
                 .execute(db)
+            
+            return true
         }
-        
-        return true
     }
 }
