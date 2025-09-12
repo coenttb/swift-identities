@@ -11,22 +11,24 @@ extension Identity.MFA.BackupCodes {
         public let isUsed: Bool
         public let createdAt: Date
         public let usedAt: Date?
-        
-        package init(
-            id: UUID = UUID(),
-            identityId: Identity.ID,
-            codeHash: String,
-            isUsed: Bool = false,
-            createdAt: Date = Date(),
-            usedAt: Date? = nil
-        ) {
-            self.id = id
-            self.identityId = identityId
-            self.codeHash = codeHash
-            self.isUsed = isUsed
-            self.createdAt = createdAt
-            self.usedAt = usedAt
-        }
+    }
+}
+
+extension Identity.MFA.BackupCodes.Record.Draft {
+    package init(
+        id: UUID? = nil,
+        identityId: Identity.ID,
+        codeHash: String,
+        isUsed: Bool = false,
+        createdAt: Date = Date(),
+        usedAt: Date? = nil
+    ) {
+        self.id = id
+        self.identityId = identityId
+        self.codeHash = codeHash
+        self.isUsed = isUsed
+        self.createdAt = createdAt
+        self.usedAt = usedAt
     }
 }
 

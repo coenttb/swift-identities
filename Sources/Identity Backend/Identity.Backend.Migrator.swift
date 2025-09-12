@@ -136,6 +136,13 @@ extension Identity.Backend {
                 CREATE INDEX IF NOT EXISTS identity_email_change_requests_identityId_idx 
                 ON identity_email_change_requests("identityId")
             """)
+            
+            // Add partial unique index to ensure only one pending email change per identity
+            try await db.execute("""
+                CREATE UNIQUE INDEX IF NOT EXISTS identity_email_change_requests_identityId_pending_idx 
+                ON identity_email_change_requests("identityId") 
+                WHERE "confirmedAt" IS NULL AND "cancelledAt" IS NULL
+            """)
         }
         
         // User profiles table

@@ -60,7 +60,7 @@ extension Identity.Email.Change.Client {
                         try await Identity.Email.Change.Request.Record
                             .where { $0.identityId.eq(identity.id) }
                             .where { request in
-                                request.confirmedAt != nil && request.cancelledAt != nil
+                                request.confirmedAt == nil && request.cancelledAt == nil
                             }
                             .update { $0.cancelledAt = Date() }
                             .execute(db)
@@ -72,7 +72,6 @@ extension Identity.Email.Change.Client {
                             .where { $0.type.eq(Identity.Token.Record.TokenType.emailChange) }
                             .execute(db)
                         
-                        @Dependency(\.uuid) var uuid
                         @Dependency(\.date) var date
                         
                         
@@ -93,7 +92,6 @@ extension Identity.Email.Change.Client {
                         try await Identity.Email.Change.Request.Record
                             .insert {
                                 Identity.Email.Change.Request.Record.Draft(
-                                    id: uuid(),
                                     identityId: identity.id,
                                     newEmail: newEmailAddress,
                                     verificationToken: token.value, // Link to token!

@@ -50,8 +50,6 @@ extension Identity.MFA.BackupCodes.Client {
                     codes.append(code)
                 }
                 
-                // Delete old codes and save new ones with explicit operations
-                @Dependency(\.uuid) var uuid
                 
                 try await database.write { [codes] db in
                     // Delete existing codes
@@ -62,8 +60,7 @@ extension Identity.MFA.BackupCodes.Client {
                     
                     // Create new codes
                     for code in codes {
-                        let backupCode = Identity.MFA.BackupCodes.Record(
-                            id: uuid(),
+                        let backupCode = Identity.MFA.BackupCodes.Record.Draft(
                             identityId: identity.id,
                             codeHash: try Identity.MFA.BackupCodes.Record.hashCode(code)
                         )

@@ -10,7 +10,7 @@ import IdentitiesTypes
 
 extension Identity.Frontend {
     package static func response(
-        api: Identity.API,
+        identity: Identity.API,
         configuration: Identity.Frontend.Configuration
     ) async throws -> any AsyncResponseEncodable {
         return try await Self.response(
@@ -27,23 +27,22 @@ extension Identity.Frontend {
     /// This function provides the shared API response logic used by both
     /// Consumer and Standalone.
     package static func response(
-        api: Identity.API,
-        client: Identity.Client,
+        identity: Identity,
         router: AnyParserPrinter<URLRequestData, Identity.Route>,
         cookies: Identity.Frontend.Configuration.Cookies,
         redirect: Identity.Frontend.Configuration.Redirect
     ) async throws -> any AsyncResponseEncodable {
         switch api {
         case .authenticate(let authenticate):
-            return try await handleAuthenticate(authenticate, client: client, loginSuccessRedirect: redirect.loginSuccess)
+            return try await handleAuthenticate(authenticate, client: identity.authenticate.client, loginSuccessRedirect: redirect.loginSuccess)
         case .create(let create):
-            return try await handleCreate(create, client: client)
+            return try await handleCreate(identity.create.client, client: client)
         case .delete(let delete):
-            return try await handleDelete(delete, client: client, router: router)
+            return try await handleDelete(delete, client: identity.delete.client, router: router)
         case .email(let email):
-            return try await handleEmail(email, client: client)
+            return try await handleEmail(email, client: identity.email.client)
         case .password(let password):
-            return try await handlePassword(password, client: client)
+            return try await handlePassword(password, client: identity.password.client)
         case .reauthorize(let reauthorize):
             return try await handleReauthorize(
                 reauthorize,
@@ -69,14 +68,14 @@ extension Identity.Frontend {
     }
     
     private static func handleAuthenticate(
-        _ authenticate: Identity.API.Authenticate,
-        client: Identity.Client,
+        _ authenticate: Identity.Authentication.API,
+        client: Identity.Authentication.Client,
         loginSuccessRedirect: (Identity.ID) async throws -> URL
     ) async throws -> any AsyncResponseEncodable {
         switch authenticate {
         case .credentials(let credentials):
             do {
-                let response = try await client.authenticate.credentials(
+                let response = try await client.credentials(
                     username: credentials.username,
                     password: credentials.password
                 )
@@ -111,10 +110,10 @@ extension Identity.Frontend {
         case .token(let token):
             switch token {
             case .access(let jwt):
-                try await client.authenticate.token.access(jwt)
+                try await client.token.access(jwt)
                 return Response.success(true)
             case .refresh(let jwt):
-                let response = try await client.authenticate.token.refresh(jwt)
+                let response = try await client.token.refresh(jwt)
                 return Response.success(true)
                     .withTokens(for: response)
                     
