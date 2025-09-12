@@ -10,89 +10,12 @@ import RFC_6238
 
 extension Identity.MFA.TOTP.Record {
     
-    package static func findByIdentity(_ identityId: Identity.ID) async throws -> Identity.MFA.TOTP.Record? {
-        @Dependency(\.defaultDatabase) var db
-        return try await db.read { db in
-            try await Identity.MFA.TOTP.Record.findByIdentity(identityId)
-                .fetchOne(db)
-        }
-    }
-    
-    package static func findConfirmedByIdentity(_ identityId: Identity.ID) async throws -> Identity.MFA.TOTP.Record? {
-        @Dependency(\.defaultDatabase) var db
-        return try await db.read { db in
-            try await Identity.MFA.TOTP.Record.findConfirmedByIdentity(identityId)
-                .fetchOne(db)
-        }
-    }
-    
-    package static func create(
-        identityId: Identity.ID,
-        secret: String,
-        algorithm: RFC_6238.TOTP.Algorithm = .sha1,
-        digits: Int = 6,
-        timeStep: Int = 30
-    ) async throws -> Identity.MFA.TOTP.Record {
-        @Dependency(\.defaultDatabase) var db
-        @Dependency(\.uuid) var uuid
-        
-        let totp = Identity.MFA.TOTP.Record(
-            id: uuid(),
-            identityId: identityId,
-            secret: secret,
-            isConfirmed: false,
-            algorithm: algorithm,
-            digits: digits,
-            timeStep: timeStep
-        )
-        
-        _ = try await db.write { db in
-            try await Identity.MFA.TOTP.Record.insert { totp }
-                .execute(db)
-        }
-        
-        return totp
-    }
-    
-    package func confirm() async throws {
-        @Dependency(\.defaultDatabase) var db
-        @Dependency(\.logger) var logger
-        
-        _ = try await db.write { db in
-            try await Identity.MFA.TOTP.Record
-                .update { totp in
-                    totp.isConfirmed = true
-                    totp.confirmedAt = Date()
-                }
-                .where { $0.id.eq(self.id) }
-                .execute(db)
-        }
-    }
-    
-    package func recordUsage() async throws {
-        @Dependency(\.defaultDatabase) var db
-        
-        let now = Date()
-        _ = try await db.write { db in
-            try await Identity.MFA.TOTP.Record
-                .update { totp in
-                    totp.lastUsedAt = now
-                    totp.usageCount = totp.usageCount + 1
-                }
-                .where { $0.id.eq(self.id) }
-                .execute(db)
-        }
-    }
-    
-    package static func deleteForIdentity(_ identityId: Identity.ID) async throws {
-        @Dependency(\.defaultDatabase) var db
-        _ = try await db.write { db in
-            try await Identity.MFA.TOTP.Record
-                .delete()
-                .where { $0.identityId.eq(identityId) }
-                .execute(db)
-        }
-    }
+    // REMOVED: findByIdentity() - Use explicit queries at call sites
+    // REMOVED: findConfirmedByIdentity() - Use explicit queries at call sites
+    // REMOVED: create() that auto-saves - Create records inline within transactions
+    // REMOVED: confirm() - Make DB updates explicit at call sites
+    // REMOVED: recordUsage() - Make DB updates explicit at call sites
+    // REMOVED: deleteForIdentity() - Make DB deletes explicit at call sites
 }
 
 // MARK: - Helper Functions

@@ -30,8 +30,15 @@ extension Identity.MFA.BackupCodes.Client {
                     throw Identity.Authentication.Error.notAuthenticated
                 }
                 
-                // Check if TOTP is enabled
-                guard let totpData = try await Identity.MFA.TOTP.Record.findConfirmedByIdentity(identity.id) else {
+                // Check if TOTP is enabled with explicit database query
+                let totpEnabled = try await database.read { db in
+                    let count = try await Identity.MFA.TOTP.Record
+                        .findConfirmedByIdentity(identity.id)
+                        .fetchCount(db)
+                    return count > 0
+                }
+                
+                guard totpEnabled else {
                     logger.error("TOTP not enabled for identity")
                     throw Identity.MFA.TOTP.Client.ClientError.totpNotEnabled
                 }
@@ -43,11 +50,29 @@ extension Identity.MFA.BackupCodes.Client {
                     codes.append(code)
                 }
                 
-                // Delete old codes and save new ones
-                try await Identity.MFA.BackupCodes.Record.create(
-                    identityId: identity.id,
-                    codes: codes
-                )
+                // Delete old codes and save new ones with explicit operations
+                @Dependency(\.uuid) var uuid
+                
+                try await database.write { [codes] db in
+                    // Delete existing codes
+                    try await Identity.MFA.BackupCodes.Record
+                        .delete()
+                        .where { $0.identityId.eq(identity.id) }
+                        .execute(db)
+                    
+                    // Create new codes
+                    for code in codes {
+                        let backupCode = Identity.MFA.BackupCodes.Record(
+                            id: uuid(),
+                            identityId: identity.id,
+                            codeHash: try Identity.MFA.BackupCodes.Record.hashCode(code)
+                        )
+                        
+                        try await Identity.MFA.BackupCodes.Record
+                            .insert { backupCode }
+                            .execute(db)
+                    }
+                }
                 
                 logger.notice("Backup codes regenerated for identity: \(identity.id)")
                 
@@ -78,11 +103,29 @@ extension Identity.MFA.BackupCodes.Client {
                     throw Identity.Authentication.Error.accountNotFound
                 }
                 
-                // Verify the backup code
-                let isValid = try await Identity.MFA.BackupCodes.Record.verify(
-                    identityId: identityId,
-                    code: code.uppercased()
-                )
+                // Verify the backup code with explicit operations
+                @Dependency(\.date) var date
+                
+                let isValid = try await database.write { db in
+                    let unusedCodes = try await Identity.MFA.BackupCodes.Record
+                        .findUnusedByIdentity(identityId)
+                        .fetchAll(db)
+                    
+                    for backupCode in unusedCodes {
+                        if try await Identity.MFA.BackupCodes.Record.verifyCode(code.uppercased(), hash: backupCode.codeHash) {
+                            // Mark as used in same transaction
+                            try await Identity.MFA.BackupCodes.Record
+                                .where { $0.id.eq(backupCode.id) }
+                                .update { code in
+                                    code.isUsed = true
+                                    code.usedAt = date()
+                                }
+                                .execute(db)
+                            return true
+                        }
+                    }
+                    return false
+                }
                 
                 guard isValid else {
                     logger.warning("Invalid backup code for identity: \(identityId)")
@@ -115,7 +158,11 @@ extension Identity.MFA.BackupCodes.Client {
                     throw Identity.Authentication.Error.notAuthenticated
                 }
                 
-                let count = try await Identity.MFA.BackupCodes.Record.countUnusedByIdentity(identity.id)
+                let count = try await database.read { db in
+                    try await Identity.MFA.BackupCodes.Record
+                        .findUnusedByIdentity(identity.id)
+                        .fetchCount(db)
+                }
                 
                 logger.debug("Remaining backup codes for identity \(identity.id): \(count)")
                 

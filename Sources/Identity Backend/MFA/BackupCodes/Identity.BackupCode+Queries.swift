@@ -8,101 +8,13 @@ import Crypto
 
 extension Identity.MFA.BackupCodes.Record {
     
-    package static func findById(_ id: UUID) async throws -> Identity.MFA.BackupCodes.Record? {
-        @Dependency(\.defaultDatabase) var db
-        return try await db.read { db in
-            try await Identity.MFA.BackupCodes.Record
-                .where { $0.id.eq(id) }
-                .fetchOne(db)
-        }
-    }
-    
-    package static func findUnusedByIdentity(_ identityId: Identity.ID) async throws -> [Identity.MFA.BackupCodes.Record] {
-        @Dependency(\.defaultDatabase) var db
-        return try await db.read { db in
-            try await Identity.MFA.BackupCodes.Record.findUnusedByIdentity(identityId)
-                .fetchAll(db)
-        }
-    }
-    
-    package static func countUnusedByIdentity(_ identityId: Identity.ID) async throws -> Int {
-        @Dependency(\.defaultDatabase) var db
-        let codes = try await db.read { db in
-            try await Identity.MFA.BackupCodes.Record.findUnusedByIdentity(identityId)
-                .fetchAll(db)
-        }
-        return codes.count
-    }
-    
-    package static func create(
-        identityId: Identity.ID,
-        codes: [String]
-    ) async throws {
-        @Dependency(\.defaultDatabase) var db
-        @Dependency(\.uuid) var uuid
-        
-        try await db.write { db in
-            // Delete existing unused codes first
-            _ = try await Identity.MFA.BackupCodes.Record
-                .delete()
-                .where { $0.identityId.eq(identityId) }
-                .execute(db)
-            
-            // Create new backup codes
-            for code in codes {
-                let backupCode = Identity.MFA.BackupCodes.Record(
-                    id: uuid(),
-                    identityId: identityId,
-                    codeHash: try hashCode(code)
-                )
-                
-                _ = try await Identity.MFA.BackupCodes.Record.insert { backupCode }
-                    .execute(db)
-            }
-        }
-    }
-    
-    package static func verify(
-        identityId: Identity.ID,
-        code: String
-    ) async throws -> Bool {
-        let unusedCodes = try await findUnusedByIdentity(identityId)
-        
-        for backupCode in unusedCodes {
-            if try await verifyCode(code, hash: backupCode.codeHash) {
-                // Mark as used
-                try await backupCode.markAsUsed()
-                return true
-            }
-        }
-        
-        return false
-    }
-    
-    package func markAsUsed() async throws {
-        @Dependency(\.defaultDatabase) var db
-        
-        let now = Date()
-        _ = try await db.write { db in
-            try await Identity.MFA.BackupCodes.Record
-                .update { code in
-                    code.isUsed = true
-                    code.usedAt = now
-                }
-                .where { $0.id.eq(self.id) }
-                .execute(db)
-        }
-    }
-    
-    package static func deleteForIdentity(_ identityId: Identity.ID) async throws {
-        @Dependency(\.defaultDatabase) var db
-        _ = try await db.write { db in
-            try await Identity.MFA.BackupCodes.Record
-                .delete()
-                .where { $0.identityId.eq(identityId) }
-                .execute(db)
-        }
-    }
+    // REMOVED: findById() - Use explicit queries at call sites
+    // REMOVED: findUnusedByIdentity() - Use explicit queries at call sites  
+    // REMOVED: countUnusedByIdentity() - Use explicit queries at call sites
+    // REMOVED: create() that auto-saves - Create records inline within transactions
+    // REMOVED: verify() - Implement verification inline with proper transaction
+    // REMOVED: markAsUsed() - Make DB updates explicit at call sites
+    // REMOVED: deleteForIdentity() - Make DB deletes explicit at call sites
 }
 
 // MARK: - Helper Functions
