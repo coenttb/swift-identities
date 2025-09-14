@@ -50,5 +50,20 @@ extension Identity.Standalone {
             "component": "Identity.Standalone",
             "operation": "configure.success"
         ])
+        
+        @Dependency(Identity.Standalone.Configuration.self) var configuration
+        @Dependency(\.identity.oauth?.client.registerProvider) var registerProvider
+
+        if
+            let registerProvider,
+            let providers = configuration.oauth?.providers {
+            for provider in providers {
+                do {
+                    try await registerProvider(provider)
+                } catch {
+                    logger.warning("\(provider.displayName) identity provider not registered")
+                }
+            }
+        }
     }
 }
