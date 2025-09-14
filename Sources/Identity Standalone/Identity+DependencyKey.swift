@@ -111,7 +111,7 @@ extension Identity: @retroactive DependencyKey {
                         }
                     }
                 ),
-//                router: router.reauthorization
+                router: router.reauthorization
             ),
             create: .init(
                 client: .live(
@@ -134,9 +134,9 @@ extension Identity: @retroactive DependencyKey {
                         sendEmailChangeRequestNotification: emailConfig.sendEmailChangeRequestNotification,
                         onEmailChangeSuccess: emailConfig.onEmailChangeSuccess
                     ),
-//                    router: router.emailChange
+//                    router: router.email.change
                 ),
-//                router: router.email
+                router: router.email
             ),
             password: .init(
                 change: .init(
@@ -144,14 +144,14 @@ extension Identity: @retroactive DependencyKey {
                         sendPasswordResetEmail: emailConfig.sendPasswordResetEmail,
                         sendPasswordChangeNotification: emailConfig.sendPasswordChangeNotification
                     ).change,
-//                    router: router.passwordChange
+//                    router: router.password.change
                 ),
                 reset: .init(
                     client: Password.Client.live(
                         sendPasswordResetEmail: emailConfig.sendPasswordResetEmail,
                         sendPasswordChangeNotification: emailConfig.sendPasswordChangeNotification
                     ).reset,
-//                    router: router.passwordReset
+//                    router: router.password.reset
                 ),
                 router: router.password
             ),

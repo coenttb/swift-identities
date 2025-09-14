@@ -10,9 +10,7 @@ import URLRouting
 import IdentitiesTypes
 
 extension URLRouting.Router where Output == Identity.Route, Input == URLRequestData {
-
-    // MARK: - Authentication Routes
-
+    
     var authentication: any URLRouting.Router<Identity.Authentication.Route> {
         self.map(
             .convert(
@@ -21,9 +19,7 @@ extension URLRouting.Router where Output == Identity.Route, Input == URLRequestD
             )
         )
     }
-
-    // MARK: - Logout Routes
-
+    
     var logout: any URLRouting.Router<Identity.Logout.Route> {
         self.map(
             .convert(
@@ -32,20 +28,16 @@ extension URLRouting.Router where Output == Identity.Route, Input == URLRequestD
             )
         )
     }
-
-    // MARK: - Reauthorization Routes
-
-//    var reauthorization: any URLRouting.Router<Identity.Reauthorization.Request> {
-//        self.map(
-//            .convert(
-//                apply: \.reauthorize,
-//                unapply: Identity.Route.reauthorize
-//            )
-//        )
-//    }
-
-    // MARK: - Creation Routes
-
+    
+        var reauthorization: any URLRouting.Router<Identity.Reauthorization.Request> {
+            self.map(
+                .convert(
+                    apply: { $0.reauthorize?.api },
+                    unapply: { Identity.Route.reauthorize(.api($0)) }
+                )
+            )
+        }
+    
     var creation: any URLRouting.Router<Identity.Creation.Route> {
         self.map(
             .convert(
@@ -54,9 +46,7 @@ extension URLRouting.Router where Output == Identity.Route, Input == URLRequestD
             )
         )
     }
-
-    // MARK: - Deletion Routes
-
+    
     var deletion: any URLRouting.Router<Identity.Deletion.Route> {
         self.map(
             .convert(
@@ -65,29 +55,20 @@ extension URLRouting.Router where Output == Identity.Route, Input == URLRequestD
             )
         )
     }
-
-    // MARK: - Email Routes
-//
-//    var email: any URLRouting.Router<Identity.Email.Route> {
-//        self.map(
-//            .convert(
-//                apply: \.email,
-//                unapply: Identity.Route.email
-//            )
-//        )
-//    }
-//
-//    var emailChange: any URLRouting.Router<Identity.Email.Change.API> {
-//        self.map(
-//            .convert(
-//                apply: \.email.change,
-//                unapply: Identity.Route.email.change
-//            )
-//        )
-//    }
-
+    
+    var email: any URLRouting.Router<Identity.Email.Route> {
+        self.map(
+            .convert(
+                apply: \.email,
+                unapply: Identity.Route.email
+            )
+        )
+    }
+    
+    
+    
     // MARK: - Password Routes
-
+    
     var password: any URLRouting.Router<Identity.Password.Route> {
         self.map(
             .convert(
@@ -96,22 +77,35 @@ extension URLRouting.Router where Output == Identity.Route, Input == URLRequestD
             )
         )
     }
+}
 
-//    var passwordChange: any URLRouting.Router<Identity.Password.Change.API> {
-//        self.map(
-//            .convert(
-//                apply: \.password.change,
-//                unapply: Identity.Route.password.change
-//            )
-//        )
-//    }
-//
-//    var passwordReset: any URLRouting.Router<Identity.Password.Reset.API> {
-//        self.map(
-//            .convert(
-//                apply: \.password.reset,
-//                unapply: Identity.Route.password.reset
-//            )
-//        )
-//    }
+extension URLRouting.Router where Output == Identity.Email.API, Input == URLRequestData {
+    var change: any URLRouting.Router<Identity.Email.Change.API> {
+        self.map(
+            .convert(
+                apply: \.change,
+                unapply: Identity.Email.API.change
+            )
+        )
+    }
+}
+
+extension URLRouting.Router where Output == Identity.Password.API, Input == URLRequestData {
+    var change: any URLRouting.Router<Identity.Password.Change.API> {
+        self.map(
+            .convert(
+                apply: \.change,
+                unapply: Identity.Password.API.change
+            )
+        )
+    }
+    
+    var reset: any URLRouting.Router<Identity.Password.Reset.API> {
+        self.map(
+            .convert(
+                apply: \.reset,
+                unapply: Identity.Password.API.reset
+            )
+        )
+    }
 }
