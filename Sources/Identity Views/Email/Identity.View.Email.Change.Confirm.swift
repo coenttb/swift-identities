@@ -70,6 +70,7 @@ extension Identity.Email.Change.Confirmation {
                         english: "Email Change Complete"
                     )
                 }
+                .color(.text.primary)
                 .display(.inlineBlock)
                 .textAlign(.center)
             }

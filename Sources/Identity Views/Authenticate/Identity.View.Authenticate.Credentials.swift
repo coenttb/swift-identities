@@ -122,7 +122,9 @@ extension Identity.Authentication.Credentials {
                             .justifyContent(.center)
 
                             div {
-                                HTMLText("\(String.dont_have_an_account.capitalizingFirstLetter().questionmark) ")
+                                span { "\(String.dont_have_an_account.capitalizingFirstLetter().questionmark) " }
+                                    .color(.text.secondary)
+                                    
                                 Link(href: .init(accountCreateHref.relativePath)) {
                                     String.signup.capitalizingFirstLetter()
                                 }
@@ -147,6 +149,7 @@ extension Identity.Authentication.Credentials {
                 Header(3) {
                     String.welcome_back.capitalizingFirstLetter()
                 }
+                .color(.text.primary)
             }
             .width(.percent(100))
 

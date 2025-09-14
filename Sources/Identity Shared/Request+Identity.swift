@@ -40,16 +40,6 @@ extension Vapor.Request {
         public var displayName: String {
             token.displayName
         }
-        
-//        /// Require authenticated identity ID or throw an unauthorized error
-//        /// - Returns: The UUID of the authenticated identity
-//        /// - Throws: Abort.unauthorized if not authenticated
-//        public func requireId() throws -> UUID {
-//            guard let id = id else {
-//                throw Abort(.unauthorized, reason: "Authentication required")
-//            }
-//            return id
-//        }
     }
 }
 

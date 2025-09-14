@@ -88,10 +88,6 @@ extension Identity.Password.Reset.Request {
                     }
                     .id("form-forgot-password")
                 }
-                .width(.percent(100))
-                .maxWidth(.identityComponentDesktop)
-                .maxWidth(.identityComponentMobile, media: .mobile)
-                .margin(horizontal: .auto)
             } title: {
                 Header(3) {
                     TranslatedString(
@@ -99,11 +95,15 @@ extension Identity.Password.Reset.Request {
                         english: "Reset Password"
                     )
                 }
+                .color(.text.primary)
                 .display(.inlineBlock)
                 .textAlign(.center)
             }
             .id(Self.pagemodule_forgot_password_id)
             .width(.percent(100))
+            .maxWidth(.identityComponentDesktop)
+            .maxWidth(.identityComponentMobile, media: .mobile)
+            .margin(horizontal: .auto)
 
             script {"""
             document.addEventListener('DOMContentLoaded', function() {
@@ -185,10 +185,6 @@ extension Identity.Password.Reset.Request.View {
                 }
                 .textAlign(.center)
                 .alignItems(.center)
-                .width(.percent(100))
-                .maxWidth(.identityComponentDesktop)
-                .maxWidth(.identityComponentMobile, media: .mobile)
-                .margin(horizontal: .auto)
             } title: {
                 Header(3) {
                     TranslatedString(
@@ -196,10 +192,14 @@ extension Identity.Password.Reset.Request.View {
                         english: "Request Received"
                     )
                 }
+                .color(.text.primary)
                 .display(.inlineBlock)
                 .textAlign(.center)
             }
             .width(.percent(100))
+            .maxWidth(.identityComponentDesktop)
+            .maxWidth(.identityComponentMobile, media: .mobile)
+            .margin(horizontal: .auto)
         }
     }
 }
@@ -227,7 +227,6 @@ extension Identity.Password.Reset.Confirm {
 
         package var body: some HTML {
             PageModule(theme: .authenticationFlow) {
-
                 VStack {
                     HTMLComponents.Paragraph {
                         TranslatedString(
@@ -277,19 +276,19 @@ extension Identity.Password.Reset.Confirm {
                     }
                     .id("form-password-reset")
                 }
-                .width(.percent(100))
-                .maxWidth(.identityComponentDesktop)
-                .maxWidth(.identityComponentMobile, media: .mobile)
-                .margin(horizontal: .auto)
             } title: {
                 Header(3) {
                     String.reset_your_password.capitalizingFirstLetter()
                 }
+                .color(.text.primary)
                 .display(.inlineBlock)
                 .textAlign(.center)
             }
             .id(Self.passwordResetId)
             .width(.percent(100))
+            .maxWidth(.identityComponentDesktop)
+            .maxWidth(.identityComponentMobile, media: .mobile)
+            .margin(horizontal: .auto)
 
             script {"""
                document.addEventListener('DOMContentLoaded', function() {
@@ -398,10 +397,6 @@ extension Identity.Password.Reset.Confirm.View {
                     .fontWeight(.medium)
                     .textAlign(.center)
                 }
-                .width(.percent(100))
-                .maxWidth(.identityComponentDesktop)
-                .maxWidth(.identityComponentMobile, media: .mobile)
-                .margin(horizontal: .auto)
             } title: {
                 Header(3) {
                     TranslatedString(
@@ -409,11 +404,15 @@ extension Identity.Password.Reset.Confirm.View {
                         english: "Password Reset Complete"
                     )
                 }
+                .color(.text.primary)
                 .display(.inlineBlock)
                 .textAlign(.center)
             }
             .id(Self.confirmationId)
             .width(.percent(100))
+            .maxWidth(.identityComponentDesktop)
+            .maxWidth(.identityComponentMobile, media: .mobile)
+            .margin(horizontal: .auto)
 
             script {"""
                 document.addEventListener('DOMContentLoaded', function() {

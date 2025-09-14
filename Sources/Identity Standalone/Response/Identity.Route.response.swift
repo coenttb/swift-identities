@@ -69,7 +69,10 @@ extension Identity.Route {
             return try await Identity.View.standaloneResponse(view: .logout)
             
         case .reauthorize(let reauth):
-            return try await Identity.API.response(api: .reauthorize(reauth))
+            switch reauth {
+            case .api(let api):
+                return try await Identity.API.response(api: .reauthorize(api))
+            }
             
         case .oauth(let oauth):
             switch oauth {

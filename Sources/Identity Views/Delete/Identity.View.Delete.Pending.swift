@@ -92,6 +92,7 @@ extension Identity.Deletion.Pending {
                             }
                         }
                         .margin(bottom: .rem(0.5))
+                        .color(.text.primary)
                         
                         HTMLComponents.Paragraph {
                             if daysRemaining > 0 {
@@ -188,6 +189,7 @@ extension Identity.Deletion.Pending {
                 }
                 .display(.inlineBlock)
                 .textAlign(.center)
+                .color(.text.primary)
             }
             .id(Self.pagemodule_delete_pending_id)
             .width(.percent(100))

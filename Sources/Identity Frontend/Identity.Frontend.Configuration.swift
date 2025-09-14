@@ -6,7 +6,7 @@
 //
 
 import Foundation
-import IdentitiesTypes
+@preconcurrency import IdentitiesTypes
 import URLRouting
 import ServerFoundation
 import HTML
@@ -141,7 +141,8 @@ extension Identity.Frontend {
 extension Identity.Frontend.Configuration: TestDependencyKey {
     public static var testValue: Identity.Frontend.Configuration {
         let baseURL = URL(string: "http://localhost:8080")!
-        let router: AnyParserPrinter<URLRequestData, Identity.Route> = Identity.Route.Router().baseURL(baseURL.absoluteString).eraseToAnyParserPrinter()
+        
+        let router: any ParserPrinter<URLRequestData, Identity.Route> = Identity.Route.Router().baseURL(baseURL.absoluteString)
         
         return .init(
             baseURL: baseURL,
@@ -208,7 +209,7 @@ extension Identity.Frontend.Configuration: TestDependencyKey {
 }
 
 extension Identity.Frontend.Configuration.Redirect {
-    public static func `default`(router: AnyParserPrinter<URLRequestData, Identity.Route>) -> Self {
+    public static func `default`(router: any ParserPrinter<URLRequestData, Identity.Route>) -> Self {
         let home = URL(string: "/")!
         return .init(
             loginSuccess: { _ in home },

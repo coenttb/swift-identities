@@ -23,6 +23,7 @@ extension Identity.Backend {
     /// ```
     public static func migrator() -> Records.Database.Migrator {
         var migrator = Records.Database.Migrator()
+        @Dependency(\.logger) var logger
         
         // Core identity table
         migrator.registerMigration("create_identities_table") { db in
@@ -399,35 +400,60 @@ extension Identity.Backend {
             """)
             
             // Index for session token lookups with type and validity
+            // Note: We include validUntil in the index but don't use it in WHERE clause
+            // because CURRENT_TIMESTAMP is not immutable for partial indexes
             try await db.execute("""
                 CREATE INDEX IF NOT EXISTS idx_tokens_type_valid 
-                ON identity_tokens(value, type) 
-                WHERE "validUntil" > CURRENT_TIMESTAMP
+                ON identity_tokens(value, type, "validUntil")
             """)
             
             // Composite index for OAuth connection lookups
             try await db.execute("""
                 CREATE INDEX IF NOT EXISTS idx_oauth_connections_provider_identity 
-                ON oauth_connections("providerId", "identityId")
+                ON oauth_connections(provider, identity_id)
             """)
             
             // Index for email change request token lookups
             try await db.execute("""
                 CREATE INDEX IF NOT EXISTS idx_email_change_token 
-                ON identity_email_change_requests(token) 
+                ON identity_email_change_requests("verificationToken") 
                 WHERE "confirmedAt" IS NULL
             """)
             
             // Index for active sessions by identity (for logout all)
+            // Note: We include validUntil in the index but don't use it in WHERE clause
+            // because CURRENT_TIMESTAMP is not immutable for partial indexes
             try await db.execute("""
                 CREATE INDEX IF NOT EXISTS idx_tokens_identity_active 
-                ON identity_tokens("identityId", type) 
-                WHERE "validUntil" > CURRENT_TIMESTAMP
+                ON identity_tokens("identityId", type, "validUntil")
             """)
             
             logger.info("Additional performance indexes added successfully", metadata: [
                 "component": "Identity.Database",
                 "migration": "add_performance_indexes_v2"
+            ])
+        }
+        
+        
+        
+        // Add unique constraint for OAuth connections per identity
+        migrator.registerMigration("add_oauth_connections_unique_constraint") { db in
+            logger.info("Adding unique constraint for OAuth connections", metadata: [
+                "component": "Identity.Database",
+                "migration": "add_oauth_connections_unique_constraint"
+            ])
+            
+            // Add unique constraint on (identity_id, provider) to ensure
+            // only one connection per provider per identity
+            try await db.execute("""
+                ALTER TABLE oauth_connections
+                ADD CONSTRAINT oauth_connections_identity_provider_unique
+                UNIQUE (identity_id, provider)
+            """)
+            
+            logger.info("OAuth connections unique constraint added successfully", metadata: [
+                "component": "Identity.Database",
+                "migration": "add_oauth_connections_unique_constraint"
             ])
         }
         

@@ -255,6 +255,7 @@ extension Identity.MFA.BackupCodes.Verify {
                 Header(3) {
                     "Use Backup Code"
                 }
+                .color(.text.primary)
             }
         }
     }

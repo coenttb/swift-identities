@@ -17,7 +17,7 @@ extension Identity.Password.Change.Request {
         let currentUserName: String
         let formActionURL: URL
         let redirectOnSuccess: URL
-
+        
         package init(
             currentUserName: String,
             formActionURL: URL,
@@ -27,14 +27,14 @@ extension Identity.Password.Change.Request {
             self.formActionURL = formActionURL
             self.redirectOnSuccess = redirectOnSuccess
         }
-
+        
         private static var pagemodule_change_password_id: String { "pagemodule_change_password_id" }
-
+        
         package  var body: some HTML {
             PageModule(theme: .authenticationFlow) {
                 div {
-                VStack {
-                    HTMLMarkdown { """
+                    VStack {
+                        HTMLMarkdown { """
                       \(
                           TranslatedString(
                               dutch: "Ingelogd als",
@@ -43,79 +43,75 @@ extension Identity.Password.Change.Request {
                       )
                     **\(currentUserName)**.
                     """ }
-                    .textAlign(.center)
-                    
-                    HTMLComponents.Paragraph {
-                        TranslatedString(
-                            dutch: "Voer uw huidige wachtwoord en uw nieuwe wachtwoord in.",
-                            english: "Enter your current password and your new password."
-                        )
-                    }
-                    .font(.body(.small))
-                    .textAlign(.center)
-                    .color(.text.secondary)
-                    
-                    form(
-                        action: .init(self.formActionURL.relativePath),
-                        method: .post
-                    ) {
-                        VStack {
-                            Input(
-                                codingKey: Identity.Password.Change.Request.CodingKeys.currentPassword,
-                                type: .password(
-                                    .init(
-                                        placeholder: .init(TranslatedString(dutch: "Huidig wachtwoord", english: "Current password").description)
-                                    )
-                                )
+                        .textAlign(.center)
+                        
+                        HTMLComponents.Paragraph {
+                            TranslatedString(
+                                dutch: "Voer uw huidige wachtwoord en uw nieuwe wachtwoord in.",
+                                english: "Enter your current password and your new password."
                             )
-                            
-                            Input(
-                                codingKey: Identity.Password.Change.Request.CodingKeys.newPassword,
-                                type: .password(
-                                    .init(
-                                        placeholder: .init(TranslatedString(dutch: "Nieuw wachtwoord", english: "New password").description)
-                                    )
-                                )
-                            )
-                            
-                            VStack {
-                                Button(
-                                    button: .init(type: .submit)
-                                ) {
-                                    TranslatedString(
-                                        dutch: "Wachtwoord wijzigen",
-                                        english: "Change Password"
-                                    )
-                                }
-                                .color(.text.primary.reverse())
-                                .width(.percent(100))
-                                .justifyContent(.center)
-                                
-                                Link(href: .init(redirectOnSuccess.relativePath)) {
-                                    TranslatedString(
-                                        dutch: "Terug naar home",
-                                        english: "Back to Home"
-                                    ).description
-                                }
-                                .linkColor(.branding.primary)
-                                .fontWeight(.medium)
-                                .font(.body(.small))
-                            }
-                            .flexContainer(
-                                justification: .center,
-                                itemAlignment: .center,
-                                media: .desktop
-                            )
-                            .width(.percent(100))
                         }
+                        .font(.body(.small))
+                        .textAlign(.center)
+                        .color(.text.secondary)
+                        
+                        form(
+                            action: .init(self.formActionURL.relativePath),
+                            method: .post
+                        ) {
+                            VStack {
+                                Input(
+                                    codingKey: Identity.Password.Change.Request.CodingKeys.currentPassword,
+                                    type: .password(
+                                        .init(
+                                            placeholder: .init(TranslatedString(dutch: "Huidig wachtwoord", english: "Current password").description)
+                                        )
+                                    )
+                                )
+                                
+                                Input(
+                                    codingKey: Identity.Password.Change.Request.CodingKeys.newPassword,
+                                    type: .password(
+                                        .init(
+                                            placeholder: .init(TranslatedString(dutch: "Nieuw wachtwoord", english: "New password").description)
+                                        )
+                                    )
+                                )
+                                
+                                VStack {
+                                    Button(
+                                        button: .init(type: .submit)
+                                    ) {
+                                        TranslatedString(
+                                            dutch: "Wachtwoord wijzigen",
+                                            english: "Change Password"
+                                        )
+                                    }
+                                    .color(.text.primary.reverse())
+                                    .width(.percent(100))
+                                    .justifyContent(.center)
+                                    
+                                    Link(href: .init(redirectOnSuccess.relativePath)) {
+                                        TranslatedString(
+                                            dutch: "Terug naar home",
+                                            english: "Back to Home"
+                                        ).description
+                                    }
+                                    .linkColor(.branding.primary)
+                                    .fontWeight(.medium)
+                                    .font(.body(.small))
+                                }
+                                .flexContainer(
+                                    justification: .center,
+                                    itemAlignment: .center,
+                                    media: .desktop
+                                )
+                                .width(.percent(100))
+                            }
+                        }
+                        .id("form-change-password")
                     }
-                    .id("form-change-password")
                 }
-            }
-                .width(.percent(100))
-                .maxWidth(.identityComponentDesktop)
-                .maxWidth(.identityComponentMobile, media: .mobile)
-                .margin(horizontal: .auto)
             } title: {
                 Header(3) {
                     TranslatedString(
@@ -123,12 +119,16 @@ extension Identity.Password.Change.Request {
                         english: "Change Password"
                     )
                 }
+                .color(.text.primary)
                 .display(.inlineBlock)
                 .textAlign(.center)
             }
             .id(Self.pagemodule_change_password_id)
             .width(.percent(100))
-
+            .maxWidth(.identityComponentDesktop)
+            .maxWidth(.identityComponentMobile, media: .mobile)
+            .margin(horizontal: .auto)
+            
             script {"""
             document.addEventListener('DOMContentLoaded', function() {
                 const form = document.getElementById('form-change-password');
@@ -171,13 +171,13 @@ extension Identity.Password.Change.Request {
 extension Identity.Password.Change.Request.View {
     package struct Confirmation: HTML {
         package let redirectOnSuccess: URL
-
+        
         package init(
             redirectOnSuccess: URL
         ) {
             self.redirectOnSuccess = redirectOnSuccess
         }
-
+        
         package  var body: some HTML {
             PageModule(theme: .authenticationFlow) {
                 VStack {
@@ -189,7 +189,7 @@ extension Identity.Password.Change.Request.View {
                     }
                     .textAlign(.center)
                     .margin(bottom: .rem(1))
-
+                    
                     HTMLComponents.Paragraph {
                         TranslatedString(
                             dutch: "U kunt nu inloggen met uw nieuwe wachtwoord.",
@@ -198,7 +198,7 @@ extension Identity.Password.Change.Request.View {
                     }
                     .textAlign(.center)
                     .margin(bottom: .rem(2))
-
+                    
                     Link(href: .init(redirectOnSuccess.relativePath)) {
                         TranslatedString(
                             dutch: "Terug naar home",
@@ -220,6 +220,7 @@ extension Identity.Password.Change.Request.View {
                         english: "Password Changed"
                     )
                 }
+                .color(.text.primary)
                 .display(.inlineBlock)
                 .textAlign(.center)
             }

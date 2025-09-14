@@ -238,6 +238,7 @@ extension Identity.MFA.TOTP.Verify {
                 Header(3) {
                     "Verify Your Identity"
                 }
+                .color(.text.primary)
             }
         }
     }

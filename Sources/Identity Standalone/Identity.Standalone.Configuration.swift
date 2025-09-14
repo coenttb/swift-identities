@@ -10,7 +10,7 @@ import Identity_Frontend
 extension Identity.Standalone {
     /// Standalone uses the same configuration as Frontend.
     /// Since Standalone includes both provider and consumer functionality,
-    /// it needs the full Frontend configuration including the client.
+    /// it needs the full Frontend configuration including the identity.
     public typealias Configuration = Identity.Frontend.Configuration
 }
 
@@ -21,11 +21,17 @@ extension DependencyValues {
     }
 }
 
+extension Identity: @retroactive DependencyKey {
+    public static var liveValue: Self {
+        @Dependency(\.identity.identity) var identity
+        return identity
+    }
+}
+
 extension Identity.Standalone.Configuration {
     public init(
         baseURL: URL,
-        router: AnyParserPrinter<URLRequestData, Identity.Route>,
-        client: Identity.Client,
+        identity: Identity,
         jwt: Identity.Token.Client,
         cookies: Identity.Frontend.Configuration.Cookies? = nil,
         branding: Branding = .default,
@@ -38,13 +44,12 @@ extension Identity.Standalone.Configuration {
     ) {
         self = .init(
             baseURL: baseURL,
-            router: router,
-            client: client,
+            identity: identity,
             jwt: jwt,
-            cookies: cookies ?? .live(router, domain: baseURL.host),
+            cookies: cookies ?? .live(identity.router, domain: baseURL.host),
             branding: branding,
             navigation: navigation,
-            redirect: redirect ?? .default(router: router),
+            redirect: redirect ?? .default(router: identity.router),
             rateLimiters: rateLimiters,
             currentUserName: currentUserName,
             canonicalHref: canonicalHref,

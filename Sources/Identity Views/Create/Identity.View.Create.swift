@@ -64,7 +64,9 @@ extension Identity.Creation.Request {
                             .justifyContent(.center)
 
                             div {
-                                HTMLText("\(String.already_have_an_account.capitalizingFirstLetter().questionmark) ")
+                                span { "\(String.already_have_an_account.capitalizingFirstLetter().questionmark) " }
+                                    .color(.text.primary)
+                                
                                 Link(href: .init(loginHref.relativePath)) {
                                     String.login.capitalizingFirstLetter()
                                 }
@@ -80,20 +82,21 @@ extension Identity.Creation.Request {
                         .width(.percent(100))
                     }
                 }
-                .id("form-create-identity")
                 .width(.percent(100))
-                .maxWidth(.rem(30), media: .desktop)
-                .maxWidth(.identityComponentMobile, media: .mobile)
-                .margin(horizontal: .auto)
+                .id("form-create-identity")
             } title: {
                 Header(3) {
                     String.create_your_account.capitalizingFirstLetter()
                 }
                 .display(.inlineBlock)
                 .textAlign(.center)
+                .color(.text.primary)
             }
             .id(Self.pagemodule_create_identity)
             .width(.percent(100))
+            .maxWidth(.identityComponentDesktop)
+            .maxWidth(.identityComponentMobile, media: .mobile)
+            .margin(horizontal: .auto)
 
             script {"""
             document.addEventListener('DOMContentLoaded', function() {
@@ -184,18 +187,18 @@ extension Identity.Creation.Request.View {
                     //                .fontSize(.secondary)
                     //                .textAlign(.center)
                 }
-                .width(.percent(100))
-                .maxWidth(.rem(30), media: .desktop)
-                .maxWidth(.identityComponentMobile, media: .mobile)
-                .margin(horizontal: .auto)
             } title: {
                 Header(3) {
                     "Account Request Confirmation"
                 }
                 .display(.inlineBlock)
                 .textAlign(.center)
+                .color(.text.primary)
             }
             .width(.percent(100))
+            .maxWidth(.identityComponentDesktop)
+            .maxWidth(.identityComponentMobile, media: .mobile)
+            .margin(horizontal: .auto)
         }
     }
 }
@@ -222,15 +225,12 @@ extension Identity.Creation.Verification {
                         .id("spinner")
                     h2 { "message" }
                         .id("message")
+                        .color(.text.primary)
                 }
                 .textAlign(.center)
                 .alignItems(.center)
                 .textAlign(.start, media: .mobile)
                 .alignItems(.leading, media: .mobile)
-                .width(.percent(100))
-                .maxWidth(.identityComponentDesktop)
-                .maxWidth(.identityComponentMobile, media: .mobile)
-                .margin(horizontal: .auto)
 
             } title: {
                 Header(3) {
@@ -239,11 +239,15 @@ extension Identity.Creation.Verification {
                         english: "Verification in Progress..."
                     )
                 }
+                .color(.text.primary)
                 .display(.inlineBlock)
                 .textAlign(.center)
             }
             .id(Self.pagemodule_verify_id)
             .width(.percent(100))
+            .maxWidth(.identityComponentDesktop)
+            .maxWidth(.identityComponentMobile, media: .mobile)
+            .margin(horizontal: .auto)
 
             script {"""
                 document.addEventListener('DOMContentLoaded', function() {
@@ -340,18 +344,18 @@ extension Identity.Creation.Verification.View {
                 }
                 .textAlign(.center)
                 .alignItems(.center)
-                .width(.percent(100))
-                .maxWidth(.identityComponentDesktop)
-                .maxWidth(.identityComponentMobile, media: .mobile)
-                .margin(horizontal: .auto)
             } title: {
                 Header(3) {
                     "Account Verified"
                 }
+                .color(.text.primary)
                 .display(.inlineBlock)
                 .textAlign(.center)
             }
             .width(.percent(100))
+            .maxWidth(.identityComponentDesktop)
+            .maxWidth(.identityComponentMobile, media: .mobile)
+            .margin(horizontal: .auto)
         }
     }
 }

@@ -5,7 +5,7 @@
 //  Created by Coen ten Thije Boonkkamp on 29/01/2025.
 //
 
-import ServerFoundationVapor
+@preconcurrency import ServerFoundationVapor
 import Dependencies
 import IdentitiesTypes
 import JWT
@@ -28,8 +28,8 @@ extension Identity.Backend {
         sendDeletionRequestNotification: @escaping @Sendable (_ email: EmailAddress) async throws -> Void,
         sendDeletionConfirmationNotification: @escaping @Sendable (_ email: EmailAddress) async throws -> Void,
         onIdentityCreationSuccess: @escaping @Sendable (_ identity: (id: Identity.ID, email: EmailAddress)) async throws -> Void = { _ in },
-        mfaConfiguration: Identity.MFA.TOTP.Configuration? = nil,
-        oauthProviderRegistry: Identity.OAuth.ProviderRegistry? = nil
+        mfaConfiguration: Identity.MFA?,
+        oauthConfiguration: Identity.OAuth? = nil
     ) -> Identity {
         @Dependency(\.logger) var logger
         @Dependency(\.defaultDatabase) var database
@@ -166,56 +166,17 @@ extension Identity.Backend {
                 ),
                 router: Identity.Password.Route.Router()
             ),
-            mfa: mfaConfiguration.map { config in
-                Identity.MFA(
-                    totp: Identity.MFA.TOTP(
-                        client: Identity.MFA.TOTP.Client.live(configuration: config),
-                        router: Identity.MFA.TOTP.API.Router()
-                    ),
-                    sms: Identity.MFA.SMS(
-                        client: .init(),  // Not implemented yet
-                        router: Identity.MFA.SMS.API.Router()
-                    ),
-                    email: Identity.MFA.Email(
-                        client: .init(),  // Not implemented yet
-                        router: Identity.MFA.Email.API.Router()
-                    ),
-                    webauthn: Identity.MFA.WebAuthn(
-                        client: .init(),  // Not implemented yet
-                        router: Identity.MFA.WebAuthn.API.Router()
-                    ),
-                    backupCodes: Identity.MFA.BackupCodes(
-                        client: Identity.MFA.BackupCodes.Client.live(configuration: config),
-                        router: Identity.MFA.BackupCodes.API.Router()
-                    ),
-                    status: Identity.MFA.Status(
-                        client: Identity.MFA.Status.Client.live(),
-                        router: Identity.MFA.Status.API.Router()
-                    ),
-                    router: Identity.MFA.Route.Router()
-                )
-            },
-            oauth: oauthProviderRegistry.map { registry in
-                @Dependency(Identity.Token.Client.self) var encryption
-                
-                let stateManager = Identity.OAuth.State.Manager()
-                return Identity.OAuth(
-                    client: Identity.OAuth.Client.live(
-                        registry: registry,
-                        stateManager: stateManager
-                    ),
-                    router: Identity.OAuth.Route.Router()
-                )
-            }
+            mfa: mfaConfiguration,
+            oauth: oauthConfiguration
         )
     }
 }
 
 extension Identity.Backend {
     public static func logging(
-        router: AnyParserPrinter<URLRequestData, Identity.Route>,
-        mfaConfiguration: Identity.MFA.TOTP.Configuration? = nil,
-        oauthProviderRegistry: Identity.OAuth.ProviderRegistry? = nil
+        router: any ParserPrinter<URLRequestData, Identity.Route>,
+        mfaConfiguration: Identity.MFA? = nil,
+        oauthConfiguration: Identity.OAuth? = nil
     ) -> Identity {
         return Identity.Backend.live(
             sendVerificationEmail: { email, token in
@@ -299,7 +260,7 @@ extension Identity.Backend {
                 ])
             },
             mfaConfiguration: mfaConfiguration,
-            oauthProviderRegistry: oauthProviderRegistry
+            oauthConfiguration: oauthConfiguration
         )
     }
 }

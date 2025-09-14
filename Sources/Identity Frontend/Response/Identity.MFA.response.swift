@@ -59,7 +59,7 @@
 //        let backupCodeURL = router.url(for: .mfa(.view(.backupCodes(.verify(challenge)))))
 //        
 //        // Create a dummy verify request just to get the URL path
-//        let dummyVerify = Identity.API.MFA.Verify(
+//        let dummyVerify = Identity.MFA.API.Verify(
 //            sessionToken: "",
 //            method: .totp,
 //            code: ""
@@ -88,7 +88,7 @@
 //        let router = configuration.identity.router
 //        
 //        // Create a dummy verify request just to get the URL path
-//        let dummyVerify = Identity.API.MFA.Verify(
+//        let dummyVerify = Identity.MFA.API.Verify(
 //            sessionToken: "",
 //            method: .backupCode,
 //            code: ""

@@ -43,7 +43,7 @@ extension Identity.Provider {
         /// - HTTPS requirements for production
         public static func forDeployment(
             _ mode: Identity.Cookies.DeploymentMode,
-            router: AnyParserPrinter<URLRequestData, Identity.Route>
+            router: any ParserPrinter<URLRequestData, Identity.Route>
         ) -> Self {
             switch mode {
             case .sameOrigin:
@@ -64,7 +64,7 @@ extension Identity.Provider {
         /// Uses strict SameSite policy for maximum security.
         public static func sameOrigin(
             domain: String? = nil,
-            router: AnyParserPrinter<URLRequestData, Identity.Route>
+            router: any ParserPrinter<URLRequestData, Identity.Route>
         ) -> Self {
             let refreshPath = Identity.Cookies.Paths.refresh(using: router)
             let reauthorizePath = Identity.Cookies.Paths.reauthorize(using: router)
@@ -104,7 +104,7 @@ extension Identity.Provider {
         /// Sets parent domain to allow cookie sharing between subdomains.
         public static func crossSubdomain(
             parentDomain: String,
-            router: AnyParserPrinter<URLRequestData, Identity.Route>
+            router: any ParserPrinter<URLRequestData, Identity.Route>
         ) -> Self {
             let refreshPath = Identity.Cookies.Paths.refresh(using: router)
             let reauthorizePath = Identity.Cookies.Paths.reauthorize(using: router)
@@ -144,7 +144,7 @@ extension Identity.Provider {
         /// Uses SameSite=None to allow cross-domain cookie sharing.
         /// Warning: Requires HTTPS and proper CORS configuration.
         public static func crossDomain(
-            router: AnyParserPrinter<URLRequestData, Identity.Route>
+            router: any ParserPrinter<URLRequestData, Identity.Route>
         ) -> Self {
             let refreshPath = Identity.Cookies.Paths.refresh(using: router)
             let reauthorizePath = Identity.Cookies.Paths.reauthorize(using: router)
@@ -183,7 +183,7 @@ extension Identity.Provider {
         /// Development configuration for Provider services.
         /// Allows HTTP and cross-origin for local development.
         public static func development(
-            router: AnyParserPrinter<URLRequestData, Identity.Route>
+            router: any ParserPrinter<URLRequestData, Identity.Route>
         ) -> Self {
             let refreshPath = Identity.Cookies.Paths.refresh(using: router)
             let reauthorizePath = Identity.Cookies.Paths.reauthorize(using: router)

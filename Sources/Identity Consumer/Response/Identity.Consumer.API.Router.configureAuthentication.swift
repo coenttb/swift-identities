@@ -13,7 +13,7 @@ extension Identity.Consumer.API.Router {
     package static func configureAuthentication(
         baseRouter: some URLRouting.Router<Identity.Consumer.API>,
         route: Identity.Consumer.API
-    ) throws -> AnyParserPrinter<URLRequestData, Identity.Consumer.API> {
+    ) throws -> any ParserPrinter<URLRequestData, Identity.Consumer.API> {
         @Dependency(\.request) var request
         guard let request else { throw Abort.requestUnavailable }
 
@@ -28,7 +28,7 @@ extension Identity.Consumer.API.Router {
             case .token:
                 return router
                     .setBearerAuth(request.cookies.accessToken?.string)
-                    .eraseToAnyParserPrinter()
+                    
             case .apiKey:
                 break
 
@@ -38,8 +38,7 @@ extension Identity.Consumer.API.Router {
             return router
                 .setBearerAuth(request.cookies.accessToken?.string)
                 .setReauthorizationToken(request.cookies.reauthorizationToken?.string)
-                .eraseToAnyParserPrinter()
-
+                
         case .password(let password):
             switch password {
             case .reset:
@@ -48,24 +47,23 @@ extension Identity.Consumer.API.Router {
             case .change:
                 return router
                     .setBearerAuth(request.cookies.accessToken?.string)
-                    .eraseToAnyParserPrinter()
             }
 
         case .create, .delete, .logout, .reauthorize:
             return router
                 .setBearerAuth(request.cookies.accessToken?.string)
-                .eraseToAnyParserPrinter()
+                
             
         case .mfa(_):
             break
         }
 
-        return router.eraseToAnyParserPrinter()
+        return router
     }
 }
 
-extension AnyParserPrinter<URLRequestData, Identity.API> {
-    package func configureAuthentication(for route: Identity.API) throws -> Self {
+extension ParserPrinter<URLRequestData, Identity.API> {
+    package func configureAuthentication(for route: Identity.API) throws -> any ParserPrinter<URLRequestData, Identity.API> {
         try Identity.Consumer.API.Router.configureAuthentication(baseRouter: self, route: route)
     }
 }

@@ -23,7 +23,7 @@ extension Identity.Frontend.Configuration.Cookies {
     /// - No cross-domain concerns
     public static func standalone(
         mode: Identity.Cookies.DeploymentMode = .sameOrigin,
-        router: AnyParserPrinter<URLRequestData, Identity.Route>
+        router: any ParserPrinter<URLRequestData, Identity.Route>
     ) -> Self {
         switch mode {
         case .sameOrigin:
@@ -40,7 +40,7 @@ extension Identity.Frontend.Configuration.Cookies {
     /// Uses strict security settings with HTTPS requirement.
     public static func production(
         domain: String? = nil,
-        router: AnyParserPrinter<URLRequestData, Identity.Route>
+        router: any ParserPrinter<URLRequestData, Identity.Route>
     ) -> Self {
         let refreshPath = Identity.Cookies.Paths.refresh(using: router)
         let reauthorizePath = Identity.Cookies.Paths.reauthorize(using: router)
@@ -79,7 +79,7 @@ extension Identity.Frontend.Configuration.Cookies {
     /// Development configuration for Standalone identity system.
     /// Uses relaxed security settings suitable for local development.
     public static func development(
-        router: AnyParserPrinter<URLRequestData, Identity.Route>? = nil
+        router: (any ParserPrinter<URLRequestData, Identity.Route>)? = nil
     ) -> Self {
        
         return Self(

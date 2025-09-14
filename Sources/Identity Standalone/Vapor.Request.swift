@@ -10,7 +10,7 @@ import Identity_Frontend
 
 extension Vapor.Request {
     public func redirect(to view: Identity.View) -> Response {
-        @Dependency(\.identity.router) var router
+        @Dependency(\.identity.identity.router) var router
         return self.redirect(to: router.url(for: .view(view)).absoluteString)
     }
 }

@@ -114,6 +114,7 @@ extension Identity.Reauthorization {
                     Header(3) {
                         String.confirm_access.capitalizingFirstLetter()
                     }
+                    .color(.text.primary)
                 }
 
                 script {"""

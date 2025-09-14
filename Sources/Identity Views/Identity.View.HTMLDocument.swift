@@ -86,6 +86,20 @@ extension Identity.View {
                 name: .viewport,
                 content: "width=device-width, initial-scale=1.0, viewport-fit=cover"
             )()
+            
+            Style {"""
+
+            body, html {
+                background: \(HTMLColor.theme.background.primary.light.description);
+            }
+
+            @media (prefers-color-scheme: dark) {
+                body, html {
+                    background: \(HTMLColor.theme.background.primary.dark.description);
+                }
+            }
+
+            """}
         }
 
         public var body: some HTML {

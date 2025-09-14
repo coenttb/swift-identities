@@ -15,11 +15,24 @@ import JWT
 import Logging
 import EmailAddress
 
+extension Identity.OAuth.ProviderRegistry: DependencyKey {
+    public static var liveValue: Identity.OAuth.ProviderRegistry {
+        .init()
+    }
+}
+
+extension Identity.OAuth.State.Manager: DependencyKey {
+    public static var liveValue: Identity.OAuth.State.Manager {
+        .init()
+    }
+}
+
 extension Identity.OAuth.Client {
     public static func live(
-        registry: Identity.OAuth.ProviderRegistry,
-        stateManager: Identity.OAuth.State.Manager
     ) -> Identity.OAuth.Client {
+        @Dependency(Identity.OAuth.ProviderRegistry.self) var registry
+        @Dependency(Identity.OAuth.State.Manager.self) var stateManager
+        
         
         return .init(
             registerProvider: { await registry.register($0) },

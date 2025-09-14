@@ -28,7 +28,7 @@ extension Identity.Standalone.Client.Profile {
                 // Upsert to ensure profile exists, then fetch it
                 let profile = try await db.write { db in
                     // Create default profile if doesn't exist
-                    let defaultProfile = Identity.Profile.Record(
+                    let defaultProfile = Identity.Profile.Record.Draft(
                         id: uuid(),
                         identityId: identity.id,
                         displayName: nil,

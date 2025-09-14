@@ -87,7 +87,7 @@ extension Identity.Frontend.Configuration {
 
 extension Identity.Frontend.Configuration.Cookies {
     public static func live(
-        _ router: AnyParserPrinter<URLRequestData, Identity.Route>,
+        _ router: any ParserPrinter<URLRequestData, Identity.Route>,
         domain: String?
     ) -> Identity.Frontend.Configuration.Cookies {
         

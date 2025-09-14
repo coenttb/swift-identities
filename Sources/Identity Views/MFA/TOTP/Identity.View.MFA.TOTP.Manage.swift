@@ -233,6 +233,7 @@ extension Identity.MFA.TOTP.Manage {
                     // Status card
                     div {
                         Header(3) { "Two-Factor Authentication Settings" }
+                            .color(.text.primary)
                         
                         VStack(spacing: .rem(0.5)) {
                             StatusIndicator(isEnabled: isEnabled)

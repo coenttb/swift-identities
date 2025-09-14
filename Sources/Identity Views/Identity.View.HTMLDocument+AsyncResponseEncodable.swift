@@ -9,11 +9,11 @@ import ServerFoundationVapor
 import IdentitiesTypes
 
 extension Identity.View.HTMLDocument: AsyncResponseEncodable {
-    public func encodeResponse(for request: Vapor.Request) async throws -> Vapor.Response {
+    public func encodeResponse(
+        for request: Vapor.Request
+    ) async throws -> Vapor.Response {
         var headers = HTTPHeaders()
         headers.add(name: .contentType, value: "text/html")
-        let bytes: ContiguousArray<UInt8> = self.render()
-        let string: String = String(decoding: bytes, as: UTF8.self)
-        return .init(status: .ok, headers: headers, body: .init(string: string))
+        return .init(status: .ok, headers: headers, body: .init(data: .init(self.render())))
     }
 }

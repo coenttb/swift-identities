@@ -326,6 +326,7 @@ extension Identity.MFA.TOTP.Setup {
                 Header(3) {
                     "Two-Factor Authentication Setup"
                 }
+                .color(.text.primary)
             }
             .id(Self.pagemodule_id)
         }

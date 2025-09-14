@@ -107,6 +107,7 @@ extension Identity.Email.Change.Request {
                         english: "Change Email Address"
                     )
                 }
+                .color(.text.primary)
                 .display(.inlineBlock)
                 .textAlign(.center)
             }
@@ -248,6 +249,7 @@ extension Identity.Email.Change.Request.View {
                         english: "Request Received"
                     )
                 }
+                .color(.text.primary)
                 .display(.inlineBlock)
                 .textAlign(.center)
             }

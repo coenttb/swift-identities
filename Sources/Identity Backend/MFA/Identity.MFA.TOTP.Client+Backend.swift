@@ -174,7 +174,63 @@ extension Identity.MFA.TOTP.Client {
                     configuration: configuration
                 )
             },
-            
+            verify: { code, sessionToken in
+                @Dependency(\.logger) var logger
+                @Dependency(\.tokenClient) var tokenClient
+                @Dependency(\.defaultDatabase) var database
+                
+                logger.debug("TOTP MFA verification initiated")
+                
+                // 1. Verify the MFA session token
+                let mfaToken = try await tokenClient.verifyMFASession(sessionToken)
+                
+                // Check if token is valid
+                guard mfaToken.isValid else {
+                    logger.error("MFA session token is expired or invalid")
+                    throw Identity.Authentication.Error.tokenExpired
+                }
+                
+                let identityId = mfaToken.identityId
+                
+                // 2. Get identity from database
+                guard let identity = try await database.read({ db in
+                    try await Identity.Record
+                        .where { $0.id.eq(identityId) }
+                        .fetchOne(db)
+                }) else {
+                    logger.error("Identity not found: \(identityId)")
+                    throw Identity.Authentication.Error.accountNotFound
+                }
+                
+                // 3. Verify the TOTP code using existing verification logic
+                let isValid = try await verifyTOTPCode(
+                    identityId: identityId,
+                    code: code,
+                    window: configuration.verificationWindow,
+                    configuration: configuration
+                )
+                
+                guard isValid else {
+                    logger.warning("Invalid TOTP code for identity: \(identityId)")
+                    throw Identity.MFA.TOTP.Client.ClientError.invalidCode
+                }
+                
+                logger.notice("TOTP verified successfully for identity: \(identityId)")
+                
+                // 4. Generate full authentication tokens
+                let (accessToken, refreshToken) = try await tokenClient.generateTokenPair(
+                    identity.id,
+                    identity.email,
+                    identity.sessionVersion
+                )
+                
+                // 5. Return authentication response
+                return Identity.Authentication.Response(
+                    accessToken: accessToken,
+                    refreshToken: refreshToken,
+                    mfaStatus: .satisfied
+                )
+            },
             generateBackupCodes: { identityId, count in
                 let actualCount = count > 0 ? count : configuration.backupCodeCount
                 var codes: [String] = []

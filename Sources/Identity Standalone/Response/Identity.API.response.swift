@@ -11,6 +11,7 @@ import Identity_Frontend
 import Identity_Shared
 import Dependencies
 import Vapor
+import JWT
 
 extension Identity.API {
     public static func response(
@@ -59,7 +60,7 @@ extension Identity.API {
             throw Abort(.unauthorized, reason: "Not authenticated")
         }
         
-        let client = configuration.client
+        let identity = configuration.identity
         
         // Special handling for logout and logout.all to clear cookies and redirect
         if case .logout = api {
@@ -74,7 +75,7 @@ extension Identity.API {
             }
             
             // Call the client logout
-            try await client.logout()
+            try await identity.logout.client.current()
             logger.info("[Standalone.logout] Client logout completed")
             
             // Check if this is a browser request (form submission)
@@ -124,7 +125,7 @@ extension Identity.API {
             }
             
             // Call the client logout.all
-            try await client.logout.all()
+            try await identity.logout.client.all()
             logger.info("[Standalone.logout.all] Client logout.all completed - all sessions invalidated")
             
             // Check if this is a browser request (form submission)
@@ -157,7 +158,7 @@ extension Identity.API {
         }
         
         // Handle MFA requests directly in Standalone (has backend access)
-        if case .mfa(let mfaAPI) = api {
+        if case .mfa(let api) = api {
             do {
                 // Record the attempt BEFORE the actual operation
                 if let rateLimitClient {
@@ -165,8 +166,8 @@ extension Identity.API {
                 }
                 
                 let response = try await handleMFAAPI(
-                    mfaAPI,
-                    client: client,
+                    api,
+                    mfa: identity.mfa!,
                     router: configuration.identity.router
                 )
                 
@@ -194,8 +195,7 @@ extension Identity.API {
             
             let response = try await Identity.Frontend.response(
                 api: api,
-                client: client,
-                router: configuration.identity.router,
+                identity: identity,
                 cookies: configuration.cookies,
                 redirect: configuration.redirect
             )
@@ -287,26 +287,17 @@ extension Identity.API {
             
             throw error
         }
-        
     }
     
-    
-    
-    
     private static func handleMFAAPI(
-        _ mfa: Identity.API.MFA,
-        client: Identity.Client,
-        router: AnyParserPrinter<URLRequestData, Identity.Route>
+        _ api: Identity.MFA.API,
+        mfa: Identity.MFA,
+        router: any ParserPrinter<URLRequestData, Identity.Route>
     ) async throws -> any AsyncResponseEncodable {
-        guard let mfaClient = client.mfa else {
-            throw Abort(.notImplemented, reason: "MFA is not configured")
-        }
         
-        switch mfa {
+        switch api {
         case .totp(let totp):
-            guard let totpClient = mfaClient.totp else {
-                throw Abort(.notImplemented, reason: "TOTP is not configured")
-            }
+            let totpClient = mfa.totp.client
             
             switch totp {
             case .setup:
@@ -314,17 +305,19 @@ extension Identity.API {
                 throw Abort(.badRequest, reason: "TOTP setup should be initiated through the view")
                 
             case .confirmSetup(let confirm):
-                // Confirm TOTP setup and get backup codes
-                let backupCodes = try await totpClient.confirmSetup(confirm.code)
+                // Get current identity from request
+                @Dependency(\.request) var request
+                guard let accessToken = request?.auth.get(Identity.Token.Access.self) else {
+                    throw Abort(.unauthorized, reason: "Not authenticated")
+                }
                 
-                // Return JSON with backup codes directly
-                return try Response.json(success: true, data: [
-                    "backupCodes": backupCodes,
-                    "message": "TOTP setup successful"
-                ])
+                // For setup confirmation, we need the secret from the session/setup process
+                // This should have been stored during the setup initiation
+                // TODO: Retrieve secret from session storage
+                throw Abort(.badRequest, reason: "TOTP setup confirmation requires prior setup initiation")
                 
             case .verify(let verify):
-                // Verify TOTP during login
+                // For MFA verification during login, use the verify method
                 let authResponse = try await totpClient.verify(
                     verify.code,
                     verify.sessionToken
@@ -335,8 +328,13 @@ extension Identity.API {
                     .withTokens(for: authResponse)
                 
             case .disable(let disable):
-                // Disable TOTP
-                try await totpClient.disable(disable.reauthorizationToken)
+                // Get current identity from reauth token
+                @Dependency(\.request) var request
+                guard let accessToken = request?.auth.get(Identity.Token.Access.self) else {
+                    throw Abort(.unauthorized, reason: "Not authenticated")
+                }
+                // Disable TOTP for the authenticated user
+                try await totpClient.disable(identityId: accessToken.identityId)
                 return Response.success(true)
             }
             
@@ -354,18 +352,16 @@ extension Identity.API {
             
         case .status:
             // Get MFA status
-            let statusClient = mfaClient.status
-            let configuredMethods = try await statusClient.configured()
-            return Response.success(true, data: configuredMethods)
+            let statusClient = mfa.status.client
+            let status = try await statusClient.get()
+            return Response.success(true, data: status.configured)
             
         case .verify(let verify):
             // General MFA verification endpoint
             // Routes to the appropriate method handler based on the method type
             switch verify.method {
             case .totp:
-                guard let totpClient = mfaClient.totp else {
-                    throw Abort(.notImplemented, reason: "TOTP is not configured")
-                }
+                let totpClient = mfa.totp.client
                 let authResponse = try await totpClient.verify(
                     verify.code,
                     verify.sessionToken

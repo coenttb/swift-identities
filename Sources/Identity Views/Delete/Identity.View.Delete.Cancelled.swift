@@ -50,6 +50,7 @@ extension Identity.Deletion.Cancelled {
                     .font(.body)
                     .textAlign(.center)
                     .margin(bottom: .rem(1))
+                    .color(.text.primary)
                     
                     HTMLComponents.Paragraph {
                         TranslatedString(
@@ -61,6 +62,7 @@ extension Identity.Deletion.Cancelled {
                     .textAlign(.center)
                     .color(.text.secondary)
                     .margin(bottom: .rem(2))
+                    .color(.text.primary)
                     
                     Link(href: .init(homeHref.relativePath)) {
                         TranslatedString(
@@ -85,6 +87,7 @@ extension Identity.Deletion.Cancelled {
                         english: "Deletion Cancelled"
                     )
                 }
+                .color(.text.primary)
                 .display(.inlineBlock)
                 .textAlign(.center)
             }

@@ -37,7 +37,7 @@
 //    package static func response(
 //        view: Identity.View,
 //        client: Identity.Client,
-//        router: AnyParserPrinter<URLRequestData, Identity.Route>,
+//        router: any ParserPrinter<URLRequestData, Identity.Route>,
 //        canonicalHref: @Sendable @escaping (Identity.View) -> URL?,
 //        hreflang: @Sendable @escaping (Identity.View, Translating.Language) -> URL,
 //        branding: Identity.Frontend.Configuration.Branding,

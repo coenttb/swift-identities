@@ -17,7 +17,7 @@ extension Identity.Frontend.Configuration.Cookies {
     /// Designed to handle cookies set by a separate Provider service.
     public static func consumer(
         domain: String? = nil,
-        router: AnyParserPrinter<URLRequestData, Identity.Route>,
+        router: any ParserPrinter<URLRequestData, Identity.Route>,
         crossOrigin: Bool = false
     ) -> Self {
         // Calculate refresh token path from router
@@ -70,7 +70,7 @@ extension Identity.Frontend.Configuration.Cookies {
     /// Development configuration for Consumer applications.
     /// More relaxed settings for local development but still maintains separation concerns.
     public static func consumerDevelopment(
-        router: AnyParserPrinter<URLRequestData, Identity.Route>
+        router: any ParserPrinter<URLRequestData, Identity.Route>
     ) -> Self {
         // Calculate refresh token path from router
         let refreshPath: String = {

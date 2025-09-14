@@ -50,6 +50,7 @@ extension Identity.Deletion.Confirm {
                     .font(.body)
                     .textAlign(.center)
                     .margin(bottom: .rem(1))
+                    .color(.text.primary)
                     
                     HTMLComponents.Paragraph {
                         TranslatedString(
@@ -72,6 +73,7 @@ extension Identity.Deletion.Confirm {
                     .textAlign(.center)
                     .color(.text.secondary)
                     .margin(bottom: .rem(2))
+                    .color(.text.primary)
                     
                     Link(href: .init(redirectURL.relativePath)) {
                         TranslatedString(
@@ -96,6 +98,7 @@ extension Identity.Deletion.Confirm {
                         english: "Account Deleted"
                     )
                 }
+                .color(.text.primary)
                 .display(.inlineBlock)
                 .textAlign(.center)
             }

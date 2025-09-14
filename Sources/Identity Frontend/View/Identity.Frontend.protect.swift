@@ -15,7 +15,7 @@ extension Identity.Frontend {
     /// to ensure consistent authentication checks across different deployment models.
     package static func protect(
         view: Identity.View,
-        router: AnyParserPrinter<URLRequestData, Identity.Route>
+        router: any ParserPrinter<URLRequestData, Identity.Route>
     ) async throws {
         @Dependency(\.request) var request
         guard let request else { throw Abort.requestUnavailable }

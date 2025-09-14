@@ -23,14 +23,14 @@ extension Identity.View {
     ) async throws -> any AsyncResponseEncodable {
         
         @Dependency(\.identity) var configuration
-        @Dependency(\.identity) var identity
-        @Dependency(\.identity.router) var router
+        @Dependency(\.identity.identity) var identity
+        @Dependency(\.identity.identity.router) var router
         @Dependency(\.request) var request
         
         // Check authentication requirements
         try await Identity.Frontend.protect(
             view: view,
-            router: router
+            router: identity.router
         )
         
         // Handle views with special Standalone logic
@@ -134,7 +134,7 @@ extension Identity.View {
             
         case .logout:
             return try await Identity.Logout.response(
-                client: configuration.client,
+                client: identity.logout.client,
                 redirect: configuration.redirect
             )
             
@@ -162,8 +162,9 @@ extension Identity.View {
         mfa: Identity.MFA.View,
         configuration: Identity.Standalone.Configuration
     ) async throws -> any AsyncResponseEncodable {
-        @Dependency(\.identity) var identity
-        @Dependency(\.identity.router) var router
+        @Dependency(\.identity) var configuration
+        @Dependency(\.identity.identity.router) var router
+        @Dependency(\.identity.identity) var identity
         @Dependency(\.request) var request
         
         switch mfa {
@@ -171,7 +172,7 @@ extension Identity.View {
             switch totp {
             case .setup:
                 // Generate TOTP setup data
-                guard let totpClient = client.mfa?.totp else {
+                guard let totpClient = identity.mfa?.totp.client else {
                     throw Abort(.notImplemented, reason: "TOTP is not configured")
                 }
                 
@@ -233,13 +234,13 @@ extension Identity.View {
                 
             case .manage:
                 // TOTP management page
-                guard let statusClient = client.mfa?.status else {
+                guard let statusClient = identity.mfa?.status.client else {
                     throw Abort(.notImplemented, reason: "MFA is not configured")
                 }
                 
-                let configuredMethods = try await statusClient.configured()
-                let isEnabled = configuredMethods.totp
-                let backupCodesRemaining: Int? = configuredMethods.backupCodesRemaining > 0 ? configuredMethods.backupCodesRemaining : nil
+                let configuredMethods = try await statusClient.get()
+                let isEnabled = configuredMethods.configured.totp
+                let backupCodesRemaining: Int? = configuredMethods.configured.backupCodesRemaining > 0 ? configuredMethods.configured.backupCodesRemaining : nil
                 
                 return try await Identity.Frontend.htmlDocument(
                     for: .mfa(mfa),
@@ -261,7 +262,7 @@ extension Identity.View {
         case .verify(let challenge):
             // MFA verification during login
             // Create a dummy verify request just to get the URL path
-            let dummyVerify = Identity.API.MFA.Verify(
+            let dummyVerify = Identity.MFA.Verify(
                 sessionToken: "",
                 method: .totp,
                 code: ""
@@ -291,7 +292,7 @@ extension Identity.View {
             
         case .manage:
             // General MFA management page
-            guard client.mfa?.status != nil
+            guard identity.mfa?.status.client != nil
             else {
                 // If no MFA methods are configured, show setup prompt
                 return try await Identity.Frontend.htmlDocument(
@@ -341,7 +342,7 @@ extension Identity.View {
                     request.session.data["backup_codes"] = nil
                 } else {
                     // Regenerating codes
-                    guard let backupCodesClient = client.mfa?.backupCodes else {
+                    guard let backupCodesClient = identity.mfa?.backupCodes.client else {
                         throw Abort(.notImplemented, reason: "Backup codes are not configured")
                     }
                     backupCodes = try await backupCodesClient.regenerate()
@@ -364,7 +365,7 @@ extension Identity.View {
             case .verify(let challenge):
                 // Backup code verification during login
                 // Create a dummy verify request just to get the URL path
-                let dummyVerify = Identity.API.MFA.Verify(
+                let dummyVerify = Identity.MFA.Verify(
                     sessionToken: "test",
                     method: .backupCode,
                     code: "test"
@@ -376,7 +377,7 @@ extension Identity.View {
                 
                 // Get backup codes remaining count if available
                 var remainingCodes: Int? = nil
-                if let backupCodesClient = client.mfa?.backupCodes {
+                if let backupCodesClient = identity.mfa?.backupCodes.client {
                     do {
                         remainingCodes = try await backupCodesClient.remaining()
                     } catch {

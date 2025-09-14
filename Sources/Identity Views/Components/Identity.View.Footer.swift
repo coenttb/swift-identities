@@ -23,7 +23,10 @@ extension Identity.View {
                     HStack {
                         HTMLForEach(Array(links.enumerated())) { index, link in
                             if index > 0 {
-                                div { "|" }
+                                div {
+                                    "|"
+                                        .color(.text.primary)
+                                }
                                     .width(.rem(1))
                                     .textAlign(.center)
                                     .padding(vertical: nil, horizontal: .rem(0.5))

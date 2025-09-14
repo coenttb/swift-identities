@@ -134,6 +134,7 @@ extension Identity.Deletion.Request {
                         english: "Delete Account"
                     )
                 }
+                .color(.text.primary)
                 .display(.inlineBlock)
                 .textAlign(.center)
             }
@@ -293,6 +294,7 @@ extension Identity.Deletion.Request.View {
                             )
                         }
                         .margin(bottom: .rem(0.5))
+                        .color(.text.primary)
                         
                         HTMLComponents.Paragraph {
                             TranslatedString(
@@ -301,6 +303,7 @@ extension Identity.Deletion.Request.View {
                             )
                         }
                         .font(.body(.small))
+                        .color(.text.primary)
                     }
                     .padding(.rem(1))
                     .backgroundColor(.background.warning/*.opacity(0.1)*/)
@@ -354,6 +357,7 @@ extension Identity.Deletion.Request.View {
                         english: "Account Deletion Pending"
                     )
                 }
+                .color(.text.primary)
                 .display(.inlineBlock)
                 .textAlign(.center)
             }
