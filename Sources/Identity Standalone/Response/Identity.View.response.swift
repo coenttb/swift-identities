@@ -22,9 +22,9 @@ extension Identity.View {
         view: Identity.View
     ) async throws -> any AsyncResponseEncodable {
         
-        @Dependency(\.identity) var configuration
-        @Dependency(\.identity.identity) var identity
-        @Dependency(\.identity.identity.router) var router
+        @Dependency(Identity.Standalone.Configuration.self) var configuration
+        @Dependency(\.identity) var identity
+        @Dependency(\.identity.router) var router
         @Dependency(\.request) var request
         
         // Check authentication requirements
@@ -48,11 +48,11 @@ extension Identity.View {
             if let statusParam = statusParam {
                 switch statusParam {
                 case "cancelled":
+                    
                     return try await Identity.Frontend.htmlDocument(
                         for: view,
                         title: "Delete Account",
-                        description: "Delete your account",
-                        configuration: configuration
+                        description: "Delete your account"
                     ) {
                         Identity.Deletion.Cancelled.View(
                             homeHref: configuration.navigation.home
@@ -62,8 +62,7 @@ extension Identity.View {
                     return try await Identity.Frontend.htmlDocument(
                         for: view,
                         title: "Delete Account",
-                        description: "Delete your account",
-                        configuration: configuration
+                        description: "Delete your account"
                     ) {
                         Identity.Deletion.Confirm.View(
                             redirectURL: configuration.navigation.home
@@ -81,8 +80,7 @@ extension Identity.View {
                     return try await Identity.Frontend.htmlDocument(
                         for: view,
                         title: "Delete Account",
-                        description: "Delete your account",
-                        configuration: configuration
+                        description: "Delete your account"
                     ) {
                         Identity.Deletion.Pending.View(
                             daysRemaining: deletionStatus.daysRemaining ?? 7,
@@ -96,8 +94,7 @@ extension Identity.View {
                     return try await Identity.Frontend.htmlDocument(
                         for: view,
                         title: "Delete Account",
-                        description: "Delete your account",
-                        configuration: configuration
+                        description: "Delete your account"
                     ) {
                         Identity.Deletion.Pending.View(
                             daysRemaining: 0,
@@ -108,29 +105,23 @@ extension Identity.View {
                     }
                 case .cancelled:
                     // Show initial request form if previously cancelled
-                    return try await Identity.Deletion.response(configuration: configuration)
+                    return try await Identity.Deletion.response()
                 }
             
             } else {
                 // No pending deletion, use Delete handler
-                return try await Identity.Deletion.response(configuration: configuration)
+                return try await Identity.Deletion.response()
             }
             
         case .mfa(let mfa):
             // Handle MFA views with backend access
-            return try await handleMFAView(mfa: mfa, configuration: configuration)
+            return try await handleMFAView(mfa: mfa)
             
         case .create(let create):
-            return try await Identity.Creation.response(
-                view: create,
-                configuration: configuration
-            )
+            return try await Identity.Creation.response(view: create)
             
         case .authenticate(let authenticate):
-            return try await Identity.Authentication.response(
-                view: authenticate,
-                configuration: configuration
-            )
+            return try await Identity.Authentication.response(view: authenticate)
             
         case .logout:
             return try await Identity.Logout.response(
@@ -139,32 +130,22 @@ extension Identity.View {
             )
             
         case .email(let email):
-            return try await Identity.Email.response(
-                view: email,
-                configuration: configuration
-            )
+            return try await Identity.Email.response(view: email)
             
         case .password(let password):
-            return try await Identity.Password.response(
-                view: password,
-                configuration: configuration
-            )
+            return try await Identity.Password.response(view: password)
         case .oauth(let oath):
-            return try await Identity.OAuth.response(
-                view: oath,
-                configuration: configuration
-            )
+            return try await Identity.OAuth.response(view: oath)
         }
     }
     
     /// Handles MFA-specific views that require backend access.
     private static func handleMFAView(
         mfa: Identity.MFA.View,
-        configuration: Identity.Standalone.Configuration
     ) async throws -> any AsyncResponseEncodable {
-        @Dependency(\.identity) var configuration
-        @Dependency(\.identity.identity.router) var router
-        @Dependency(\.identity.identity) var identity
+        @Dependency(Identity.Standalone.Configuration.self) var configuration
+        @Dependency(\.identity.router) var router
+        @Dependency(\.identity) var identity
         @Dependency(\.request) var request
         
         switch mfa {
@@ -181,8 +162,7 @@ extension Identity.View {
                 return try await Identity.Frontend.htmlDocument(
                     for: .mfa(mfa),
                     title: "Set Up Two-Factor Authentication",
-                    description: "Manage two-factor authentication",
-                    configuration: configuration
+                    description: "Manage two-factor authentication"
                 ) {
                     Identity.MFA.TOTP.Setup.View(
                         qrCodeURL: setupData.qrCodeURL,
@@ -198,8 +178,7 @@ extension Identity.View {
                 return try await Identity.Frontend.htmlDocument(
                     for: .mfa(mfa),
                     title: "Confirm TOTP Setup",
-                    description: "Manage two-factor authentication",
-                    configuration: configuration
+                    description: "Manage two-factor authentication"
                 ) {
                     div {
                         h2 { "Two-Factor Authentication Enabled" }
@@ -245,8 +224,7 @@ extension Identity.View {
                 return try await Identity.Frontend.htmlDocument(
                     for: .mfa(mfa),
                     title: "Manage Two-Factor Authentication",
-                    description: "Manage two-factor authentication",
-                    configuration: configuration
+                    description: "Manage two-factor authentication"
                 ) {
                     Identity.MFA.TOTP.Manage.View(
                         isEnabled: isEnabled,
@@ -278,8 +256,7 @@ extension Identity.View {
             return try await Identity.Frontend.htmlDocument(
                 for: .mfa(mfa),
                 title: "Two-Factor Authentication",
-                description: "Manage two-factor authentication",
-                configuration: configuration
+                description: "Manage two-factor authentication"
             ) {
                 Identity.MFA.TOTP.Verify.View(
                     sessionToken: challenge.sessionToken,
@@ -298,8 +275,7 @@ extension Identity.View {
                 return try await Identity.Frontend.htmlDocument(
                     for: .mfa(mfa),
                     title: "Security Settings",
-                    description: "Manage two-factor authentication",
-                    configuration: configuration
+                    description: "Manage two-factor authentication"
                 ) {
                     div {
                         h2 { "Two-Factor Authentication" }
@@ -322,7 +298,7 @@ extension Identity.View {
             }
             
             // Redirect to TOTP management if configured
-            return try await handleMFAView(mfa: .totp(.manage), configuration: configuration)
+            return try await handleMFAView(mfa: .totp(.manage))
             
         case .backupCodes(let backupCodesView):
             switch backupCodesView {
@@ -352,8 +328,7 @@ extension Identity.View {
                 return try await Identity.Frontend.htmlDocument(
                     for: .mfa(mfa),
                     title: "Backup Codes",
-                    description: "Manage two-factor authentication",
-                    configuration: configuration
+                    description: "Manage two-factor authentication"
                 ) {
                     Identity.MFA.BackupCodes.Display.View(
                         codes: backupCodes,
@@ -392,8 +367,7 @@ extension Identity.View {
                 return try await Identity.Frontend.htmlDocument(
                     for: .mfa(mfa),
                     title: "Use Backup Code",
-                    description: "Manage two-factor authentication",
-                    configuration: configuration
+                    description: "Manage two-factor authentication"
                 ) {
                     Identity.MFA.BackupCodes.Verify.View(
                         sessionToken: challenge.sessionToken,

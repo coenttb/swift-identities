@@ -58,9 +58,10 @@ extension Identity.Token.Client {
             generateAccess: { identityId, email, sessionVersion in
                 // For Standalone, try to fetch the profile to add displayName
                 @Dependency(\.defaultDatabase) var database
-                
+                @Dependency(Identity.Standalone.Configuration.self) var standaloneConfig
+
                 var additionalClaims: [String: Any] = [:]
-                
+
                 // Try to fetch the profile's displayName (but don't fail if not found)
                 if let profile = try? await database.read { db in
                     try await Identity.Profile.Record.findByIdentity(identityId).fetchOne(db)
@@ -68,7 +69,14 @@ extension Identity.Token.Client {
                    let displayName = profile.displayName {
                     additionalClaims["displayName"] = displayName
                 }
-                
+
+                // Add custom claims from tokenEnrichment if configured
+                if let tokenEnrichment = standaloneConfig.tokenEnrichment {
+                    let customClaims = try await tokenEnrichment.additionalClaims(identityId)
+                    // Merge custom claims, preferring new values for conflicts
+                    additionalClaims.merge(customClaims) { _, new in new }
+                }
+
                 // Generate token with additional claims
                 let token = try Identity.Token.Access(
                     identityId: identityId,
@@ -132,11 +140,12 @@ extension Identity.Token.Client {
                     throw ClientError.sessionVersionMismatch
                 }
                 
-                // For refresh, also try to add displayName
+                // For refresh, also try to add displayName and custom claims
                 @Dependency(\.defaultDatabase) var database
-                
+                @Dependency(Identity.Standalone.Configuration.self) var standaloneConfig
+
                 var additionalClaims: [String: Any] = [:]
-                
+
                 // Try to fetch the profile's displayName
                 if let profile = try? await database.read { db in
                     try await Identity.Profile.Record.findByIdentity(identityId).fetchOne(db)
@@ -144,7 +153,14 @@ extension Identity.Token.Client {
                    let displayName = profile.displayName {
                     additionalClaims["displayName"] = displayName
                 }
-                
+
+                // Add custom claims from tokenEnrichment if configured
+                if let tokenEnrichment = standaloneConfig.tokenEnrichment {
+                    let customClaims = try await tokenEnrichment.additionalClaims(identityId)
+                    // Merge custom claims, preferring new values for conflicts
+                    additionalClaims.merge(customClaims) { _, new in new }
+                }
+
                 // Generate new access token with additional claims
                 let newToken = try Identity.Token.Access(
                     identityId: identityId,
@@ -203,11 +219,12 @@ extension Identity.Token.Client {
             },
             
             generateTokenPair: { identityId, email, sessionVersion in
-                // For token pairs, also try to add displayName
+                // For token pairs, also try to add displayName and custom claims
                 @Dependency(\.defaultDatabase) var database
-                
+                @Dependency(Identity.Standalone.Configuration.self) var standaloneConfig
+
                 var additionalClaims: [String: Any] = [:]
-                
+
                 // Try to fetch the profile's displayName
                 if let profile = try? await database.read ({ db in
                     try await Identity.Profile.Record.findByIdentity(identityId).fetchOne(db)
@@ -215,7 +232,14 @@ extension Identity.Token.Client {
                    let displayName = profile.displayName {
                     additionalClaims["displayName"] = displayName
                 }
-                
+
+                // Add custom claims from tokenEnrichment if configured
+                if let tokenEnrichment = standaloneConfig.tokenEnrichment {
+                    let customClaims = try await tokenEnrichment.additionalClaims(identityId)
+                    // Merge custom claims, preferring new values for conflicts
+                    additionalClaims.merge(customClaims) { _, new in new }
+                }
+
                 let accessToken = try Identity.Token.Access(
                     identityId: identityId,
                     email: email,

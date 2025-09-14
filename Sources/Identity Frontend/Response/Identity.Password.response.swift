@@ -19,17 +19,20 @@ extension Identity.Password {
     /// Dispatches password view requests to appropriate handlers.
     public static func response(
         view: Identity.Password.View,
-        configuration: Identity.Frontend.Configuration
+
     ) async throws -> any AsyncResponseEncodable {
+        @Dependency(Identity.Frontend.Configuration.self) var configuration
+        
         let router = configuration.identity.router
         
         switch view {
         case .reset(let reset):
             switch reset {
             case .request:
+                @Dependency(Identity.Frontend.Configuration.self) var configuration
+                
                 return try await Identity.Frontend.htmlDocument(
-                    for: .password(.reset(.request)),
-                    configuration: configuration
+                    for: .password(.reset(.request))
                 ) {
                     Identity.Password.Reset.Request.View(
                         formActionURL: router.url(for: .password(.api(.reset(.request(.init()))))),
@@ -37,13 +40,13 @@ extension Identity.Password {
                     )
                 }
             case .confirm:
-                return try await handleResetConfirm(configuration: configuration)
+                return try await handleResetConfirm()
             }
             
         case .change(let change):
             switch change {
             case .request:
-                return try await handleChangeRequest(configuration: configuration)
+                return try await handleChangeRequest()
             }
         }
     }
@@ -53,16 +56,17 @@ extension Identity.Password {
   
     /// Handles password reset confirmation view.
     public static func handleResetConfirm(
-        configuration: Identity.Frontend.Configuration
+
     ) async throws -> any AsyncResponseEncodable {
+        @Dependency(Identity.Frontend.Configuration.self) var configuration
+        
         @Dependency(\.request) var req
         
         let token = req?.parameters.get("token") ?? ""
         let router = configuration.identity.router
         
         return try await Identity.Frontend.htmlDocument(
-            for: .password(.reset(.confirm(.init()))),
-            configuration: configuration
+            for: .password(.reset(.confirm(.init())))
         ) {
             PageModule(theme: .authenticationFlow) {
                 VStack {
@@ -108,15 +112,16 @@ extension Identity.Password {
     
     /// Handles password change request view.
     public static func handleChangeRequest(
-        configuration: Identity.Frontend.Configuration
+
     ) async throws -> any AsyncResponseEncodable {
+        @Dependency(Identity.Frontend.Configuration.self) var configuration
+        
         let router = configuration.identity.router
         
         @Dependency(\.request?.identity?.email.description) var email
                 
         return try await Identity.Frontend.htmlDocument(
-            for: .password(.change(.request)),
-            configuration: configuration
+            for: .password(.change(.request))
         ) {
             try await Identity.Password.Change.Request.View(
                 currentUserName: email ?? "...",

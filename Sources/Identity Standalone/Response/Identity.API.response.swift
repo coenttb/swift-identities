@@ -18,7 +18,9 @@ extension Identity.API {
         api: Identity.API,
     ) async throws -> any AsyncResponseEncodable {
         
-        @Dependency(\.identity) var configuration
+        @Dependency(Identity.Standalone.Configuration.self) var configuration
+        
+        @Dependency(\.identity) var identity
         
         // Apply rate limiting for public endpoints only
         var rateLimitClient: RateLimiter<String>.Client? = nil
@@ -59,8 +61,6 @@ extension Identity.API {
             // If protection fails, return unauthorized
             throw Abort(.unauthorized, reason: "Not authenticated")
         }
-        
-        let identity = configuration.identity
         
         // Special handling for logout and logout.all to clear cookies and redirect
         if case .logout = api {
@@ -368,7 +368,7 @@ extension Identity.API {
                 )
                 
                 @Dependency(\.request) var request
-                @Dependency(\.identity) var configuration
+                @Dependency(Identity.Standalone.Configuration.self) var configuration
                 
                 // Check if this is a browser request (form submission)
                 let isFormSubmission = request?.headers["accept"].contains {

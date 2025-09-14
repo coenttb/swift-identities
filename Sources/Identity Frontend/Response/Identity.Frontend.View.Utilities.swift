@@ -18,9 +18,10 @@ extension Identity.Frontend {
     /// This shared utility is used by both Frontend handlers and Standalone handlers.
     public static func htmlDocument<Content: HTML>(
         for view: Identity.View,
-        configuration: Identity.Frontend.Configuration,
         @HTMLBuilder content: () async throws -> Content
     ) async throws -> any AsyncResponseEncodable {
+        @Dependency(Identity.Frontend.Configuration.self) var configuration
+        
         return try await htmlDocument(
             for: view,
             branding: configuration.branding,
@@ -80,9 +81,11 @@ extension Identity.Frontend {
         for view: Identity.View,
         title: String,
         description: String,
-        configuration: Identity.Frontend.Configuration,
         @HTMLBuilder content: () async throws -> Content
     ) async throws -> any AsyncResponseEncodable {
+        
+        @Dependency(Identity.Frontend.Configuration.self) var configuration
+        
         return try await Identity.View.HTMLDocument(
             view: view,
             title: { _ in title },

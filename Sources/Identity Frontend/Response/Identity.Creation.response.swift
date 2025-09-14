@@ -17,17 +17,20 @@ import Vapor
 extension Identity.Creation {
     /// Dispatches password view requests to appropriate handlers.
     public static func response(
-        view: Identity.Creation.View,
-        configuration: Identity.Frontend.Configuration
+        view: Identity.Creation.View
     ) async throws -> any AsyncResponseEncodable {
+        
+        
         switch view {
         case .request:
-            return try await handleCreateRequest(configuration: configuration)
+            return try await handleCreateRequest()
         case .verify(let verify):
+            @Dependency(Identity.Frontend.Configuration.self) var configuration
+            
             let router = configuration.identity.router
             let redirect = configuration.redirect
             
-            return try await Identity.Frontend.htmlDocument(for: .create(.verify), configuration: configuration) {
+            return try await Identity.Frontend.htmlDocument(for: .create(.verify)) {
                 try await Identity.Creation.Verification.View(
                     verificationAction: router.url(for: .create(.api(.verify(verify)))),
                     redirectURL: redirect.createVerificationSuccess()
@@ -42,11 +45,12 @@ extension Identity.Creation {
     
     /// Handles the account creation request view.
     public static func handleCreateRequest(
-        configuration: Identity.Frontend.Configuration
     ) async throws -> any AsyncResponseEncodable {
+        @Dependency(Identity.Frontend.Configuration.self) var configuration
+        
         let router = configuration.identity.router
         
-        return try await Identity.Frontend.htmlDocument(for: .create(.request), configuration: configuration) {
+        return try await Identity.Frontend.htmlDocument(for: .create(.request)) {
             Identity.Creation.Request.View(
                 loginHref: router.url(for: .login),
                 accountCreateHref: router.url(for: .create(.view(.request))),

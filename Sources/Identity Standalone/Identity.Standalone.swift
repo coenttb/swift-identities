@@ -29,3 +29,4 @@ extension Identity {
     /// - Applications that don't need federated identity
     public enum Standalone {}
 }
+

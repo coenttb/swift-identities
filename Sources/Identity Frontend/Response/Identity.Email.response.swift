@@ -20,17 +20,16 @@ extension Identity.Email {
     /// Dispatches email view requests to appropriate handlers.
     public static func response(
         view: Identity.Email.View,
-        configuration: Identity.Frontend.Configuration
     ) async throws -> any AsyncResponseEncodable {
         switch view {
         case .change(let change):
             switch change {
             case .request:
-                return try await handleChangeRequest(configuration: configuration)
+                return try await handleChangeRequest()
             case .confirm:
-                return try await handleChangeConfirm(configuration: configuration)
+                return try await handleChangeConfirm()
             case .reauthorization:
-                return try await handleChangeReauthorization(configuration: configuration)
+                return try await handleChangeReauthorization()
             }
         }
     }
@@ -41,12 +40,13 @@ extension Identity.Email {
     
     /// Handles the email change request view.
     public static func handleChangeRequest(
-        configuration: Identity.Frontend.Configuration
+        
     ) async throws -> any AsyncResponseEncodable {
+        @Dependency(Identity.Frontend.Configuration.self) var configuration
         let router = configuration.identity.router
         let homeHref = configuration.navigation.home
         
-        return try await Identity.Frontend.htmlDocument(for: .email(.change(.request)), configuration: configuration) {
+        return try await Identity.Frontend.htmlDocument(for: .email(.change(.request))) {
             Identity.Email.Change.Request.View(
                 formActionURL: router.url(for: .email(.api(.change(.request(.init()))))),
                 homeHref: homeHref,
@@ -57,11 +57,12 @@ extension Identity.Email {
     
     /// Handles the email change confirmation view.
     public static func handleChangeConfirm(
-        configuration: Identity.Frontend.Configuration
+        
     ) async throws -> any AsyncResponseEncodable {
+        @Dependency(Identity.Frontend.Configuration.self) var configuration
         let redirect = configuration.redirect
         
-        return try await Identity.Frontend.htmlDocument(for: .email(.change(.confirm)), configuration: configuration) {
+        return try await Identity.Frontend.htmlDocument(for: .email(.change(.confirm))) {
             try await Identity.Email.Change.Confirmation.View(
                 redirect: redirect.logoutSuccess()
             )
@@ -70,8 +71,9 @@ extension Identity.Email {
     
     /// Handles the email change reauthorization view.
     public static func handleChangeReauthorization(
-        configuration: Identity.Frontend.Configuration
+        
     ) async throws -> any AsyncResponseEncodable {
+        @Dependency(Identity.Frontend.Configuration.self) var configuration
         let router = configuration.identity.router
         
         @Dependency(\.request) var request
@@ -82,7 +84,7 @@ extension Identity.Email {
             throw Abort(.unauthorized, reason: "Authentication required")
         }
         
-        return try await Identity.Frontend.htmlDocument(for: .email(.change(.reauthorization)), configuration: configuration) {
+        return try await Identity.Frontend.htmlDocument(for: .email(.change(.reauthorization))) {
             Identity.Reauthorization.View(
                 currentUserName: token.email.description,
                 passwordResetHref: router.url(for: .view(.password(.reset(.request)))),

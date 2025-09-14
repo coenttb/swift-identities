@@ -18,10 +18,9 @@ import Language
 extension Identity.Deletion {
     /// Dispatches delete view requests to appropriate handlers.
     public static func response(
-        configuration: Identity.Frontend.Configuration
     ) async throws -> any AsyncResponseEncodable {
         // Delete only has one view (request), no subviews
-        return try await handleRequest(configuration: configuration)
+        return try await handleRequest()
     }
 }
 
@@ -30,12 +29,13 @@ extension Identity.Deletion {
     
     /// Handles the account deletion request view.
     public static func handleRequest(
-        configuration: Identity.Frontend.Configuration
     ) async throws -> any AsyncResponseEncodable {
+        @Dependency(Identity.Frontend.Configuration.self) var configuration
+        
         let router = configuration.identity.router
         let homeHref = configuration.navigation.home
         
-        return try await Identity.Frontend.htmlDocument(for: .delete(.request), configuration: configuration) {
+        return try await Identity.Frontend.htmlDocument(for: .delete(.request)) {
             Identity.Deletion.Request.View(
                 deleteRequestAction: router.url(for: .delete(.api(.request(.init())))),
                 cancelAction: router.url(for: .delete(.api(.cancel))),

@@ -18,12 +18,13 @@ import Language
 extension Identity.Authentication {
     /// Dispatches authentication view requests to appropriate handlers.
     public static func response(
-        view: Identity.Authentication.View,
-        configuration: Identity.Frontend.Configuration
+        view: Identity.Authentication.View
     ) async throws -> any AsyncResponseEncodable {
+        @Dependency(Identity.Frontend.Configuration.self) var configuration
+        
         switch view {
         case .credentials:
-            return try await Identity.Frontend.htmlDocument(for: .authenticate(.credentials), configuration: configuration) {
+            return try await Identity.Frontend.htmlDocument(for: .authenticate(.credentials)) {
                 Identity.Authentication.Credentials.View(
                     passwordResetHref: configuration.identity.router.url(for: .password(.view(.reset(.request)))),
                     accountCreateHref: configuration.identity.router.url(for: .create(.view(.request))),

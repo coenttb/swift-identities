@@ -13,12 +13,35 @@ import EmailAddress
 import Records
 
 extension Identity.Backend {
-    /// Creates a live backend Identity with direct database access.
+    /// Creates a live backend Identity using configuration from dependency injection.
     ///
     /// This implementation provides the core business logic for identity operations,
     /// including database access, token generation, and email sending.
+    public static func live() -> Identity {
+        @Dependency(Identity.Backend.Configuration.self) var configuration
+
+        return live(
+            router: configuration.router,
+            sendVerificationEmail: configuration.email.sendVerificationEmail,
+            sendPasswordResetEmail: configuration.email.sendPasswordResetEmail,
+            sendPasswordChangeNotification: configuration.email.sendPasswordChangeNotification,
+            sendEmailChangeConfirmation: configuration.email.sendEmailChangeConfirmation,
+            sendEmailChangeRequestNotification: configuration.email.sendEmailChangeRequestNotification,
+            onEmailChangeSuccess: configuration.email.onEmailChangeSuccess,
+            sendDeletionRequestNotification: configuration.email.sendDeletionRequestNotification,
+            sendDeletionConfirmationNotification: configuration.email.sendDeletionConfirmationNotification,
+            onIdentityCreationSuccess: configuration.email.onIdentityCreationSuccess,
+            mfaConfiguration: configuration.mfa,
+            oauthConfiguration: configuration.oauth
+        )
+    }
+
+    /// Creates a live backend Identity with direct parameter specification.
+    /// This is kept for backward compatibility and testing.
+    ///
+    /// Prefer using `live()` which uses configuration from dependency injection.
     public static func live(
-        router: Identity.Authentication.Route.Router = Identity.Authentication.Route.Router(),
+        router: any URLRouting.Router<Identity.Authentication.Route> = Identity.Authentication.Route.Router(),
         sendVerificationEmail: @escaping @Sendable (_ email: EmailAddress, _ token: String) async throws -> Void,
         sendPasswordResetEmail: @escaping @Sendable (_ email: EmailAddress, _ token: String) async throws -> Void,
         sendPasswordChangeNotification: @escaping @Sendable (_ email: EmailAddress) async throws -> Void,

@@ -27,7 +27,7 @@ extension Identity.Standalone {
             
             do {
                 // Authenticate with credentials
-                let response = try await identity.identity.authenticate.credentials(
+                let response = try await identity.authenticate.credentials(
                     username: credentials.username,
                     password: credentials.password
                 )

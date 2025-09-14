@@ -6,41 +6,119 @@
 //
 
 import Identity_Frontend
+import Identity_Backend
+import Identity_Shared
+import IdentitiesTypes
+import Dependencies
+import ServerFoundation
+import Language
+import URLRouting
 
 extension Identity.Standalone {
-    /// Standalone uses the same configuration as Frontend.
-    /// Since Standalone includes both provider and consumer functionality,
-    /// it needs the full Frontend configuration including the identity.
-    public typealias Configuration = Identity.Frontend.Configuration
-}
+    /// Standalone configuration that includes both Frontend and Backend configurations
+    /// This is the central configuration point that orchestrates both
+    public struct Configuration: Sendable {
+        /// Frontend configuration
+        public var baseURL: URL
+        public var identity: Identity
+        public var jwt: Identity.Token.Client
+        public var cookies: Identity.Standalone.Configuration.Cookies
+        public var branding: Identity.Standalone.Configuration.Branding
+        public var navigation: Identity.Standalone.Configuration.Navigation
+        public var redirect: Identity.Standalone.Configuration.Redirect
+        public var rateLimiters: RateLimiters?
+        public var currentUserName: @Sendable () async throws -> String?
+        public var canonicalHref: @Sendable (Identity.View) -> URL?
+        public var hreflang: @Sendable (Identity.View, Language) -> URL
 
-extension DependencyValues {
-    public var identity: Identity.Frontend.Configuration {
-        get { self[Identity.Frontend.Configuration.self] }
-        set { self[Identity.Frontend.Configuration.self] = newValue }
+        public typealias Cookies = Identity.Frontend.Configuration.Cookies
+        public typealias Branding = Identity.Frontend.Configuration.Branding
+        public typealias Navigation = Identity.Frontend.Configuration.Navigation
+        public typealias Redirect = Identity.Frontend.Configuration.Redirect
+        public typealias Email = Identity.Backend.Configuration.Email
+        public typealias TokenEnrichment = Identity.Backend.Configuration.TokenEnrichment
+        
+        
+        /// Backend configuration
+        public var email: Identity.Backend.Configuration.Email?
+        public var tokenEnrichment: Identity.Backend.Configuration.TokenEnrichment?
+        public var mfa: Identity.MFA?
+        public var oauth: Identity.OAuth?
+        
+        package init(
+            baseURL: URL,
+            identity: Identity,
+            jwt: Identity.Token.Client,
+            cookies: Identity.Standalone.Configuration.Cookies,
+            branding: Identity.Standalone.Configuration.Branding,
+            navigation: Identity.Standalone.Configuration.Navigation,
+            redirect: Identity.Standalone.Configuration.Redirect,
+            rateLimiters: RateLimiters?,
+            currentUserName: (@Sendable () async throws -> String?)? = nil,
+            canonicalHref: (@Sendable (Identity.View) -> URL?)? = nil,
+            hreflang: (@Sendable (Identity.View, Language) -> URL)? = nil,
+            email: Identity.Backend.Configuration.Email? = nil,
+            tokenEnrichment: TokenEnrichment? = nil,
+            mfa: Identity.MFA? = nil,
+            oauth: Identity.OAuth? = nil
+        ) {
+            self.baseURL = baseURL
+            self.identity = identity
+            self.jwt = jwt
+            self.cookies = cookies
+            self.branding = branding
+            self.navigation = navigation
+            self.redirect = redirect
+            self.rateLimiters = rateLimiters
+            self.currentUserName = currentUserName ?? {
+                @Dependency(\.request) var request
+                guard
+                    let request,
+                    let accessToken = request.auth.get(Identity.Token.Access.self)
+                else { return "User" }
+                return accessToken.displayName
+            }
+            self.canonicalHref = canonicalHref ?? { view in
+                identity.router.url(for: .view(view))
+            }
+            self.hreflang = hreflang ?? { view, _ in
+                identity.router.url(for: .view(view))
+            }
+            self.email = email
+            self.tokenEnrichment = tokenEnrichment
+            self.mfa = mfa
+            self.oauth = oauth
+        }
     }
 }
 
-extension Identity: @retroactive DependencyKey {
-    public static var liveValue: Self {
-        @Dependency(\.identity.identity) var identity
-        return identity
+extension Identity.Standalone.Configuration: TestDependencyKey {
+    public static var testValue: Self {
+        fatalError()
     }
 }
+
+
+
 
 extension Identity.Standalone.Configuration {
+    /// Convenience initializer with defaults
     public init(
         baseURL: URL,
-        identity: Identity,
+        identity: Identity = .live(),
         jwt: Identity.Token.Client,
         cookies: Identity.Frontend.Configuration.Cookies? = nil,
-        branding: Branding = .default,
-        navigation: Navigation = .default,
-        redirect: Redirect? = nil,
+        branding: Identity.Frontend.Configuration.Branding = .default,
+        navigation: Identity.Frontend.Configuration.Navigation = .default,
+        redirect: Identity.Frontend.Configuration.Redirect? = nil,
         rateLimiters: RateLimiters? = .default,
         currentUserName: (@Sendable () async throws -> String?)? = nil,
         canonicalHref: (@Sendable (Identity.View) -> URL?)? = nil,
-        hreflang: ( @Sendable (Identity.View, Language) -> URL)? = nil
+        hreflang: (@Sendable (Identity.View, Language) -> URL)? = nil,
+        email: Identity.Backend.Configuration.Email? = nil,
+        tokenEnrichment: Identity.Backend.Configuration.TokenEnrichment? = nil,
+        mfa: Identity.MFA? = nil,
+        oauth: Identity.OAuth? = nil
     ) {
         self = .init(
             baseURL: baseURL,
@@ -53,8 +131,11 @@ extension Identity.Standalone.Configuration {
             rateLimiters: rateLimiters,
             currentUserName: currentUserName,
             canonicalHref: canonicalHref,
-            hreflang: hreflang
+            hreflang: hreflang,
+            email: email,
+            tokenEnrichment: tokenEnrichment,
+            mfa: mfa,
+            oauth: oauth
         )
     }
 }
-

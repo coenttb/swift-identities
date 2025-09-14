@@ -120,7 +120,7 @@ extension Identity.Standalone {
                         // Try to refresh if we have a refresh token
                         if let refreshTokenCookie = request.cookies["refresh_token"]?.string {
                             do {
-                                let response = try await identity.identity.authenticate.token.refresh(refreshTokenCookie)
+                                let response = try await identity.authenticate.token.refresh(refreshTokenCookie)
                                 let newAccessToken = try await tokenClient.verifyAccess(response.accessToken)
                                 
                                 // Authenticate with new token
@@ -166,7 +166,7 @@ extension Identity.Standalone {
                     if let refreshTokenCookie = request.cookies["refresh_token"]?.string {
                         do {
                             // Try to refresh the token
-                            let response = try await identity.identity.authenticate.token.refresh(refreshTokenCookie)
+                            let response = try await identity.authenticate.token.refresh(refreshTokenCookie)
                             
                             // Authenticate the request with the new token BEFORE calling next
                             let accessToken = try await tokenClient.verifyAccess(response.accessToken)

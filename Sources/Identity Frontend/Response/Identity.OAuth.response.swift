@@ -18,9 +18,10 @@ import Language
 extension Identity.OAuth {
     /// Dispatches OAuth view requests to appropriate handlers.
     public static func response(
-        view: Identity.View.OAuth,
-        configuration: Identity.Frontend.Configuration
+        view: Identity.View.OAuth
     ) async throws -> any AsyncResponseEncodable {
+        @Dependency(Identity.Frontend.Configuration.self) var configuration
+        
         let router = configuration.identity.router
         
         // Check if OAuth is configured
@@ -30,16 +31,16 @@ extension Identity.OAuth {
         
         switch view {
         case .login:
-            return try await handleLogin(configuration: configuration)
+            return try await handleLogin()
             
         case .callback(let callbackRequest):
-            return try await handleCallback(callbackRequest: callbackRequest, configuration: configuration)
+            return try await handleCallback(callbackRequest: callbackRequest)
             
         case .connections:
-            return try await handleConnections(configuration: configuration)
+            return try await handleConnections()
             
         case .error(let message):
-            return try await handleError(message: message, configuration: configuration)
+            return try await handleError(message: message)
         }
     }
 }
@@ -50,8 +51,10 @@ extension Identity.OAuth {
     
     /// Handles OAuth login view showing available providers.
     private static func handleLogin(
-        configuration: Identity.Frontend.Configuration
+
     ) async throws -> any AsyncResponseEncodable {
+        @Dependency(Identity.Frontend.Configuration.self) var configuration
+        
         guard let oauth = configuration.identity.oauth else {
             throw Abort(.notImplemented, reason: "OAuth is not configured")
         }
@@ -79,8 +82,7 @@ extension Identity.OAuth {
         return try await Identity.Frontend.htmlDocument(
             for: .oauth(.login),
             title: "Sign in with OAuth",
-            description: "Sign in using your preferred OAuth provider",
-            configuration: configuration
+            description: "Sign in using your preferred OAuth provider"
         ) {
             Identity.OAuth.Login.View(
                 providers: providerUrls,
@@ -92,16 +94,17 @@ extension Identity.OAuth {
     /// Handles OAuth callback processing.
     private static func handleCallback(
         callbackRequest: Identity.OAuth.CallbackRequest,
-        configuration: Identity.Frontend.Configuration
+
     ) async throws -> any AsyncResponseEncodable {
         // The callback is typically handled by the API endpoint
         // This view can show a processing state or error
         return try await Identity.Frontend.htmlDocument(
             for: .oauth(.callback(callbackRequest)),
             title: "Processing OAuth Login",
-            description: "Processing your OAuth login",
-            configuration: configuration
+            description: "Processing your OAuth login"
         ) {
+            @Dependency(Identity.Frontend.Configuration.self) var configuration
+            
             Identity.OAuth.Callback.View(
                 provider: callbackRequest.provider,
                 redirectUrl: configuration.redirect.loginSuccess
@@ -111,8 +114,10 @@ extension Identity.OAuth {
     
     /// Handles OAuth connections management view.
     private static func handleConnections(
-        configuration: Identity.Frontend.Configuration
+
     ) async throws -> any AsyncResponseEncodable {
+        @Dependency(Identity.Frontend.Configuration.self) var configuration
+        
         guard let oauth = configuration.identity.oauth else {
             throw Abort(.notImplemented, reason: "OAuth is not configured")
         }
@@ -132,10 +137,9 @@ extension Identity.OAuth {
         return try await Identity.Frontend.htmlDocument(
             for: .oauth(.connections),
             title: "Manage OAuth Connections",
-            description: "Manage your connected OAuth accounts",
-            configuration: configuration
+            description: "Manage your connected OAuth accounts"
         ) {
-            Identity.OAuth.Connections.View(
+            return Identity.OAuth.Connections.View(
                 connections: connections,
                 availableProviders: availableProviders,
                 connectAction: { provider in
@@ -152,15 +156,16 @@ extension Identity.OAuth {
     /// Handles OAuth error view.
     private static func handleError(
         message: String,
-        configuration: Identity.Frontend.Configuration
+
     ) async throws -> any AsyncResponseEncodable {
         return try await Identity.Frontend.htmlDocument(
             for: .oauth(.error(message)),
             title: "OAuth Error",
-            description: "An error occurred during OAuth authentication",
-            configuration: configuration
+            description: "An error occurred during OAuth authentication"
         ) {
-            Identity.OAuth.Error.View(
+            @Dependency(Identity.Frontend.Configuration.self) var configuration
+            
+            return Identity.OAuth.Error.View(
                 errorMessage: message,
                 retryHref: configuration.identity.router.url(for: .view(.oauth(.login))),
                 cancelHref: configuration.navigation.home
