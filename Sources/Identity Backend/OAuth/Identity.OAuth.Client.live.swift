@@ -29,11 +29,14 @@ extension Identity.OAuth.State.Manager: DependencyKey {
 
 extension Identity.OAuth.Client {
     public static func live(
+        configuration: Identity.OAuth.Configuration? = nil
     ) -> Identity.OAuth.Client {
         @Dependency(Identity.OAuth.ProviderRegistry.self) var registry
         @Dependency(Identity.OAuth.State.Manager.self) var stateManager
-        
-        
+
+        // Configuration is passed for settings like successRedirectPath, failureRedirectPath, etc.
+        // but providers are registered separately at app startup
+
         return .init(
             registerProvider: { await registry.register($0) },
             provider: { await registry.provider(for: $0) },

@@ -17,7 +17,7 @@ import URLRouting
 extension Identity.Standalone {
     /// Standalone configuration that includes both Frontend and Backend configurations
     /// This is the central configuration point that orchestrates both
-    public struct Configuration: @unchecked Sendable {
+    public struct Configuration: Sendable {
         /// Frontend configuration
         public var baseURL: URL
         public var router: any URLRouting.Router<Identity.Route>
@@ -42,8 +42,8 @@ extension Identity.Standalone {
         /// Backend configuration
         public var email: Identity.Backend.Configuration.Email
         public var tokenEnrichment: Identity.Backend.Configuration.TokenEnrichment?
-        public var mfa: Identity.MFA?
-        public var oauth: Identity.OAuth?
+        public var mfa: Identity.MFA.Configuration?
+        public var oauth: Identity.OAuth.Configuration?
         
         package init(
             baseURL: URL,
@@ -59,8 +59,8 @@ extension Identity.Standalone {
             hreflang: (@Sendable (Identity.View, Language) -> URL)? = nil,
             email: Identity.Backend.Configuration.Email,
             tokenEnrichment: TokenEnrichment? = nil,
-            mfa: Identity.MFA? = nil,
-            oauth: Identity.OAuth? = nil
+            mfa: Identity.MFA.Configuration? = nil,
+            oauth: Identity.OAuth.Configuration? = nil
         ) {
             self.baseURL = baseURL
             self.router = router
@@ -117,8 +117,8 @@ extension Identity.Standalone.Configuration {
         hreflang: (@Sendable (Identity.View, Language) -> URL)? = nil,
         email: Identity.Backend.Configuration.Email = .noop,
         tokenEnrichment: Identity.Backend.Configuration.TokenEnrichment? = nil,
-        mfa: Identity.MFA? = nil,
-        oauth: Identity.OAuth? = nil
+        mfa: Identity.MFA.Configuration? = nil,
+        oauth: Identity.OAuth.Configuration? = nil
     ) {
         self = .init(
             baseURL: baseURL,

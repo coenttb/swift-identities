@@ -145,7 +145,7 @@ extension Identity.Backend {
                         }
                     }
                 ),
-                router: Identity.Reauthorization.Request.Router()
+                router: Identity.Reauthorization.Route.Router()
             ),
             create: Identity.Creation(
                 client: .live(

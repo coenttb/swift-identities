@@ -59,7 +59,7 @@ extension Identity.API {
                 await rateLimitClient.recordFailure()
             }
             // If protection fails, return unauthorized
-            throw Abort(.unauthorized, reason: "Not authenticated")
+            throw Abort(.unauthorized, reason: "Not authenticated3")
         }
         
         // Special handling for logout and logout.all to clear cookies and redirect
@@ -308,7 +308,7 @@ extension Identity.API {
                 // Get current identity from request
                 @Dependency(\.request) var request
                 guard let accessToken = request?.auth.get(Identity.Token.Access.self) else {
-                    throw Abort(.unauthorized, reason: "Not authenticated")
+                    throw Abort(.unauthorized, reason: "Not authenticated4")
                 }
                 
                 // For setup confirmation, we need the secret from the session/setup process
@@ -331,7 +331,7 @@ extension Identity.API {
                 // Get current identity from reauth token
                 @Dependency(\.request) var request
                 guard let accessToken = request?.auth.get(Identity.Token.Access.self) else {
-                    throw Abort(.unauthorized, reason: "Not authenticated")
+                    throw Abort(.unauthorized, reason: "Not authenticated5")
                 }
                 // Disable TOTP for the authenticated user
                 try await totpClient.disable(identityId: accessToken.identityId)

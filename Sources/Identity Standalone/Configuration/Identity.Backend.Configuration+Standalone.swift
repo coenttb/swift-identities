@@ -21,8 +21,8 @@ extension Identity.Backend.Configuration: DependencyKey {
             router: configuration.router.authentication.eraseToAnyParserPrinter(),
             email: configuration.email,
             tokenEnrichment: configuration.tokenEnrichment,
-            mfa: configuration.mfa,
-            oauth: configuration.oauth
+//            mfa: configuration.mfa,
+//            oauth: configuration.oauth
         )
     }
 }

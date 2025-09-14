@@ -29,14 +29,14 @@ extension URLRouting.Router where Output == Identity.Route, Input == URLRequestD
         )
     }
     
-        var reauthorization: any URLRouting.Router<Identity.Reauthorization.Request> {
-            self.map(
-                .convert(
-                    apply: { $0.reauthorize?.api },
-                    unapply: { Identity.Route.reauthorize(.api($0)) }
-                )
+    var reauthorization: any URLRouting.Router<Identity.Reauthorization.Route> {
+        self.map(
+            .convert(
+                apply: \.reauthorize,
+                unapply: Identity.Route.reauthorize
             )
-        }
+        )
+    }
     
     var creation: any URLRouting.Router<Identity.Creation.Route> {
         self.map(
@@ -64,8 +64,6 @@ extension URLRouting.Router where Output == Identity.Route, Input == URLRequestD
             )
         )
     }
-    
-    
     
     // MARK: - Password Routes
     

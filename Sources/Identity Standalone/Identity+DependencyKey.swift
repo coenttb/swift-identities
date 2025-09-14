@@ -18,6 +18,12 @@ import Records
 import JWT
 
 
+// MARK: - Helper Functions
+
+
+
+
+
 extension Identity: @retroactive DependencyKey {
     public static var liveValue: Self {
         @Dependency(Identity.Standalone.Configuration.self) var configuration
@@ -155,8 +161,12 @@ extension Identity: @retroactive DependencyKey {
                 ),
                 router: router.password
             ),
-            mfa: configuration.mfa,
-            oauth: configuration.oauth,
+            mfa: configuration.mfa.map { mfaConfig in
+                Identity.MFA(from: mfaConfig)
+            },
+            oauth: configuration.oauth.map { oauthConfig in
+                Identity.OAuth(from: oauthConfig)
+            },
             router: router
         )
     }

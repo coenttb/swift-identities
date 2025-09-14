@@ -57,7 +57,7 @@ extension Identity.Frontend {
         case .logout:
             // Logout requires being logged in
             if !isAuthenticated {
-                throw Abort(.forbidden, reason: "Not authenticated")
+                throw Abort(.forbidden, reason: "Not authenticated2")
             }
             
         case .password(.reset):
