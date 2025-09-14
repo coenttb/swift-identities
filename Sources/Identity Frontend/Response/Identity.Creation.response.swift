@@ -26,8 +26,7 @@ extension Identity.Creation {
             return try await handleCreateRequest()
         case .verify(let verify):
             @Dependency(Identity.Frontend.Configuration.self) var configuration
-            
-            let router = configuration.identity.router
+            @Dependency(\.identity.router) var router
             let redirect = configuration.redirect
             
             return try await Identity.Frontend.htmlDocument(for: .create(.verify)) {
@@ -47,8 +46,8 @@ extension Identity.Creation {
     public static func handleCreateRequest(
     ) async throws -> any AsyncResponseEncodable {
         @Dependency(Identity.Frontend.Configuration.self) var configuration
+        @Dependency(\.identity.router) var router
         
-        let router = configuration.identity.router
         
         return try await Identity.Frontend.htmlDocument(for: .create(.request)) {
             Identity.Creation.Request.View(

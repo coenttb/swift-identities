@@ -53,7 +53,7 @@
 //        challenge: Identity.MFA.URLChallenge,
 //        configuration: Identity.Frontend.Configuration
 //    ) async throws -> any AsyncResponseEncodable {
-//        let router = configuration.identity.router
+//        @Dependency(\.identity.router) var router
 //        
 //        // Create URL for backup code verification
 //        let backupCodeURL = router.url(for: .mfa(.view(.backupCodes(.verify(challenge)))))
@@ -85,7 +85,7 @@
 //        challenge: Identity.MFA.URLChallenge,
 //        configuration: Identity.Frontend.Configuration
 //    ) async throws -> any AsyncResponseEncodable {
-//        let router = configuration.identity.router
+//        @Dependency(\.identity.router) var router
 //        
 //        // Create a dummy verify request just to get the URL path
 //        let dummyVerify = Identity.MFA.API.Verify(
@@ -118,7 +118,7 @@
 //        mfa: Identity.MFA.View,
 //        configuration: Identity.Frontend.Configuration
 //    ) async throws -> any AsyncResponseEncodable {
-//        let router = configuration.identity.router
+//        @Dependency(\.identity.router) var router
 //        
 //        // For frontend-only implementations, show a message or redirect
 //        return try await Identity.Frontend.htmlDocument(

@@ -21,14 +21,15 @@ extension Identity.Authentication {
         view: Identity.Authentication.View
     ) async throws -> any AsyncResponseEncodable {
         @Dependency(Identity.Frontend.Configuration.self) var configuration
+        @Dependency(\.identity.router) var router
         
         switch view {
         case .credentials:
             return try await Identity.Frontend.htmlDocument(for: .authenticate(.credentials)) {
                 Identity.Authentication.Credentials.View(
-                    passwordResetHref: configuration.identity.router.url(for: .password(.view(.reset(.request)))),
-                    accountCreateHref: configuration.identity.router.url(for: .create(.view(.request))),
-                    loginFormAction: configuration.identity.router.url(for: .authenticate(.api(.credentials(.init()))))
+                    passwordResetHref: router.url(for: .password(.view(.reset(.request)))),
+                    accountCreateHref: router.url(for: .create(.view(.request))),
+                    loginFormAction: router.url(for: .authenticate(.api(.credentials(.init()))))
                 )
             }
         }

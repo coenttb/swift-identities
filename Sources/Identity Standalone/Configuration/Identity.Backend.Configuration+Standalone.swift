@@ -9,19 +9,17 @@
 import Identity_Backend
 import Identity_Shared
 import Dependencies
+import URLRouting
 
 extension Identity.Backend.Configuration: DependencyKey {
     /// In Standalone mode, Backend configuration is extracted from Standalone configuration
     public static var liveValue: Self {
         @Dependency(Identity.Standalone.Configuration.self) var configuration
-        @Dependency(\.identity) var identity
-
-        let emailConfig = configuration.email ?? .noop
 
         return Self(
             jwt: configuration.jwt,
-            router: identity.authenticate.router,
-            email: emailConfig,
+            router: configuration.router.authentication.eraseToAnyParserPrinter(),
+            email: configuration.email,
             tokenEnrichment: configuration.tokenEnrichment,
             mfa: configuration.mfa,
             oauth: configuration.oauth

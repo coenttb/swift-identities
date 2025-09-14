@@ -43,7 +43,7 @@ extension Identity.Email {
         
     ) async throws -> any AsyncResponseEncodable {
         @Dependency(Identity.Frontend.Configuration.self) var configuration
-        let router = configuration.identity.router
+        @Dependency(\.identity.router) var router
         let homeHref = configuration.navigation.home
         
         return try await Identity.Frontend.htmlDocument(for: .email(.change(.request))) {
@@ -74,7 +74,7 @@ extension Identity.Email {
         
     ) async throws -> any AsyncResponseEncodable {
         @Dependency(Identity.Frontend.Configuration.self) var configuration
-        let router = configuration.identity.router
+        @Dependency(\.identity.router) var router
         
         @Dependency(\.request) var request
         guard let request else { throw Abort.requestUnavailable }

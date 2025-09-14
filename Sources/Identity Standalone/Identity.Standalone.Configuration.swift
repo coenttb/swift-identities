@@ -5,7 +5,7 @@
 //  Created by Coen ten Thije Boonkkamp on 29/01/2025.
 //
 
-import Identity_Frontend
+@preconcurrency import Identity_Frontend
 import Identity_Backend
 import Identity_Shared
 import IdentitiesTypes
@@ -17,10 +17,10 @@ import URLRouting
 extension Identity.Standalone {
     /// Standalone configuration that includes both Frontend and Backend configurations
     /// This is the central configuration point that orchestrates both
-    public struct Configuration: Sendable {
+    public struct Configuration: @unchecked Sendable {
         /// Frontend configuration
         public var baseURL: URL
-        public var identity: Identity
+        public var router: any URLRouting.Router<Identity.Route>
         public var jwt: Identity.Token.Client
         public var cookies: Identity.Standalone.Configuration.Cookies
         public var branding: Identity.Standalone.Configuration.Branding
@@ -40,14 +40,14 @@ extension Identity.Standalone {
         
         
         /// Backend configuration
-        public var email: Identity.Backend.Configuration.Email?
+        public var email: Identity.Backend.Configuration.Email
         public var tokenEnrichment: Identity.Backend.Configuration.TokenEnrichment?
         public var mfa: Identity.MFA?
         public var oauth: Identity.OAuth?
         
         package init(
             baseURL: URL,
-            identity: Identity,
+            router: any URLRouting.Router<Identity.Route>,
             jwt: Identity.Token.Client,
             cookies: Identity.Standalone.Configuration.Cookies,
             branding: Identity.Standalone.Configuration.Branding,
@@ -57,13 +57,13 @@ extension Identity.Standalone {
             currentUserName: (@Sendable () async throws -> String?)? = nil,
             canonicalHref: (@Sendable (Identity.View) -> URL?)? = nil,
             hreflang: (@Sendable (Identity.View, Language) -> URL)? = nil,
-            email: Identity.Backend.Configuration.Email? = nil,
+            email: Identity.Backend.Configuration.Email,
             tokenEnrichment: TokenEnrichment? = nil,
             mfa: Identity.MFA? = nil,
             oauth: Identity.OAuth? = nil
         ) {
             self.baseURL = baseURL
-            self.identity = identity
+            self.router = router
             self.jwt = jwt
             self.cookies = cookies
             self.branding = branding
@@ -79,10 +79,10 @@ extension Identity.Standalone {
                 return accessToken.displayName
             }
             self.canonicalHref = canonicalHref ?? { view in
-                identity.router.url(for: .view(view))
+                router.url(for: .view(view))
             }
             self.hreflang = hreflang ?? { view, _ in
-                identity.router.url(for: .view(view))
+                router.url(for: .view(view))
             }
             self.email = email
             self.tokenEnrichment = tokenEnrichment
@@ -105,7 +105,7 @@ extension Identity.Standalone.Configuration {
     /// Convenience initializer with defaults
     public init(
         baseURL: URL,
-        identity: Identity = .live(),
+        router: any URLRouting.Router<Identity.Route>,
         jwt: Identity.Token.Client,
         cookies: Identity.Frontend.Configuration.Cookies? = nil,
         branding: Identity.Frontend.Configuration.Branding = .default,
@@ -115,19 +115,19 @@ extension Identity.Standalone.Configuration {
         currentUserName: (@Sendable () async throws -> String?)? = nil,
         canonicalHref: (@Sendable (Identity.View) -> URL?)? = nil,
         hreflang: (@Sendable (Identity.View, Language) -> URL)? = nil,
-        email: Identity.Backend.Configuration.Email? = nil,
+        email: Identity.Backend.Configuration.Email = .noop,
         tokenEnrichment: Identity.Backend.Configuration.TokenEnrichment? = nil,
         mfa: Identity.MFA? = nil,
         oauth: Identity.OAuth? = nil
     ) {
         self = .init(
             baseURL: baseURL,
-            identity: identity,
+            router: router,
             jwt: jwt,
-            cookies: cookies ?? .live(identity.router, domain: baseURL.host),
+            cookies: cookies ?? .live(router, domain: baseURL.host),
             branding: branding,
             navigation: navigation,
-            redirect: redirect ?? .default(router: identity.router),
+            redirect: redirect ?? .default(router: router),
             rateLimiters: rateLimiters,
             currentUserName: currentUserName,
             canonicalHref: canonicalHref,

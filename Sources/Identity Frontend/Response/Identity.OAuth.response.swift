@@ -21,8 +21,7 @@ extension Identity.OAuth {
         view: Identity.View.OAuth
     ) async throws -> any AsyncResponseEncodable {
         @Dependency(Identity.Frontend.Configuration.self) var configuration
-        
-        let router = configuration.identity.router
+        @Dependency(\.identity.router) var router
         
         // Check if OAuth is configured
         guard configuration.identity.oauth != nil else {
@@ -132,7 +131,7 @@ extension Identity.OAuth {
         let connectedProviders = Set(connections.map { $0.provider })
         let availableProviders = allProviders.filter { !connectedProviders.contains($0.identifier) }
         
-        let router = configuration.identity.router
+        @Dependency(\.identity.router) var router
         
         return try await Identity.Frontend.htmlDocument(
             for: .oauth(.connections),
@@ -164,10 +163,11 @@ extension Identity.OAuth {
             description: "An error occurred during OAuth authentication"
         ) {
             @Dependency(Identity.Frontend.Configuration.self) var configuration
+            @Dependency(\.identity.router) var router
             
             return Identity.OAuth.Error.View(
                 errorMessage: message,
-                retryHref: configuration.identity.router.url(for: .view(.oauth(.login))),
+                retryHref: router.url(for: .view(.oauth(.login))),
                 cancelHref: configuration.navigation.home
             )
         }

@@ -21,7 +21,7 @@
 //        return try await Self.response(
 //            view: view,
 //            client: configuration.client,
-//            router: configuration.identity.router,
+//            router: identity.router,
 //            canonicalHref: configuration.canonicalHref,
 //            hreflang: configuration.hreflang,
 //            branding: configuration.branding,
