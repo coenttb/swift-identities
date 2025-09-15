@@ -56,6 +56,20 @@ extension Identity.Consumer.API.Router {
             
         case .mfa(_):
             break
+        case .oauth(let oauth):
+            fatalError()
+//            // OAuth views generally don't require authentication
+//            // except for the connections management page
+//            switch oauth {
+//            case .connections:
+//                // Managing OAuth connections requires authentication
+//                if !isAuthenticated {
+//                    throw Abort(.unauthorized, reason: "Authentication required to manage OAuth connections")
+//                }
+//            case .login, .callback, .error:
+//                // These are part of the OAuth flow and don't require authentication
+//                break
+//            }
         }
 
         return router

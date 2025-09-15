@@ -39,18 +39,6 @@ extension Identity.Standalone {
             runMigrations: runMigrations
         )
         
-        application.middleware.use(Identity.Standalone.Authenticator())
-        
-        logger.debug("Identity authenticator middleware registered", metadata: [
-            "component": "Identity.Standalone",
-            "operation": "middleware.registered"
-        ])
-        
-        logger.info("Identity Standalone configuration complete", metadata: [
-            "component": "Identity.Standalone",
-            "operation": "configure.success"
-        ])
-        
         @Dependency(Identity.Standalone.Configuration.self) var configuration
         @Dependency(\.identity.oauth?.client.registerProvider) var registerProvider
 
@@ -65,5 +53,17 @@ extension Identity.Standalone {
                 }
             }
         }
+        
+        application.middleware.use(Identity.Standalone.Authenticator())
+        
+        logger.debug("Identity authenticator middleware registered", metadata: [
+            "component": "Identity.Standalone",
+            "operation": "middleware.registered"
+        ])
+        
+        logger.info("Identity Standalone configuration complete", metadata: [
+            "component": "Identity.Standalone",
+            "operation": "configure.success"
+        ])
     }
 }
