@@ -140,24 +140,23 @@ extension Identity: @retroactive DependencyKey {
                         sendEmailChangeRequestNotification: emailConfig.sendEmailChangeRequestNotification,
                         onEmailChangeSuccess: emailConfig.onEmailChangeSuccess
                     ),
-//                    router: router.email.change
+                    router: router.email.api.change
                 ),
                 router: router.email
             ),
             password: .init(
                 change: .init(
-                    client: Password.Client.live(
-                        sendPasswordResetEmail: emailConfig.sendPasswordResetEmail,
+                    client: .live(
                         sendPasswordChangeNotification: emailConfig.sendPasswordChangeNotification
-                    ).change,
-//                    router: router.password.change
+                    ),
+                    router: router.password.api.change
                 ),
                 reset: .init(
-                    client: Password.Client.live(
+                    client: .live(
                         sendPasswordResetEmail: emailConfig.sendPasswordResetEmail,
                         sendPasswordChangeNotification: emailConfig.sendPasswordChangeNotification
-                    ).reset,
-//                    router: router.password.reset
+                    ),
+                    router: router.password.api.reset
                 ),
                 router: router.password
             ),

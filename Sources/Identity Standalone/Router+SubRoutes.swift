@@ -77,7 +77,23 @@ extension URLRouting.Router where Output == Identity.Route, Input == URLRequestD
     }
 }
 
+// MARK: - Email Sub-routers
+
+extension URLRouting.Router where Output == Identity.Email.Route, Input == URLRequestData {
+    // Extract the API router from Email.Route
+    var api: any URLRouting.Router<Identity.Email.API> {
+        self.map(
+            .convert(
+                apply: \.api,
+                unapply: Identity.Email.Route.api
+            )
+        )
+    }
+}
+
+// Separate extension for Email.API to avoid existential issues
 extension URLRouting.Router where Output == Identity.Email.API, Input == URLRequestData {
+    // Extract change from the Email.API router
     var change: any URLRouting.Router<Identity.Email.Change.API> {
         self.map(
             .convert(
@@ -88,7 +104,23 @@ extension URLRouting.Router where Output == Identity.Email.API, Input == URLRequ
     }
 }
 
+// MARK: - Password Sub-routers
+
+extension URLRouting.Router where Output == Identity.Password.Route, Input == URLRequestData {
+    // Extract the API router from Password.Route
+    var api: any URLRouting.Router<Identity.Password.API> {
+        self.map(
+            .convert(
+                apply: \.api,
+                unapply: Identity.Password.Route.api
+            )
+        )
+    }
+}
+
+// Separate extension for Password.API to avoid existential issues
 extension URLRouting.Router where Output == Identity.Password.API, Input == URLRequestData {
+    // Extract change from the Password.API router
     var change: any URLRouting.Router<Identity.Password.Change.API> {
         self.map(
             .convert(
@@ -97,7 +129,8 @@ extension URLRouting.Router where Output == Identity.Password.API, Input == URLR
             )
         )
     }
-    
+
+    // Extract reset from the Password.API router
     var reset: any URLRouting.Router<Identity.Password.Reset.API> {
         self.map(
             .convert(
@@ -107,3 +140,4 @@ extension URLRouting.Router where Output == Identity.Password.API, Input == URLR
         )
     }
 }
+
