@@ -228,22 +228,17 @@ extension Identity.Backend {
                 // Hash the password
                 let passwordHash = try Bcrypt.hash(testPassword)
                 
-                // Create the test user with verified email
-                @Dependency(\.uuid) var uuid
-                let id = Identity.ID(uuid())
-                
-                let testUser = Identity.Record(
-                    id: id,
-                    email: testEmail,
-                    passwordHash: passwordHash,
-                    emailVerificationStatus: .verified,
-                    sessionVersion: 0,
-                    createdAt: Date(),
-                    updatedAt: Date(),
-                    lastLoginAt: nil
-                )
-                
-                try await Identity.Record.insert { testUser }.execute(db)
+                try await Identity.Record.insert {
+                    Identity.Record.Draft(
+                        email: testEmail,
+                        passwordHash: passwordHash,
+                        emailVerificationStatus: .verified,
+                        sessionVersion: 0,
+                        createdAt: Date(),
+                        updatedAt: Date(),
+                        lastLoginAt: nil
+                    )
+                }.execute(db)
                 
                 logger.info("Test user created", metadata: [
                     "component": "Identity.Database",

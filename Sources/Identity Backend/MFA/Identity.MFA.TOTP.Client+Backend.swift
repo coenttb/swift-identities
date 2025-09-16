@@ -242,7 +242,6 @@ extension Identity.MFA.TOTP.Client {
                 
                 // Save backup codes to database with explicit operations
                 @Dependency(\.defaultDatabase) var db
-                @Dependency(\.uuid) var uuid
                 
                 try await db.write { [codes] db in
                     // Delete existing codes
