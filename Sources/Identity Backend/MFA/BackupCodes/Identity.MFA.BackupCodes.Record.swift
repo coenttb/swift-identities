@@ -5,7 +5,9 @@ import IdentitiesTypes
 extension Identity.MFA.BackupCodes {
     @Table("identity_backup_codes")
     public struct Record: Codable, Equatable, Identifiable, Sendable {
-        public let id: UUID
+        public typealias ID = Tagged<Self, UUID>
+        
+        public let id: Identity.MFA.BackupCodes.Record.ID
         public let identityId: Identity.ID
         public let codeHash: String // Hashed backup code
         public let isUsed: Bool

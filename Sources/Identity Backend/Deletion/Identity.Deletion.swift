@@ -5,7 +5,9 @@ import Dependencies
 extension Identity.Deletion {
     @Table("identity_deletions")
     public struct Record: Codable, Equatable, Identifiable, Sendable {
-        public let id: UUID
+        public typealias ID = Tagged<Self, UUID>
+        
+        public let id: Identity.Deletion.Record.ID
         public var identityId: Identity.ID
         public var requestedAt: Date = Date()
         public var reason: String?
@@ -14,7 +16,7 @@ extension Identity.Deletion {
         public var scheduledFor: Date
         
         public init(
-            id: UUID,
+            id: Identity.Deletion.Record.ID,
             identityId: Identity.ID,
             requestedAt: Date = Date(),
             reason: String? = nil,
@@ -35,7 +37,7 @@ extension Identity.Deletion {
 
 extension Identity.Deletion.Record.Draft {
     public init(
-        id: UUID? = nil,
+        id: Identity.Deletion.Record.ID? = nil,
         identityId: Identity.ID,
         reason: String? = nil,
         gracePeriodDays: Int = 30

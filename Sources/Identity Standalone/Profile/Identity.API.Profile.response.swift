@@ -28,11 +28,8 @@ extension Identity.API.Profile {
             @Dependency(\.uuid) var uuid
             @Dependency(\.date) var date
             
-            // Use UPSERT to ensure profile exists, then fetch it
             let profile = try await db.write { db in
-                // Create default profile if doesn't exist
-                let defaultProfile = Identity.Profile.Record(
-                    id: uuid(),
+                let defaultProfile = Identity.Profile.Record.Draft(
                     identityId: identity.id,
                     displayName: nil,
                     createdAt: date(),
@@ -49,16 +46,19 @@ extension Identity.API.Profile {
                     .fetchOne(db)!
             }
             
-            let profileResponse = Response(
-                id: profile.id,
-                identityId: profile.identityId,
-                displayName: profile.displayName,
-                email: identity.email,
-                createdAt: profile.createdAt,
-                updatedAt: profile.updatedAt
-            )
+            //TODO: FIX THIS
+            fatalError()
             
-            return Vapor.Response.success(true, data: profileResponse)
+//            let profileResponse = Response(
+//                id: profile.id,
+//                identityId: profile.identityId,
+//                displayName: profile.displayName,
+//                email: identity.email,
+//                createdAt: profile.createdAt,
+//                updatedAt: profile.updatedAt
+//            )
+//            
+//            return Vapor.Response.success(true, data: profileResponse)
             
         case .updateDisplayName(let request):
             @Dependency(\.request) var vaporRequest
@@ -74,8 +74,7 @@ extension Identity.API.Profile {
             
             // Use UPSERT to create or update profile atomically
             try await db.write { db in
-                let profile = Identity.Profile.Record(
-                    id: uuid(),
+                let profile = Identity.Profile.Record.Draft(
                     identityId: identity.id,
                     displayName: request.displayName,
                     createdAt: date(),

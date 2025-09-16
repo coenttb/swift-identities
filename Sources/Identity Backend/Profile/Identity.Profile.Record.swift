@@ -17,14 +17,16 @@ extension Identity {
 extension Identity.Profile {
     @Table("identity_profiles")
     public struct Record: Codable, Equatable, Identifiable, Sendable {
-        public let id: UUID
+        public typealias ID = Tagged<Self, UUID>
+        
+        public let id: Identity.Profile.Record.ID
         public let identityId: Identity.ID
         public var displayName: String?
         public var createdAt: Date = Date()
         public var updatedAt: Date = Date()
         
         package init(
-            id: UUID,
+            id: Identity.Profile.Record.ID,
             identityId: Identity.ID,
             displayName: String? = nil,
             createdAt: Date = Date(),
@@ -36,18 +38,20 @@ extension Identity.Profile {
             self.createdAt = createdAt
             self.updatedAt = updatedAt
         }
-        
-        package init(
-            identityId: Identity.ID,
-            displayName: String? = nil
-        ) {
-            @Dependency(\.uuid) var uuid
-            self.id = uuid()
-            self.identityId = identityId
-            self.displayName = displayName
-            self.createdAt = Date()
-            self.updatedAt = Date()
-        }
+    }
+}
+
+extension Identity.Profile.Record.Draft {
+    package init(
+        id: Identity.Profile.Record.ID? = nil,
+        identityId: Identity.ID,
+        displayName: String? = nil
+    ) {
+        self.id = id
+        self.identityId = identityId
+        self.displayName = displayName
+        self.createdAt = Date()
+        self.updatedAt = Date()
     }
 }
 
@@ -94,7 +98,7 @@ extension Identity.Profile.Record {
     /// Upsert based on identityId (create if doesn't exist, update if exists)
     /// Uses the UNIQUE constraint on identityId for conflict detection
     package static func upsertByIdentityId(
-        _ profile: Identity.Profile.Record
+        _ profile: Identity.Profile.Record.Draft
     ) -> InsertOf<Identity.Profile.Record> {
         return Self
             .insert {

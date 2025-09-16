@@ -7,7 +7,9 @@ import RFC_6238
 extension Identity.MFA.TOTP {
     @Table("identity_totp")
     public struct Record: Codable, Equatable, Identifiable, Sendable {
-        public let id: UUID
+        public typealias ID = Tagged<Self, UUID>
+        
+        public let id: Identity.MFA.TOTP.Record.ID
         public let identityId: Identity.ID
         public let secret: String // Encrypted base32 secret
         public let isConfirmed: Bool
@@ -20,7 +22,7 @@ extension Identity.MFA.TOTP {
         public let usageCount: Int
         
         package init(
-            id: UUID = UUID(),
+            id: Identity.MFA.TOTP.Record.ID,
             identityId: Identity.ID,
             secret: String,
             isConfirmed: Bool = false,

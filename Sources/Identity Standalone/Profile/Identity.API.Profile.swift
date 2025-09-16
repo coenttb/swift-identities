@@ -43,7 +43,9 @@ extension Identity.API.Profile {
     
     /// Response containing profile information
     public struct Response: Codable, Equatable, Sendable {
-        public let id: UUID
+        public typealias ID = Tagged<Self, UUID>
+        
+        public let id: Identity.API.Profile.Response.ID
         public let identityId: Identity.ID
         public let displayName: String?
         public let email: EmailAddress
@@ -51,7 +53,7 @@ extension Identity.API.Profile {
         public let updatedAt: Date
         
         public init(
-            id: UUID,
+            id: Identity.API.Profile.Response.ID,
             identityId: Identity.ID,
             displayName: String?,
             email: EmailAddress,

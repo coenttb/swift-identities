@@ -7,7 +7,9 @@ import IdentitiesTypes
 extension Identity.Token {
     @Table("identity_tokens")
     public struct Record: Codable, Equatable, Identifiable, Sendable {
-        public let id: UUID
+        public typealias ID = Tagged<Self, UUID>
+        
+        public let id: Identity.Token.Record.ID
         package var value: String
         package var validUntil: Date
         package var identityId: Identity.ID
@@ -28,7 +30,7 @@ extension Identity.Token {
         }
         
         package init(
-            id: UUID,
+            id: Identity.Token.Record.ID,
             value: String,
             validUntil: Date,
             identityId: Identity.ID,
@@ -73,7 +75,7 @@ extension Identity.Token {
 
 extension Identity.Token.Record.Draft {
     package init(
-        id: UUID? = nil,
+        id: Identity.Token.Record.ID? = nil,
         identityId: Identity.ID,
         type: Identity.Token.Record.TokenType,
         validUntil: Date? = nil

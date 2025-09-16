@@ -7,7 +7,9 @@ import Crypto
 extension Identity.Email.Change.Request {
     @Table("identity_email_change_requests")
     package struct Record: Codable, Equatable, Identifiable, Sendable {
-        package let id: UUID
+        public typealias ID = Tagged<Self, UUID>
+        
+        package let id: Identity.Email.Change.Request.Record.ID
         package var identityId: Identity.ID
         internal var newEmail: EmailAddress
         package var verificationToken: String
@@ -17,7 +19,7 @@ extension Identity.Email.Change.Request {
         package var cancelledAt: Date?
         
         package init(
-            id: UUID,
+            id: Identity.Email.Change.Request.Record.ID,
             identityId: Identity.ID,
             newEmail: EmailAddress,
             verificationToken: String,
@@ -51,7 +53,7 @@ extension Identity.Email.Change.Request {
 
 extension Identity.Email.Change.Request.Record.Draft {
     package init(
-        id: UUID? = nil,
+        id: Identity.Email.Change.Request.Record.ID? = nil,
         identityId: Identity.ID,
         newEmail: EmailAddress,
         expirationHours: Int = 24

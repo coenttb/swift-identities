@@ -10,7 +10,9 @@ extension Identity.Authentication {
 extension Identity.Authentication.ApiKey {
     @Table("identity_api_keys")
     public struct Record: Codable, Equatable, Identifiable, Sendable {
-        public let id: UUID
+        public typealias ID = Tagged<Self, UUID>
+        
+        public let id: Identity.Authentication.ApiKey.Record.ID
         package var name: String
         package var key: String
         package var scopes: String  // Store as JSON string, maps to jsonb column in PostgreSQL
@@ -42,7 +44,7 @@ extension Identity.Authentication.ApiKey {
         }
         
         package init(
-            id: UUID,
+            id: Identity.Authentication.ApiKey.Record.ID,
             name: String,
             key: String,
             scopes: [String],
@@ -71,7 +73,7 @@ extension Identity.Authentication.ApiKey {
         }
         
         package init(
-            id: UUID,
+            id: Identity.Authentication.ApiKey.Record.ID,
             name: String,
             identityId: Identity.ID,
             scopes: [String] = [],
@@ -217,7 +219,7 @@ extension Identity.Authentication.ApiKey.Record {
     }
     
     /// Batch deactivate API keys
-    package static func deactivateMultiple(ids: [UUID]) async throws {
+    package static func deactivateMultiple(ids: [Identity.Authentication.ApiKey.Record.ID]) async throws {
         @Dependency(\.defaultDatabase) var db
         
         guard !ids.isEmpty else { return }

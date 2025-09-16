@@ -15,7 +15,7 @@ package struct AuthenticationData: Sendable {
 @Selection
 package struct IdentityWithMFAStatus: Sendable {
     package let identity: Identity.Record
-    package let totpId: UUID?
+    package let totpId: Identity.MFA.TOTP.Record.ID?
     package let totpConfirmed: Bool
     package let backupCodesAvailable: Int
 }
@@ -186,7 +186,7 @@ extension Identity.MFA.TOTP.Record {
     }
     
     /// Update TOTP usage statistics without fetching
-    package static func recordUsageOptimized(id: UUID) async throws {
+    package static func recordUsageOptimized(id: Identity.MFA.TOTP.Record.ID) async throws {
         @Dependency(\.defaultDatabase) var db
         @Dependency(\.date) var date
         
