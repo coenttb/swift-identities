@@ -9,7 +9,7 @@ import ServerFoundation
 import Vapor
 
 extension RateLimiter {
-    package struct Client {
+    public struct Client {
         package let recordAttempt: () async -> Void
         package let recordSuccess: () async -> Void
         package let recordFailure: () async -> Void

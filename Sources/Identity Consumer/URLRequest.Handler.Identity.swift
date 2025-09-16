@@ -13,11 +13,11 @@ extension URLRequest.Handler {
 }
 
 extension URLRequest.Handler.Identity: DependencyKey {
-    package static var liveValue: URLRequest.Handler {
+    public static var liveValue: URLRequest.Handler {
         .init(debug: false)
     }
     
-    package static var testValue: URLRequest.Handler {
+    public static var testValue: URLRequest.Handler {
         .init(debug: true)
     }
 }

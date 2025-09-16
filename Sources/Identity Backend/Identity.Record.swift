@@ -152,7 +152,7 @@ extension Identity.Record {
 
 
 extension Identity.Record {
-     static func update(from identity: Identity.Record) -> (inout Updates<Identity.Record>) -> Void {
+     package static func update(from identity: Identity.Record) -> (inout Updates<Identity.Record>) -> Void {
          return { updates in
              updates.email = identity.email
              updates.passwordHash = identity.passwordHash
