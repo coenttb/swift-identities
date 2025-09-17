@@ -56,4 +56,4 @@ extension Identity.Standalone {
     }
 }
 
-extension Identity.Standalone.CredentialsAuthenticator.Credentials: Vapor.Content {}
+extension Identity.Standalone.CredentialsAuthenticator.Credentials: @retroactive Vapor.Content {}
