@@ -119,6 +119,18 @@ extension Identity: @retroactive DependencyKey {
                 ),
                 router: router.reauthorization
             ),
+            require: {
+                @Dependency(\.request) var request
+                guard let request else {
+                    throw Abort(.badRequest)
+//                    throw Identity.Error.unauthorized(reason: "No request available")
+                }
+                guard let token = request.auth.get(Identity.Token.Access.self) else {
+                    throw Abort(.unauthorized)
+//                    throw Identity.Error.unauthorized(reason: "Authentication required")
+                }
+                return Identity.Context(token: token)
+            },
             create: .init(
                 client: .live(
                     sendVerificationEmail: emailConfig.sendVerificationEmail,

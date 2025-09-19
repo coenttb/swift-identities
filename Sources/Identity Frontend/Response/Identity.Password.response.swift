@@ -114,10 +114,10 @@ extension Identity.Password {
 
     ) async throws -> any AsyncResponseEncodable {
         @Dependency(Identity.Frontend.Configuration.self) var configuration
-        
         @Dependency(\.identity.router) var router
+        @Dependency(\.identity.require) var requireIdentity
         
-        @Dependency(\.request?.identity?.email.description) var email
+        let email = try? await requireIdentity().email.rawValue
                 
         return try await Identity.Frontend.htmlDocument(
             for: .password(.change(.request))

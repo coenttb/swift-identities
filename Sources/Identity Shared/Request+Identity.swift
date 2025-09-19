@@ -2,57 +2,11 @@
 //  Request+Identity.swift
 //  coenttb-identities
 //
-//  Provides convenient access to identity-related information in Vapor requests.
-//  Uses an intermediate struct to create a clean namespace for all identity operations.
+//  Deprecated identity access patterns.
+//  Use @Dependency(\.identity.require) for accessing identity context.
 //
 
 import ServerFoundationVapor
 import IdentitiesTypes
 import Foundation
-
-extension Vapor.Request {
-    /// Access identity-related information for the current request
-    public var identity: IdentityContext? {
-        self.auth.get(Identity.Token.Access.self).map(IdentityContext.init(token:))
-    }
-    
-    /// Context object providing access to identity information for a request
-    public struct IdentityContext: Sendable {
-        public let token: Identity.Token.Access
-
-        
-        /// Whether the request is authenticated
-        public var isAuthenticated: Bool {
-            true // If we have a context, we're authenticated
-        }
-        
-        /// The authenticated identity's ID
-        public var id: Identity.ID {
-            token.identityId
-        }
-        
-        /// The authenticated identity's email address
-        public var email: EmailAddress {
-            token.email
-        }
-        
-        /// The authenticated identity's display name (Standalone only)
-        public var displayName: String {
-            token.displayName
-        }
-    }
-}
-
-extension Identity {
-    /// Require authentication or throw an unauthorized error
-    /// - Returns: The access token for the authenticated session
-    /// - Throws: Abort.unauthorized if not authenticated
-    public static func require() throws -> Identity.Token.Access {
-        @Dependency(\.request) var request
-        guard let token = request?.identity?.token
-        else {
-            throw Abort(.unauthorized, reason: "Authentication required")
-        }
-        return token
-    }
-}
+//

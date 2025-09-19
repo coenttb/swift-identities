@@ -11,29 +11,29 @@ import Logging
 import Records
 import ServerFoundationVapor
 
-/// Protocol providing common dependencies for Identity Backend operations
-package protocol IdentityBackendDependencies {
-    var database: any Database.Writer { get }
-    var logger: Logger { get }
-    var date: DateGenerator { get }
-}
-
-/// Default implementation using Dependencies library
-package struct DefaultIdentityBackendDependencies: IdentityBackendDependencies {
-    @Dependency(\.defaultDatabase) package var database
-    @Dependency(\.logger) package var logger
-    @Dependency(\.date) package var date
-    
-    package init() {}
-}
-
-/// Extension for convenient access to common dependencies
-extension Identity.Backend {
-    /// Shared dependencies instance for reducing duplication
-    package static var dependencies: IdentityBackendDependencies {
-        DefaultIdentityBackendDependencies()
-    }
-}
+///// Protocol providing common dependencies for Identity Backend operations
+//package protocol IdentityBackendDependencies {
+//    var database: any Database.Writer { get }
+//    var logger: Logger { get }
+//    var date: DateGenerator { get }
+//}
+//
+///// Default implementation using Dependencies library
+//package struct DefaultIdentityBackendDependencies: IdentityBackendDependencies {
+//    @Dependency(\.defaultDatabase) package var database
+//    @Dependency(\.logger) package var logger
+//    @Dependency(\.date) package var date
+//    
+//    package init() {}
+//}
+//
+///// Extension for convenient access to common dependencies
+//extension Identity.Backend {
+//    /// Shared dependencies instance for reducing duplication
+//    package static var dependencies: IdentityBackendDependencies {
+//        DefaultIdentityBackendDependencies()
+//    }
+//}
 
 /// Constants for magic numbers used throughout Identity Backend
 extension Identity.Backend {

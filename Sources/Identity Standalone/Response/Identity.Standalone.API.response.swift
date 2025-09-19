@@ -20,15 +20,10 @@ extension Identity.Standalone.API {
     public static func response(
         api: Identity.Standalone.API,
     ) async throws -> any AsyncResponseEncodable {
-        
+        @Dependency(\.identity.require) var requireIdentity
         switch api {
         case .profile(let profileAPI):
-            // Handle profile API requests (Standalone only)
-            // Profile endpoints require authentication
-            @Dependency(\.request) var request
-            guard request?.identity?.isAuthenticated == true else {
-                throw Abort(.unauthorized, reason: "Authentication required")
-            }
+            let identity = try await requireIdentity()
             
             return try await Identity.API.Profile.response(profileAPI)
         }
