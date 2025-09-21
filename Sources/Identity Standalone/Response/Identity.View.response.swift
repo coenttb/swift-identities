@@ -18,7 +18,7 @@ extension Identity.View {
     /// Handles view rendering for standalone identity management.
     ///
     /// Composes Frontend handlers with backend-enhanced functionality.
-    public static func standaloneResponse(
+    public static func response(
         view: Identity.View
     ) async throws -> any AsyncResponseEncodable {
         

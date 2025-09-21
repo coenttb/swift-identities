@@ -13,7 +13,7 @@ extension Identity.Route {
     ///
     /// This function processes both API and view routes for standalone deployments,
     /// providing complete identity management functionality within a single server.
-    public static func standaloneResponse(
+    public static func response(
         route: Identity.Route
     ) async throws -> any AsyncResponseEncodable {
         switch route {
@@ -22,7 +22,7 @@ extension Identity.Route {
             case .api(let api):
                 return try await Identity.API.response(api: .create(api))
             case .view(let view):
-                return try await Identity.View.standaloneResponse(view: .create(mapCreateView(view)))
+                return try await Identity.View.response(view: .create(mapCreateView(view)))
             }
             
         case .authenticate(let authenticate):
@@ -30,7 +30,7 @@ extension Identity.Route {
             case .api(let api):
                 return try await Identity.API.response(api: .authenticate(api))
             case .view(let view):
-                return try await Identity.View.standaloneResponse(view: .authenticate(mapAuthView(view)))
+                return try await Identity.View.response(view: .authenticate(mapAuthView(view)))
             }
             
         case .delete(let delete):
@@ -38,7 +38,7 @@ extension Identity.Route {
             case .api(let api):
                 return try await Identity.API.response(api: .delete(api))
             case .view(let view):
-                return try await Identity.View.standaloneResponse(view: .delete(view))
+                return try await Identity.View.response(view: .delete(view))
             }
             
         case .email(let email):
@@ -46,7 +46,7 @@ extension Identity.Route {
             case .api(let api):
                 return try await Identity.API.response(api: .email(api))
             case .view(let view):
-                return try await Identity.View.standaloneResponse(view: .email(mapEmailView(view)))
+                return try await Identity.View.response(view: .email(mapEmailView(view)))
             }
             
         case .password(let password):
@@ -54,7 +54,7 @@ extension Identity.Route {
             case .api(let api):
                 return try await Identity.API.response(api: .password(api))
             case .view(let view):
-                return try await Identity.View.standaloneResponse(view: .password(mapPasswordView(view)))
+                return try await Identity.View.response(view: .password(mapPasswordView(view)))
             }
             
         case .mfa(let mfa):
@@ -62,11 +62,11 @@ extension Identity.Route {
             case .api(let api):
                 return try await Identity.API.response(api: .mfa(api))
             case .view(let view):
-                return try await Identity.View.standaloneResponse(view: .mfa(mapMFAView(view)))
+                return try await Identity.View.response(view: .mfa(mapMFAView(view)))
             }
             
         case .logout:
-            return try await Identity.View.standaloneResponse(view: .logout)
+            return try await Identity.View.response(view: .logout)
             
         case .reauthorize(let reauth):
             switch reauth {
@@ -79,7 +79,7 @@ extension Identity.Route {
             case .api(let oauth):
                 return try await Identity.API.response(api: .oauth(oauth))
             case .view(let oauth):
-                return try await Identity.View.standaloneResponse(view: .oauth(oauth))
+                return try await Identity.View.response(view: .oauth(oauth))
             }
         }
     }
