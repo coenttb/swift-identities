@@ -29,10 +29,7 @@ extension Identity.Standalone {
         @Dependency(\.logger) var logger
         @Dependency(\.defaultDatabase) var database
         
-        logger.info("Configuring Identity Standalone", metadata: [
-            "component": "Identity.Standalone",
-            "operation": "configure"
-        ])
+        logger.trace("Configuring Identity Standalone")
         
         try await Identity.Backend.configure(
             application,
@@ -56,14 +53,8 @@ extension Identity.Standalone {
         
         application.middleware.use(Identity.Standalone.Authenticator())
         
-        logger.debug("Identity authenticator middleware registered", metadata: [
-            "component": "Identity.Standalone",
-            "operation": "middleware.registered"
-        ])
+        logger.trace("Identity authenticator middleware registered")
         
-        logger.info("Identity Standalone configuration complete", metadata: [
-            "component": "Identity.Standalone",
-            "operation": "configure.success"
-        ])
+        logger.debug("Identity Standalone configured")
     }
 }

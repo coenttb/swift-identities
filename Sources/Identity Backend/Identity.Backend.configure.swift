@@ -25,51 +25,24 @@ extension Identity.Backend {
         @Dependency(\.logger) var logger
         @Dependency(\.defaultDatabase) var database
         
-        logger.info("Configuring Identity Backend", metadata: [
-            "component": "Identity.Backend",
-            "operation": "configure"
-        ])
-        
-        // Run Identity migrations
-        logger.debug("Running Identity database migrations", metadata: [
-            "component": "Identity.Backend",
-            "operation": "database.migrate"
-        ])
+        logger.trace("Configuring Identity Backend")
         
         // Run Identity-specific migrations if requested
         if runMigrations {
-            logger.debug("Running Identity database migrations", metadata: [
-                "component": "Identity.Standalone",
-                "operation": "database.migrate"
-            ])
-            
+            logger.trace("Running Identity database migrations")
+
             let migrator = Identity.Backend.migrator()
             try await migrator.migrate(database)
-            
-            logger.debug("Identity database migrations complete", metadata: [
-                "component": "Identity.Standalone",
-                "operation": "database.migrate.success"
-            ])
-        }
-        
-        
-        logger.debug("Identity database initialized", metadata: [
-            "component": "Identity.Backend",
-            "operation": "database.init.success"
-        ])
 
-        logger.debug("Database lifecycle handler registered", metadata: [
-            "component": "Identity.Backend",
-            "operation": "lifecycle.registered"
-        ])
+            logger.trace("Identity database migrations complete")
+        }
+
+        logger.trace("Identity database initialized")
         
         // Note: Backend doesn't add any middleware here as it's purely API-based
         // The consuming application should add appropriate API authentication middleware
         // based on their specific requirements (JWT, API keys, etc.)
         
-        logger.info("Identity Backend configuration complete", metadata: [
-            "component": "Identity.Backend",
-            "operation": "configure.success"
-        ])
+        logger.debug("Identity Backend configured")
     }
 }
