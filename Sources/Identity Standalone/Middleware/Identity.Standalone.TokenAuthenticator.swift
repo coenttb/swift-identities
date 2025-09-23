@@ -112,9 +112,8 @@ extension Identity.Standalone {
                     
                     // Check if token should be refreshed proactively (but not for logout routes)
                     if accessToken.shouldRefresh && !isLogoutRoute {
-                        logger.debug("Proactive token refresh initiated", metadata: [
-                            "component": "CookieAuth",
-                            "identityId": "\(accessToken.identityId)"
+                        logger.trace("Token refresh initiated", metadata: [
+                            "identity_id": .string(accessToken.identityId.uuidString)
                         ])
                         
                         // Try to refresh if we have a refresh token
@@ -125,9 +124,8 @@ extension Identity.Standalone {
                                 
                                 // Authenticate with new token
                                 request.auth.login(newAccessToken)
-                                logger.debug("Token proactively refreshed", metadata: [
-                                    "component": "CookieAuth",
-                                    "identityId": "\(newAccessToken.identityId)"
+                                logger.trace("Token refreshed", metadata: [
+                                    "identity_id": .string(newAccessToken.identityId.uuidString)
                                 ])
                                 
                                 // Process request and add new tokens to response

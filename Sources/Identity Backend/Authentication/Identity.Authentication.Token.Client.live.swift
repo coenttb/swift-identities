@@ -105,10 +105,8 @@ extension Identity.Authentication.Token.Client {
                         return identity
                     }
 
-                    logger.debug("Refresh token verified", metadata: [
-                        "component": "Backend.Authenticate",
-                        "operation": "verifyRefreshToken",
-                        "identityId": "\(identity.id)"
+                    logger.trace("Refresh token verified", metadata: [
+                        "identity_id": .string(identity.id.uuidString)
                     ])
 
                     let (accessToken, refreshToken) = try await tokenClient.generateTokenPair(
