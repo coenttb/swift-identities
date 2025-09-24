@@ -29,7 +29,7 @@ extension Identity.View.HTMLDocument {
             view: view,
             title: title,
             description: description,
-            favicons: configuration.branding.favicons,
+//            favicons: configuration.branding.favicons,
             canonicalHref: { view in configuration.canonicalHref(view) },
             hreflang: { view, lang in configuration.hreflang(view, lang) },
             footer_links: configuration.branding.footer_links,

@@ -67,7 +67,7 @@ extension Identity.Frontend {
                 case .oauth: return "OAuth"
                 }
             },
-            favicons: branding.favicons,
+//            favicons: branding.favicons,
             canonicalHref: canonicalHref,
             hreflang: hreflang,
             footer_links: footer_links
@@ -90,7 +90,7 @@ extension Identity.Frontend {
             view: view,
             title: { _ in title },
             description: { _ in description },
-            favicons: configuration.branding.favicons,
+//            favicons: configuration.branding.favicons,
             canonicalHref: configuration.canonicalHref,
             hreflang: configuration.hreflang,
             footer_links: configuration.branding.footer_links

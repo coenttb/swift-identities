@@ -99,25 +99,25 @@ extension Identity.Frontend {
         /// Branding configuration for visual identity
         public struct Branding: Sendable {
             public var logo: Identity.View.Logo
-            public var favicons: Favicons
+//            public var favicons: Favicons
             public var footer_links: [(TranslatedString, URL)]
             
             public init(
                 logo: Identity.View.Logo,
-                favicons: Favicons = Branding.defaultFavicons,
+//                favicons: Favicons = Branding.defaultFavicons,
                 footer_links: [(TranslatedString, URL)] = []
             ) {
                 self.logo = logo
-                self.favicons = favicons
+//                self.favicons = favicons
                 self.footer_links = footer_links
             }
             
-            public static let defaultFavicons: Favicons = .init(
-                icon: .init(lightMode: .init(string: "/")!, darkMode: .init(string: "/")!),
-                apple_touch_icon: "",
-                manifest: "",
-                maskIcon: ""
-            )
+//            public static let defaultFavicons: Favicons = .init(
+//                icon: .init(lightMode: .init(string: "/")!, darkMode: .init(string: "/")!),
+//                apple_touch_icon: "",
+//                manifest: "",
+//                maskIcon: ""
+//            )
         }
         
         /// Navigation configuration
@@ -187,7 +187,7 @@ extension Identity.Frontend.Configuration: TestDependencyKey {
                 )
             ),
             branding: .init(
-                logo: .init(logo: .error, href: baseURL)
+                logo: .init(logo: "", href: baseURL)
             ),
             redirect: .init(
                 loginSuccess: { _ in baseURL },
@@ -223,8 +223,15 @@ extension Identity.Frontend.Configuration.Redirect {
 
 extension Identity.Frontend.Configuration.Branding {
     public static var `default`: Self {
-        .init(
-            logo: .init(logo: .error, href: .init(string: "/")!)
+        
+        struct Test: HTML, Sendable {
+            var body: some HTML {
+                HTMLEmpty()
+            }
+        }
+        
+        return .init(
+            logo: .init(logo: Test(), href: .init(string: "/")!)
         )
     }
 }

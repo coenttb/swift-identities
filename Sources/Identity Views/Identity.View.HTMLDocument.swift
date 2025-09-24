@@ -21,7 +21,7 @@ extension Identity.View {
         let title: (Identity.View) -> String
         let description: (Identity.View) -> String
         let _body: Body
-        let favicons: Favicons
+//        let favicons: Favicons
         let canonicalHref: (Identity.View) -> URL?
         let hreflang: (Identity.View, Language) -> URL
         let footer_links: [(TranslatedString, URL)]
@@ -34,7 +34,7 @@ extension Identity.View {
             view: Identity.View,
             title: @escaping (Identity.View) -> String,
             description: @escaping (Identity.View) -> String,
-            favicons: Favicons,
+//            favicons: Favicons,
             canonicalHref: @escaping (Identity.View) -> URL?,
             hreflang: @escaping (Identity.View, Language) -> URL,
             footer_links: [(TranslatedString, URL)],
@@ -44,7 +44,7 @@ extension Identity.View {
             self.title = title
             self.description = description
             self._body = try await body()
-            self.favicons = favicons
+//            self.favicons = favicons
             self.canonicalHref = canonicalHref
             self.hreflang = hreflang
             self.footer_links = footer_links
