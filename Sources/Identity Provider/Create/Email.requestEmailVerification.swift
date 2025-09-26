@@ -6,7 +6,6 @@
 //
 
 import IdentitiesTypes
-//import Mailgun
 import HTMLEmail
 import HTML
 
