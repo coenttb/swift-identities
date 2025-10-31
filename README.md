@@ -149,9 +149,21 @@ func testAuthentication() async throws {
 
 ## Related Packages
 
-- [swift-identities-types](https://github.com/coenttb/swift-identities-types): Core types (Apache 2.0)
-- [swift-identities-mailgun](https://github.com/coenttb/swift-identities-mailgun): Mailgun email integration
-- [coenttb-com-server](https://github.com/coenttb/coenttb-com-server): Production example
+### Dependencies
+
+- [swift-html](https://github.com/coenttb/swift-html): The Swift library for domain-accurate and type-safe HTML & CSS.
+- [swift-identities-types](https://github.com/coenttb/swift-identities-types): A Swift package with foundational types for authentication.
+- [swift-one-time-password](https://github.com/coenttb/swift-one-time-password): A Swift package for TOTP and HOTP two-factor authentication.
+- [swift-records](https://github.com/coenttb/swift-records): The Swift library for PostgreSQL database operations.
+- [swift-server-foundation-vapor](https://github.com/coenttb/swift-server-foundation-vapor): A Swift package integrating swift-server-foundation with Vapor.
+
+### Used By
+
+- [swift-identities-mailgun](https://github.com/coenttb/swift-identities-mailgun): A Swift package integrating Mailgun with swift-identities.
+
+### Third-Party Dependencies
+
+- [pointfreeco/swift-dependencies](https://github.com/pointfreeco/swift-dependencies): A dependency management library for controlling dependencies in Swift.
 
 ## Requirements
 
