@@ -132,9 +132,68 @@ let package = Package(
             ]
         ),
         .testTarget(
+            name: .identityShared.tests,
+            dependencies: [
+                .identityShared,
+                .identitiesTypes,
+                .dependenciesTestSupport
+            ]
+        ),
+        .testTarget(
+            name: .identityViews.tests,
+            dependencies: [
+                .identityViews,
+                .identityShared,
+                .identitiesTypes,
+                .dependenciesTestSupport
+            ]
+        ),
+        .testTarget(
             name: .identityBackend.tests,
             dependencies: [
                 .identityBackend,
+                .identitiesTypes,
+                .dependenciesTestSupport,
+                .product(name: "RecordsTestSupport", package: "swift-records")
+            ]
+        ),
+        .testTarget(
+            name: .identityFrontend.tests,
+            dependencies: [
+                .identityFrontend,
+                .identityShared,
+                .identitiesTypes,
+                .dependenciesTestSupport
+            ]
+        ),
+        .testTarget(
+            name: .identityConsumer.tests,
+            dependencies: [
+                .identityConsumer,
+                .identityShared,
+                .identityFrontend,
+                .identitiesTypes,
+                .dependenciesTestSupport
+            ]
+        ),
+        .testTarget(
+            name: .identityProvider.tests,
+            dependencies: [
+                .identityProvider,
+                .identityShared,
+                .identityBackend,
+                .identitiesTypes,
+                .dependenciesTestSupport,
+                .product(name: "RecordsTestSupport", package: "swift-records")
+            ]
+        ),
+        .testTarget(
+            name: .identityStandalone.tests,
+            dependencies: [
+                .identityStandalone,
+                .identityShared,
+                .identityBackend,
+                .identityFrontend,
                 .identitiesTypes,
                 .dependenciesTestSupport,
                 .product(name: "RecordsTestSupport", package: "swift-records")
