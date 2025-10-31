@@ -154,7 +154,7 @@ extension Identity.Deletion.Record {
         @Dependency(\.date) var date
         let timeInterval = scheduledFor.timeIntervalSince(date())
         guard timeInterval > 0 else { return 0 }
-        return Int(ceil(timeInterval / (24 * 3600)))
+        return Int(Foundation.ceil(timeInterval / (24 * 3600)))
     }
     
     public mutating func confirm() {

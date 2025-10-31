@@ -128,7 +128,7 @@ extension Identity.Email.Change.Request.Record {
         @Dependency(\.date) var date
         let timeInterval = expiresAt.timeIntervalSince(date())
         guard timeInterval > 0 else { return 0 }
-        return Int(ceil(timeInterval / 3600))
+        return Int(Foundation.ceil(timeInterval / 3600))
     }
     
     package mutating func confirm() {
