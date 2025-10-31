@@ -189,13 +189,16 @@ extension Identity.Frontend.Configuration: TestDependencyKey {
             branding: .init(
                 logo: .init(logo: "", href: baseURL)
             ),
-            redirect: .init(
-                loginSuccess: { _ in baseURL },
-                loginProtected: { router.url(for: .authenticate(.view(.credentials))) },
-                createProtected: { router.url(for: .authenticate(.view(.credentials))) },
-                createVerificationSuccess: { router.url(for: .authenticate(.view(.credentials))) },
-                logoutSuccess: { baseURL }
-            ),
+            redirect: {
+                let loginURL = router.url(for: .authenticate(.view(.credentials)))
+                return .init(
+                    loginSuccess: { _ in baseURL },
+                    loginProtected: { loginURL },
+                    createProtected: { loginURL },
+                    createVerificationSuccess: { loginURL },
+                    logoutSuccess: { baseURL }
+                )
+            }(),
             rateLimiters: .init(
                 credentials: RateLimiter<String>(
                     windows: [
@@ -211,11 +214,12 @@ extension Identity.Frontend.Configuration: TestDependencyKey {
 extension Identity.Frontend.Configuration.Redirect {
     public static func `default`(router: any ParserPrinter<URLRequestData, Identity.Route>) -> Self {
         let home = URL(string: "/")!
+        let loginURL = router.url(for: .authenticate(.view(.credentials)))
         return .init(
             loginSuccess: { _ in home },
-            loginProtected: { router.url(for: .authenticate(.view(.credentials))) },
-            createProtected: { router.url(for: .authenticate(.view(.credentials))) },
-            createVerificationSuccess: { router.url(for: .authenticate(.view(.credentials))) },
+            loginProtected: { loginURL },
+            createProtected: { loginURL },
+            createVerificationSuccess: { loginURL },
             logoutSuccess: { home }
         )
     }

@@ -118,7 +118,7 @@ extension Identity.Frontend {
                     
             }
             
-        case .apiKey(let apiKey):
+        case .apiKey:
             // API key authentication not yet implemented in Frontend
             throw Abort(.notImplemented, reason: "API key authentication not yet implemented")
         }

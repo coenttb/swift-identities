@@ -104,7 +104,7 @@ struct ConsumerConfigurationTests {
             #expect(loginProtectedURL.absoluteString == "/")
 
             let logoutSuccessURL = redirect.logoutSuccess()
-            #expect(logoutSuccessURL.path.contains("authenticate"))
+            #expect(logoutSuccessURL.path.contains("credentials"), "Logout success should redirect to credentials/login page")
 
             let loginSuccessURL = redirect.loginSuccess()
             #expect(loginSuccessURL.absoluteString == "/")

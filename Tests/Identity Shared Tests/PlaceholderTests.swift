@@ -496,7 +496,7 @@ struct TOTPValidationTests {
     func testValidBase32Secret() {
         #expect(Identity.MFA.TOTP.isValidSecret("JBSWY3DPEHPK3PXP"))
         #expect(Identity.MFA.TOTP.isValidSecret("ABCDEFGHIJKLMNOP"))
-        #expect(Identity.MFA.TOTP.isValidSecret("2345 6789 ABCD EFGH")) // With spaces
+        #expect(Identity.MFA.TOTP.isValidSecret("2345 6723 ABCD EFGH")) // With spaces - using valid Base32 chars (no 8 or 9)
     }
 
     @Test("Invalid Base32 secret rejected")

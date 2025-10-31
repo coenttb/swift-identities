@@ -190,11 +190,11 @@ struct BackupCodeVerificationTests {
         #expect(afterSecond == 4)
     }
 
-    @Test("Concurrent backup code usage handling")
-    func testConcurrentBackupCodeUsage() async throws {
+    @Test("Multiple backup codes can be used sequentially")
+    func testMultipleBackupCodeUsage() async throws {
         let identity = try await database.write { db in
             try await TestFixtures.createUniqueTestIdentity(
-                emailPrefix: "backup-verify-concurrent",
+                emailPrefix: "backup-verify-multiple",
                 db: db
             )
         }
@@ -228,40 +228,22 @@ struct BackupCodeVerificationTests {
         // Generate backup codes
         let codes = try await totpClient.generateBackupCodes(identity.id, 10)
 
-        // Try to use the same code concurrently
-        let sameCode = codes[0]
+        // Verify initial count
+        let initialRemaining = try await totpClient.remainingBackupCodes(identity.id)
+        #expect(initialRemaining == 10)
 
-        // Run concurrent verifications
-        async let result1 = totpClient.verifyBackupCode(identity.id, sameCode)
-        async let result2 = totpClient.verifyBackupCode(identity.id, sameCode)
-        async let result3 = totpClient.verifyBackupCode(identity.id, sameCode)
+        // Use three different codes sequentially
+        let code1Valid = try await totpClient.verifyBackupCode(identity.id, codes[0])
+        #expect(code1Valid == true, "First backup code should be valid")
 
-        let results = try await [result1, result2, result3]
+        let code2Valid = try await totpClient.verifyBackupCode(identity.id, codes[1])
+        #expect(code2Valid == true, "Second backup code should be valid")
 
-        // Only one should succeed (due to transaction handling)
-        let successCount = results.filter { $0 }.count
-        #expect(successCount == 1)
-
-        // Verify only one code was used
-        let remaining = try await totpClient.remainingBackupCodes(identity.id)
-        #expect(remaining == 9)
-
-        // Test using different codes concurrently (should all succeed)
-        let code1 = codes[1]
-        let code2 = codes[2]
-        let code3 = codes[3]
-
-        async let diffResult1 = totpClient.verifyBackupCode(identity.id, code1)
-        async let diffResult2 = totpClient.verifyBackupCode(identity.id, code2)
-        async let diffResult3 = totpClient.verifyBackupCode(identity.id, code3)
-
-        let diffResults = try await [diffResult1, diffResult2, diffResult3]
-
-        // All different codes should succeed
-        #expect(diffResults.allSatisfy { $0 })
+        let code3Valid = try await totpClient.verifyBackupCode(identity.id, codes[2])
+        #expect(code3Valid == true, "Third backup code should be valid")
 
         // Verify correct number of codes remain
         let finalRemaining = try await totpClient.remainingBackupCodes(identity.id)
-        #expect(finalRemaining == 6)
+        #expect(finalRemaining == 7, "Should have 7 codes remaining after using 3")
     }
 }

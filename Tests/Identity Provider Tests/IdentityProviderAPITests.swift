@@ -21,27 +21,15 @@ enum TestFixtures {
 @Suite("MFA and OAuth Not Implemented Tests")
 struct MFAOAuthAPITests {
 
-    @Test("MFA endpoints return not implemented")
-    func testMFANotImplemented() async throws {
-        try await withDependencies {
-            $0[Identity.Provider.Configuration.self] = .testValue
-        } operation: { () async throws -> Void in
-            let api = Identity.Provider.API.mfa(.status(.get))
-
-            do {
-                _ = try await Identity.Provider.API.response(api: api)
-                Issue.record("Expected MFA to throw not implemented")
-            } catch let error as Abort {
-                #expect(error.status == .notImplemented)
-                #expect(error.reason.contains("MFA endpoints not yet implemented"))
-            }
-        }
-    }
+    // Note: MFA endpoints require authentication except for .verify
+    // .verify uses session tokens and is tested elsewhere in MFA-specific tests
 
     @Test("OAuth endpoints return not implemented")
     func testOAuthNotImplemented() async throws {
         try await withDependencies {
             $0[Identity.Provider.Configuration.self] = .testValue
+            $0.date = .constant(Date())  // Rate limiter needs date dependency
+            // No request needed - OAuth providers is a public endpoint
         } operation: { () async throws -> Void in
             let api = Identity.Provider.API.oauth(.providers)
 

@@ -250,14 +250,15 @@ extension Identity.MFA.TOTP.Client {
                         .where { $0.identityId.eq(identityId) }
                         .execute(db)
 
-                    let codes = try codes.map { try Identity.MFA.BackupCodes.Record.hashCode($0) }
-                    
+                    // Hash codes once before storing
+                    let hashedCodes = try codes.map { try Identity.MFA.BackupCodes.Record.hashCode($0) }
+
                     try await Identity.MFA.BackupCodes.Record
                         .insert {
-                            for code in codes {
+                            for codeHash in hashedCodes {
                                 Identity.MFA.BackupCodes.Record.Draft(
                                     identityId: identityId,
-                                    codeHash: try! Identity.MFA.BackupCodes.Record.hashCode(code)
+                                    codeHash: codeHash
                                 )
                             }
                         }

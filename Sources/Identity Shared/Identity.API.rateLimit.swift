@@ -349,53 +349,65 @@ extension Identity.API {
             }
             return .init(limiter: rateLimiter.reauthorize, key: key)
             
-        case .mfa:
-            // MFA operations use authenticated user's IP for rate limiting
-            @Dependency(\.request) var request
-            guard let request else { throw Abort.requestUnavailable }
-            let key = request.realIP
-            
-            // Use a general MFA rate limiter - you may want to add specific ones later
-            let rateLimit = await rateLimiter.reauthorize.checkLimit(key)
-            
-            guard rateLimit.isAllowed
-            else {
-                throw Abort.rateLimit(nextAllowedAttempt: rateLimit.nextAllowedAttempt)
-            }
-            return .init(limiter: rateLimiter.reauthorize, key: key)
-            
-        case .oauth(let oauth):
-            @Dependency(\.request) var request
-            guard let request else { throw Abort.requestUnavailable }
-            let key = request.realIP
-            
-            switch oauth {
-            case .providers:
-                // Public endpoint with relaxed rate limiting
+        case .mfa(let mfa):
+            switch mfa {
+            case .verify:
+                // Public endpoint - MFA verify uses session token, not authentication
+                let key = "public:mfa:verify"
                 let rateLimit = await rateLimiter.reauthorize.checkLimit(key)
                 guard rateLimit.isAllowed else {
                     throw Abort.rateLimit(nextAllowedAttempt: rateLimit.nextAllowedAttempt)
                 }
                 return .init(limiter: rateLimiter.reauthorize, key: key)
-                
+
+            default:
+                // Protected MFA operations use authenticated user's IP for rate limiting
+                @Dependency(\.request) var request
+                guard let request else { throw Abort.requestUnavailable }
+                let key = request.realIP
+
+                // Use a general MFA rate limiter
+                let rateLimit = await rateLimiter.reauthorize.checkLimit(key)
+                guard rateLimit.isAllowed else {
+                    throw Abort.rateLimit(nextAllowedAttempt: rateLimit.nextAllowedAttempt)
+                }
+                return .init(limiter: rateLimiter.reauthorize, key: key)
+            }
+            
+        case .oauth(let oauth):
+            switch oauth {
+            case .providers:
+                // Public endpoint - use shared rate limit key
+                let key = "public:oauth:providers"
+                let rateLimit = await rateLimiter.reauthorize.checkLimit(key)
+                guard rateLimit.isAllowed else {
+                    throw Abort.rateLimit(nextAllowedAttempt: rateLimit.nextAllowedAttempt)
+                }
+                return .init(limiter: rateLimiter.reauthorize, key: key)
+
             case .authorize:
-                // OAuth authorization - track by IP
-                let rateLimit = await rateLimiter.credentials.checkLimit("oauth:\(key)")
+                // Public OAuth authorization - use shared key per provider
+                let key = "public:oauth:authorize"
+                let rateLimit = await rateLimiter.credentials.checkLimit(key)
                 guard rateLimit.isAllowed else {
                     throw Abort.rateLimit(nextAllowedAttempt: rateLimit.nextAllowedAttempt)
                 }
-                return .init(limiter: rateLimiter.credentials, key: "oauth:\(key)")
-                
+                return .init(limiter: rateLimiter.credentials, key: key)
+
             case .callback:
-                // OAuth callback - track by IP
-                let rateLimit = await rateLimiter.credentials.checkLimit("oauth-callback:\(key)")
+                // Public OAuth callback - use shared key
+                let key = "public:oauth:callback"
+                let rateLimit = await rateLimiter.credentials.checkLimit(key)
                 guard rateLimit.isAllowed else {
                     throw Abort.rateLimit(nextAllowedAttempt: rateLimit.nextAllowedAttempt)
                 }
-                return .init(limiter: rateLimiter.credentials, key: "oauth-callback:\(key)")
-                
+                return .init(limiter: rateLimiter.credentials, key: key)
+
             case .connections, .disconnect:
-                // Authenticated endpoints - normal rate limiting
+                // Protected endpoints - require request for per-user rate limiting
+                @Dependency(\.request) var request
+                guard let request else { throw Abort.requestUnavailable }
+                let key = request.realIP
                 let rateLimit = await rateLimiter.reauthorize.checkLimit(key)
                 guard rateLimit.isAllowed else {
                     throw Abort.rateLimit(nextAllowedAttempt: rateLimit.nextAllowedAttempt)

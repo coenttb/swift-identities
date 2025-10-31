@@ -99,9 +99,9 @@ struct TOTPVerificationTests {
         }
 
         // Use invalid code (not the debug bypass)
-        await #expect(throws: (any Error).self) {
-            try await totpClient.verifyCode(identity.id, "999999")
-        }
+        // verifyCode returns Bool, doesn't throw
+        let isValid = try await totpClient.verifyCode(identity.id, "999999")
+        #expect(isValid == false, "Invalid TOTP code should return false")
     }
 
     @Test("Expired TOTP code fails")
@@ -141,9 +141,9 @@ struct TOTPVerificationTests {
 
         // Test that an old/invalid code fails (not using bypass code)
         // In a real scenario, this would be a code from a past time window
-        await #expect(throws: (any Error).self) {
-            try await totpClient.verifyCode(identity.id, "111111")
-        }
+        // verifyCode returns Bool, doesn't throw
+        let isValid = try await totpClient.verifyCode(identity.id, "111111")
+        #expect(isValid == false, "Expired/invalid TOTP code should return false")
     }
 
     @Test("TOTP verification updates usage statistics")
