@@ -219,25 +219,32 @@ private func performEmailChangeConfirmation(
     @Dependency(\.logger) var logger
     @Dependency(\.fireAndForget) var fireAndForget
 
-    return try await db.write { db in
-        // Query with JOIN - broken into steps
+    // Execute transaction to get result - key optimization: fireAndForget moved outside
+    let result = try await db.write { db in
+        // Build query with JOINs - broken into steps for compiler
         let tokenWhere = Identity.Token.Record
             .where { $0.value.eq(token) }
             .where { $0.type.eq(Identity.Token.Record.TokenType.emailChange) }
             .where { $0.validUntil > Date() }
 
-        let withRequest = tokenWhere.join(Identity.Email.Change.Request.Record.all) { token, request in
-            request.verificationToken.eq(token.value) &&
-            request.identityId.eq(token.identityId) &&
-            request.confirmedAt == nil &&
-            request.cancelledAt == nil &&
-            request.expiresAt > Date()
+        // First JOIN - with email change request
+        let requestJoin = Identity.Email.Change.Request.Record.all
+        let withRequest = tokenWhere.join(requestJoin) { token, request in
+            let verification = request.verificationToken.eq(token.value)
+            let identity = request.identityId.eq(token.identityId)
+            let notConfirmed = request.confirmedAt == nil
+            let notCancelled = request.cancelledAt == nil
+            let notExpired = request.expiresAt > Date()
+            return verification && identity && notConfirmed && notCancelled && notExpired
         }
 
-        let withIdentity = withRequest.join(Identity.Record.all) { token, _, identity in
+        // Second JOIN - with identity
+        let identityJoin = Identity.Record.all
+        let withIdentity = withRequest.join(identityJoin) { token, _, identity in
             token.identityId.eq(identity.id)
         }
 
+        // Select data
         let query = withIdentity.select { token, request, identity in
             EmailChangeValidationData.Columns(
                 token: token,
@@ -292,19 +299,6 @@ private func performEmailChangeConfirmation(
             .where { $0.type.eq(Identity.Token.Record.TokenType.emailChange) }
             .execute(db)
 
-        // Fire and forget callback
-        await fireAndForget {
-            do {
-                try await onEmailChangeSuccess(oldEmail, newEmailAddress)
-            } catch {
-                logger.error("Post-email change operation failed", metadata: [
-                    "component": "Backend.Email",
-                    "operation": "postChangeCallback",
-                    "error": "\(error)"
-                ])
-            }
-        }
-
         return (
             identity: data.identity,
             oldEmail: oldEmail,
@@ -312,4 +306,19 @@ private func performEmailChangeConfirmation(
             newSessionVersion: newSessionVersion
         )
     }
+
+    // Fire and forget callback OUTSIDE transaction - doesn't need to be atomic
+    await fireAndForget {
+        do {
+            try await onEmailChangeSuccess(result.oldEmail, result.newEmail)
+        } catch {
+            logger.error("Post-email change operation failed", metadata: [
+                "component": "Backend.Email",
+                "operation": "postChangeCallback",
+                "error": "\(error)"
+            ])
+        }
+    }
+
+    return result
 }

@@ -9,9 +9,9 @@ import ServerFoundationVapor
 import Foundation
 import IdentitiesTypes
 
-extension Identity.Provider.API.Delete {
-    package static func response(
-        delete: Identity.Provider.API.Delete
+extension Identity.Deletion.API {
+    package static func providerResponse(
+        delete: Identity.Deletion.API
     ) async throws -> Response {
 
         @Dependency(\.identity) var identity

@@ -9,9 +9,9 @@ import ServerFoundationVapor
 import Foundation
 import IdentitiesTypes
 
-extension Identity.Provider.API.Password {
-    package static func response(
-        password: Identity.Provider.API.Password
+extension Identity.Password.API {
+    package static func providerResponse(
+        password: Identity.Password.API
     ) async throws -> Response {
 
         @Dependency(\.identity) var identity

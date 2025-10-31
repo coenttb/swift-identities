@@ -9,9 +9,9 @@ import ServerFoundationVapor
 import Foundation
 import IdentitiesTypes
 
-extension Identity.Provider.API.Authenticate {
-    package static func response(
-        authenticate: Identity.Provider.API.Authenticate
+extension Identity.Authentication.API {
+    package static func providerResponse(
+        authenticate: Identity.Authentication.API
     ) async throws -> Response {
 
         @Dependency(\.identity) var identity
@@ -32,7 +32,7 @@ extension Identity.Provider.API.Authenticate {
                 return Response.success(true, data: identityAuthenticationResponse)
             }
         case .apiKey(let apiKey):
-            let identityAuthenticationResponse = try await identity.authenticate.apiKey(apiKey)
+            let identityAuthenticationResponse = try await identity.authenticate.apiKey(apiKey.token)
             return Response.success(true, data: identityAuthenticationResponse)
 
         }
