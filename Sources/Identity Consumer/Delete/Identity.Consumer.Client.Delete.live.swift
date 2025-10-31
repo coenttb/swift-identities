@@ -13,13 +13,12 @@ import IdentitiesTypes
 import JWT
 import Throttling
 
-extension Identity.Consumer.Client.Delete {
+extension Identity.Deletion.Client {
     public static func live(
-        makeRequest: @escaping @Sendable (_ route: Identity.Consumer.API.Delete) throws -> URLRequest
+        makeRequest: @escaping @Sendable (_ route: Identity.Deletion.API) throws -> URLRequest
     ) -> Self {
-        @Dependency(\.identity.consumer.client) var client
         @Dependency(URLRequest.Handler.Identity.self) var handleRequest
-        
+
         return .init(
             request: { reauthToken in
                 do {

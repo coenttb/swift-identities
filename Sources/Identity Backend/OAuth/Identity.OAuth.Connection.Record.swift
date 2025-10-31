@@ -36,7 +36,7 @@ extension Identity.OAuth.Connection {
         @Column("expires_at")
         public var expiresAt: Date?
         
-        @Column("scopes", as: [String]?.PostgresJSONB.self)
+        @Column("scopes")
         public var scopes: [String]?
         
         @Column("user_info")

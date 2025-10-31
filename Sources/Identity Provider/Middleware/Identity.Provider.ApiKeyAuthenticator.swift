@@ -8,13 +8,9 @@ import Throttling
 extension Identity.Provider {
     public struct ApiKeyAuthenticator: AsyncBearerAuthenticator {
 
-        public init(
-
-        ) {
+        public init() {
 
         }
-
-        @Dependency(\.identity.provider.client) var identity
 
         public func authenticate(
             bearer: BearerAuthorization,
@@ -23,12 +19,9 @@ extension Identity.Provider {
             await withDependencies {
                 $0.request = request
             } operation: {
+                @Dependency(\.identity) var identity
                 do {
-                    try await withDependencies {
-                        $0.request = request
-                    } operation: {
-                        _ = try await identity.authenticate.apiKey(bearer.token)
-                    }
+                    _ = try await identity.authenticate.client.apiKey(bearer.token)
                 } catch {
 
                 }

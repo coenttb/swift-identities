@@ -14,7 +14,7 @@ extension Identity.Provider.API.Email {
         email: Identity.Provider.API.Email
     ) async throws -> Response {
 
-        @Dependency(\.identity.provider.client) var identity
+        @Dependency(\.identity) var identity
 
         switch email {
         case .change(let change):

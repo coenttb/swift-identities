@@ -52,7 +52,7 @@ let package = Package(
     ],
     dependencies: [
         .package(url: "https://github.com/coenttb/swift-server-foundation-vapor", from: "0.0.1"),
-        .package(url: "https://github.com/coenttb/swift-records", from: "0.0.1"),
+        .package(url: "https://github.com/coenttb/swift-records", from: "0.1.0"),
         .package(
             url: "https://github.com/coenttb/swift-structured-queries-postgres",
             from: "0.0.1",

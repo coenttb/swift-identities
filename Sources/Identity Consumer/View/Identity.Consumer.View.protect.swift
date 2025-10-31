@@ -54,6 +54,14 @@ extension Identity.Consumer.View {
 
         case .email:
             try request.auth.require(type)
+
+        case .mfa:
+            // MFA views generally require authentication
+            try request.auth.require(type)
+
+        case .oauth:
+            // OAuth views don't require prior authentication
+            break
         }
     }
 }

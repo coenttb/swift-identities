@@ -55,13 +55,6 @@ extension Identity.Provider.Configuration: TestDependencyKey {
     public static let testValue: Self = .init(provider: .testValue)
 }
 
-extension DependencyValues {
-    public var identity: Identity.Provider.Configuration {
-        get { self[Identity.Provider.Configuration.self] }
-        set { self[Identity.Provider.Configuration.self] = newValue }
-    }
-}
-
 extension Identity.Provider.Configuration.Provider: TestDependencyKey {
     public static var testValue: Self {
 

@@ -13,101 +13,58 @@ import Vapor
 
 extension Identity.View {
     /// Handles view requests for Consumer deployments.
-    /// Dispatches to appropriate Frontend handlers.
+    /// Delegates to domain-specific response handlers.
     public static func consumerResponse(
         view: Identity.View
     ) async throws -> any AsyncResponseEncodable {
-        
-        @Dependency(\.identity.consumer) var configuration
-        
+
+        @Dependency(Identity.Consumer.Configuration.self) var config
+        @Dependency(\.identity) var identity
+        let configuration = config.consumer
+
         // Check authentication requirements
-        try await Identity.Frontend.protect(
+        try await Identity.Consumer.View.protect(
             view: view,
-            router: identity.router
+            with: Identity.Token.Access.self
         )
-        
-        // Dispatch to appropriate handler
+
+        // Delegate to domain-specific handlers
         switch view {
         case .create(let create):
-            switch create {
-            case .request:
-                return try await Identity.Frontend.handleCreateRequest(configuration: configuration)
-            case .verify:
-                return try await Identity.Frontend.handleCreateVerify(configuration: configuration)
-            }
-            
+            return try await Identity.Creation.response(view: create)
+
         case .authenticate(let authenticate):
-            switch authenticate {
-            case .credentials:
-                return try await Identity.Frontend.handleAuthenticateCredentials(configuration: configuration)
-            }
-            
-        case .logout:
-            return try await Identity.Logout.response(
-                client: configuration.client,
-                redirect: configuration.redirect
-            )
-            
+            return try await Identity.Authentication.response(view: authenticate)
+
         case .delete:
-            return try await Identity.Frontend.handleDeleteRequest(configuration: configuration)
-            
+            return try await Identity.Deletion.response()
+
         case .email(let email):
-            switch email {
-            case .change(let change):
-                switch change {
-                case .request:
-                    return try await Identity.Frontend.handleEmailChangeRequest(configuration: configuration)
-                case .confirm:
-                    return try await Identity.Frontend.handleEmailChangeConfirm(configuration: configuration)
-                case .reauthorization:
-                    return try await Identity.Frontend.handleEmailChangeReauthorization(configuration: configuration)
-                }
-            }
-            
+            return try await Identity.Email.response(view: email)
+
         case .password(let password):
-            switch password {
-            case .reset(let reset):
-                switch reset {
-                case .request:
-                    return try await Identity.Frontend.handlePasswordResetRequest(configuration: configuration)
-                case .confirm:
-                    return try await Identity.Frontend.handlePasswordResetConfirm(configuration: configuration)
-                }
-            case .change(let change):
-                switch change {
-                case .request:
-                    return try await Identity.Frontend.handlePasswordChangeRequest(configuration: configuration)
-                }
-            }
-            
+            return try await Identity.Password.response(view: password)
+
         case .mfa(let mfa):
-            switch mfa {
-            case .verify(let challenge):
-                return try await Identity.Frontend.handleMFAVerify(
-                    challenge: challenge,
-                    configuration: configuration
-                )
-            case .backupCodes(let backupCodes):
-                switch backupCodes {
-                case .verify(let challenge):
-                    return try await Identity.Frontend.handleMFABackupCodeVerify(
-                        challenge: challenge,
-                        configuration: configuration
-                    )
-                default:
-                    // Other backup code views require backend access
-                    return try await Identity.Frontend.handleMFABackendRequired(
-                        mfa: mfa,
-                        configuration: configuration
-                    )
-                }
-            default:
-                // Other MFA views require backend access
-                return try await Identity.Frontend.handleMFABackendRequired(
-                    mfa: mfa,
-                    configuration: configuration
-                )
-            }
+            // MFA views need to be handled via Frontend
+            throw Abort(.notImplemented, reason: "MFA views not yet implemented in Consumer")
+
+        case .logout:
+            // Convert Consumer redirect to Frontend redirect
+            let frontendRedirect = Identity.Frontend.Configuration.Redirect(
+                loginSuccess: { _ in configuration.redirect.loginSuccess() },
+                loginProtected: { configuration.redirect.loginProtected() },
+                createProtected: { configuration.redirect.createProtected() },
+                createVerificationSuccess: { configuration.redirect.createVerificationSuccess() },
+                logoutSuccess: { configuration.redirect.logoutSuccess() }
+            )
+            return try await Identity.Logout.response(
+                client: identity.logout.client,
+                redirect: frontendRedirect
+            )
+
+        case .oauth(let oauth):
+            return try await Identity.OAuth.response(view: oauth)
         }
     }
 }

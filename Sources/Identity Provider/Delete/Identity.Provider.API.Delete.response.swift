@@ -14,7 +14,7 @@ extension Identity.Provider.API.Delete {
         delete: Identity.Provider.API.Delete
     ) async throws -> Response {
 
-        @Dependency(\.identity.provider.client) var identity
+        @Dependency(\.identity) var identity
 
         switch delete {
         case .request(let request):

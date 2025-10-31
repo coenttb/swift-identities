@@ -14,8 +14,6 @@ import JWT
 extension Identity.Provider {
     public struct CredentialsAuthenticator: AsyncBasicAuthenticator {
 
-        @Dependency(\.identity.provider.client) var identity
-
         public init() {}
 
         public func authenticate(
@@ -26,7 +24,8 @@ extension Identity.Provider {
                 try await withDependencies {
                     $0.request = request
                 } operation: {
-                    _ = try await identity.authenticate.credentials(username: basic.username, password: basic.password)
+                    @Dependency(\.identity) var identity
+                    _ = try await identity.authenticate.client.credentials(username: basic.username, password: basic.password)
                 }
             } catch {
 

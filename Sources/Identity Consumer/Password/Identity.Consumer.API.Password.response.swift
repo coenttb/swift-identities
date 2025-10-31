@@ -8,19 +8,19 @@
 import ServerFoundationVapor
 import IdentitiesTypes
 
-extension Identity.Consumer.API.Password {
+extension Identity.Password.API {
     public static func response(
-        password: Identity.Consumer.API.Password
+        password: Identity.Password.API
     ) async throws -> Response {
 
-        @Dependency(\.identity.consumer.client) var client
+        @Dependency(\.identity) var identity
 
         switch password {
         case .reset(let reset):
             switch reset {
             case .request(let request):
                 do {
-                    try await client.password.reset.request(request)
+                    try await identity.password.reset.client.request(request)
                     return Response.success(true)
                 } catch {
                     throw Abort(.internalServerError, reason: "Failed to request password reset")
@@ -28,7 +28,7 @@ extension Identity.Consumer.API.Password {
 
             case .confirm(let confirm):
                 do {
-                    try await client.password.reset.confirm(confirm)
+                    try await identity.password.reset.client.confirm(confirm)
                     return Response.success(true)
                 } catch {
                     throw Abort(.internalServerError, reason: "Failed to confirm password reset")
@@ -38,7 +38,7 @@ extension Identity.Consumer.API.Password {
             switch change {
             case .request(let request):
                 do {
-                    try await client.password.change.request(request)
+                    try await identity.password.change.client.request(request)
                     return Response.success(true)
                 } catch {
                     throw Abort(.internalServerError, reason: "Failed to request password change")

@@ -36,27 +36,22 @@ extension Identity.Consumer.Configuration: TestDependencyKey {
     )
 }
 
-extension DependencyValues {
-    public var identity: Identity.Consumer.Configuration {
-        get { self[Identity.Consumer.Configuration.self] }
-        set { self[Identity.Consumer.Configuration.self] = newValue }
-    }
-}
-
 extension Identity.Consumer.Configuration.Consumer: TestDependencyKey {
     public static let testValue: Self = .live(
-        baseURL: .init(string: "/")!,
-        cookies: .init(accessToken: .testValue, refreshToken: .testValue, reauthorizationToken: .testValue),
-        router: Identity.Consumer.Route.Router().eraseToAnyParserPrinter(),
-        client: .testValue,
-        currentUserName: { nil },
-        branding: .init(
-            logo: .init(logo: .warning, href: .init(string: "/")!),
-            favicons: .init(icon: .init(lightMode: .init(string: "/")!, darkMode: .init(string: "/")!), apple_touch_icon: "", manifest: "", maskIcon: ""),
+        baseURL: URL(string: "/")!,
+        cookies: Identity.Frontend.Configuration.Cookies(
+            accessToken: HTTPCookies.Configuration.testValue,
+            refreshToken: HTTPCookies.Configuration.testValue,
+            reauthorizationToken: HTTPCookies.Configuration.testValue
+        ),
+        router: Identity.Route.Router().eraseToAnyParserPrinter(),
+        currentUserName: { String?.none },
+        branding: Identity.Frontend.Configuration.Branding(
+            logo: Identity.View.Logo(logo: "🔐", href: URL(string: "/")!),
             footer_links: []
         ),
-        navigation: .default,
-        redirect: .live()
+        navigation: Identity.Frontend.Configuration.Navigation.default,
+        redirect: Identity.Consumer.Configuration.Redirect.live()
     )
 }
 
@@ -66,13 +61,11 @@ extension Identity.Consumer.Configuration {
 
         public var domain: String?
         public var cookies: Identity.Frontend.Configuration.Cookies
-        public var router: AnyParserPrinter<URLRequestData, Identity.Consumer.Route> {
+        public var router: AnyParserPrinter<URLRequestData, Identity.Route> {
             didSet {
                 self.router = router.baseURL(self.baseURL.absoluteString).eraseToAnyParserPrinter()
             }
         }
-
-        public var client: Identity.Consumer.Client
 
         public var currentUserName: @Sendable () -> String?
         public var canonicalHref: @Sendable (Identity.Consumer.View) -> URL?
@@ -87,8 +80,7 @@ extension Identity.Consumer.Configuration {
             baseURL: URL,
             domain: String?,
             cookies: Identity.Frontend.Configuration.Cookies,
-            router: AnyParserPrinter<URLRequestData, Identity.Consumer.Route>,
-            client: Identity.Consumer.Client,
+            router: AnyParserPrinter<URLRequestData, Identity.Route>,
             currentUserName: @Sendable @escaping () -> String?,
             canonicalHref: @Sendable @escaping (Identity.Consumer.View) -> URL?,
             hreflang: @Sendable @escaping (Identity.Consumer.View, Translating.Language) -> URL,
@@ -101,7 +93,6 @@ extension Identity.Consumer.Configuration {
             self.domain = domain
             self.cookies = cookies
             self.router = router
-            self.client = client
             self.currentUserName = currentUserName
             self.canonicalHref = canonicalHref
             self.hreflang = hreflang
@@ -118,16 +109,15 @@ extension Identity.Consumer.Configuration.Consumer {
         baseURL: URL,
         domain: String? = nil,
         cookies: Identity.Frontend.Configuration.Cookies,
-        router: AnyParserPrinter<URLRequestData, Identity.Consumer.Route>,
-        client: Identity.Consumer.Client,
+        router: AnyParserPrinter<URLRequestData, Identity.Route>,
         currentUserName: @escaping @Sendable () -> String?,
-        canonicalHref: @escaping @Sendable (Identity.Consumer.View) -> URL? = {
-            @Dependency(\.identity.consumer.router) var router
-            return router.url(for: .view($0))
+        canonicalHref: @escaping @Sendable (Identity.Consumer.View) -> URL? = { view in
+            // Return nil - canonical URLs should be set by the application
+            return nil
         },
         hreflang: @escaping @Sendable (Identity.Consumer.View, Translating.Language) -> URL = { view, _ in
-            @Dependency(\.identity.consumer.router) var router
-            return router.url(for: .view(view))
+            @Dependency(Identity.Consumer.Configuration.self) var config
+            return config.consumer.baseURL
         },
         branding: Identity.Consumer.Configuration.Branding,
         navigation: Identity.Consumer.Configuration.Navigation,
@@ -139,7 +129,6 @@ extension Identity.Consumer.Configuration.Consumer {
             domain: domain,
             cookies: cookies,
             router: router,
-            client: client,
             currentUserName: currentUserName,
             canonicalHref: canonicalHref,
             hreflang: hreflang,
@@ -184,31 +173,29 @@ extension Identity.Consumer.Configuration {
 extension Identity.Consumer.Configuration.Redirect {
     public static func live(
         createProtected: @escaping @Sendable () -> URL = {
-            @Dependency(\.identity.consumer.router) var router
             return URL(string: "/")!
         },
         createVerificationSuccess: @escaping @Sendable () -> URL = {
-            @Dependency(\.identity.consumer.router) var router
-            return router.url(for: .view(.login))
+            @Dependency(Identity.Consumer.Configuration.self) var config
+            return config.consumer.router.url(for: .authenticate(.view(.credentials)))
         },
         loginProtected: @escaping @Sendable () -> URL = {
             return URL(string: "/")!
         },
         logoutSuccess: @escaping @Sendable () -> URL = {
-            @Dependency(\.identity.consumer.router) var router
-            return router.url(for: .view(.login))
+            @Dependency(Identity.Consumer.Configuration.self) var config
+            return config.consumer.router.url(for: .authenticate(.view(.credentials)))
         },
         loginSuccess: @escaping @Sendable () -> URL = {
-            @Dependency(\.identity.consumer.router) var router
             return URL(string: "/")!
         },
         passwordResetSuccess: @escaping @Sendable () -> URL = {
-            @Dependency(\.identity.consumer.router) var router
-            return router.url(for: .view(.login))
+            @Dependency(Identity.Consumer.Configuration.self) var config
+            return config.consumer.router.url(for: .authenticate(.view(.credentials)))
         },
         emailChangeConfirmSuccess: @escaping @Sendable () -> URL = {
-            @Dependency(\.identity.consumer.router) var router
-            return router.url(for: .view(.login))
+            @Dependency(Identity.Consumer.Configuration.self) var config
+            return config.consumer.router.url(for: .authenticate(.view(.credentials)))
         }
     ) -> Self {
         .init(
@@ -226,16 +213,35 @@ extension Identity.Consumer.Configuration.Redirect {
 
 extension Identity.Consumer.Configuration.Redirect {
     public static func toHome() -> Self {
-        @Dependency(\.identity.consumer.navigation.home) var home
-
         return .init(
-            createProtected: { home },
-            createVerificationSuccess: { home },
-            loginProtected: { home },
-            logoutSuccess: { home },
-            loginSuccess: { home },
-            passwordResetSuccess: { home },
-            emailChangeConfirmSuccess: { home }
+            createProtected: {
+                @Dependency(Identity.Consumer.Configuration.self) var config
+                return config.consumer.navigation.home
+            },
+            createVerificationSuccess: {
+                @Dependency(Identity.Consumer.Configuration.self) var config
+                return config.consumer.navigation.home
+            },
+            loginProtected: {
+                @Dependency(Identity.Consumer.Configuration.self) var config
+                return config.consumer.navigation.home
+            },
+            logoutSuccess: {
+                @Dependency(Identity.Consumer.Configuration.self) var config
+                return config.consumer.navigation.home
+            },
+            loginSuccess: {
+                @Dependency(Identity.Consumer.Configuration.self) var config
+                return config.consumer.navigation.home
+            },
+            passwordResetSuccess: {
+                @Dependency(Identity.Consumer.Configuration.self) var config
+                return config.consumer.navigation.home
+            },
+            emailChangeConfirmSuccess: {
+                @Dependency(Identity.Consumer.Configuration.self) var config
+                return config.consumer.navigation.home
+            }
         )
     }
 }
@@ -355,6 +361,55 @@ extension Identity.Consumer.Configuration.Branding {
                     )
                 }
             }
+        case .mfa(let mfa):
+            switch mfa {
+            case .verify:
+                return .init(
+                    dutch: "Twee-factor Authenticatie",
+                    english: "Two-Factor Authentication"
+                )
+            case .manage:
+                return .init(
+                    dutch: "Authenticatie Beheren",
+                    english: "Manage Authentication"
+                )
+            case .totp(let totp):
+                switch totp {
+                case .setup:
+                    return .init(
+                        dutch: "Authenticatie App Instellen",
+                        english: "Set Up Authenticator App"
+                    )
+                case .confirmSetup:
+                    return .init(
+                        dutch: "Authenticatie App Bevestigen",
+                        english: "Confirm Authenticator App"
+                    )
+                case .manage:
+                    return .init(
+                        dutch: "Authenticatie App Beheren",
+                        english: "Manage Authenticator App"
+                    )
+                }
+            case .backupCodes(let codes):
+                switch codes {
+                case .display:
+                    return .init(
+                        dutch: "Back-up Codes",
+                        english: "Backup Codes"
+                    )
+                case .verify:
+                    return .init(
+                        dutch: "Back-up Code Verificatie",
+                        english: "Backup Code Verification"
+                    )
+                }
+            }
+        case .oauth:
+            return .init(
+                dutch: "OAuth Authenticatie",
+                english: "OAuth Authentication"
+            )
         }
     }
 }
@@ -438,6 +493,55 @@ extension Identity.Consumer.Configuration.Branding {
                     )
                 }
             }
+        case .mfa(let mfa):
+            switch mfa {
+            case .verify:
+                return .init(
+                    dutch: "Voer je verificatiecode in om door te gaan.",
+                    english: "Enter your verification code to continue."
+                )
+            case .manage:
+                return .init(
+                    dutch: "Beheer je twee-factor authenticatiemethoden.",
+                    english: "Manage your two-factor authentication methods."
+                )
+            case .totp(let totp):
+                switch totp {
+                case .setup:
+                    return .init(
+                        dutch: "Scan de QR-code met je authenticatie app.",
+                        english: "Scan the QR code with your authenticator app."
+                    )
+                case .confirmSetup:
+                    return .init(
+                        dutch: "Voer de code uit je authenticatie app in om de instelling te voltooien.",
+                        english: "Enter the code from your authenticator app to complete setup."
+                    )
+                case .manage:
+                    return .init(
+                        dutch: "Beheer je authenticatie app instellingen.",
+                        english: "Manage your authenticator app settings."
+                    )
+                }
+            case .backupCodes(let codes):
+                switch codes {
+                case .display:
+                    return .init(
+                        dutch: "Bewaar deze back-up codes op een veilige plek.",
+                        english: "Keep these backup codes in a safe place."
+                    )
+                case .verify:
+                    return .init(
+                        dutch: "Voer een van je back-up codes in.",
+                        english: "Enter one of your backup codes."
+                    )
+                }
+            }
+        case .oauth:
+            return .init(
+                dutch: "Log in met een externe dienst.",
+                english: "Sign in with an external service."
+            )
         }
     }
 }

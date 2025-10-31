@@ -8,18 +8,19 @@
 import ServerFoundationVapor
 import IdentitiesTypes
 
-extension Identity.Consumer.API.Email.Change {
+extension Identity.Email.API {
     public static func response(
-        email: Identity.Consumer.API.Email
+        email: Identity.Email.API
     ) async throws -> Response {
-        @Dependency(\.identity.consumer.client) var client
+        @Dependency(\.identity) var identity
+        let client = identity.email.change.client
 
         switch email {
         case .change(let change):
             switch change {
             case .request(let request):
                 do {
-                    let data = try await client.email.change.request(request)
+                    let data = try await client.request(request)
                     switch data {
                     case .success:
                         return Response.success(true)
@@ -33,7 +34,7 @@ extension Identity.Consumer.API.Email.Change {
 
             case .confirm(let confirm):
                 do {
-                    let identityEmailChangeConfirmResponse = try await client.email.change.confirm(confirm)
+                    let identityEmailChangeConfirmResponse = try await client.confirm(confirm)
 
                     return Response.success(true)
                         .withTokens(for: identityEmailChangeConfirmResponse)

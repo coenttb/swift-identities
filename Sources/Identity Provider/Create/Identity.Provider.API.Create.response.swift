@@ -14,7 +14,7 @@ extension Identity.Provider.API.Create {
         create: Identity.Provider.API.Create
     ) async throws -> Response {
 
-        @Dependency(\.identity.provider.client) var identity
+        @Dependency(\.identity) var identity
         @Dependency(\.logger) var logger
 
         switch create {

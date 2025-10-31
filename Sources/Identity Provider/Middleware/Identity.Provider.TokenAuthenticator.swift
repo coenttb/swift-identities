@@ -15,8 +15,6 @@ extension Identity.Provider {
     public struct TokenAuthenticator: AsyncMiddleware {
         public init() {}
 
-        @Dependency(\.identity.provider.client) var identity
-
         public func respond(
             to request: Request,
             chainingTo next: AsyncResponder
@@ -24,6 +22,8 @@ extension Identity.Provider {
             return try await withDependencies {
                 $0.request = request
             } operation: {
+                @Dependency(\.identity) var identity
+
                 if let bearerAuth = request.headers.bearerAuthorization {
                     do {
                         try await identity.authenticate.token.access(bearerAuth.token)

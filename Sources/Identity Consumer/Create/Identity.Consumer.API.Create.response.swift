@@ -8,17 +8,18 @@
 import ServerFoundationVapor
 import IdentitiesTypes
 
-extension Identity.Consumer.API.Create {
+extension Identity.Creation.API {
     public static func response(
-        create: Identity.Consumer.API.Create
+        create: Identity.Creation.API
     ) async throws -> Response {
 
-        @Dependency(\.identity.consumer.client) var client
+        @Dependency(\.identity) var identity
+        let client = identity.create.client
 
         switch create {
         case .request(let request):
             do {
-                try await client.create.request(request)
+                try await client.request(request)
                 return Response.success(true)
             } catch {
                 throw Abort(.internalServerError, reason: "Failed to request account creation")
@@ -26,7 +27,7 @@ extension Identity.Consumer.API.Create {
 
         case .verify(let verify):
             do {
-                try await client.create.verify(email: verify.email, token: verify.token)
+                try await client.verify(email: verify.email, token: verify.token)
                 return Response.success(true)
             } catch {
                 throw Abort(.internalServerError, reason: "Failed to verify account creation")

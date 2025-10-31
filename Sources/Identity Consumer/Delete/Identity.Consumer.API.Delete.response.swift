@@ -8,17 +8,18 @@
 import ServerFoundationVapor
 import IdentitiesTypes
 
-extension Identity.Consumer.API.Delete {
+extension Identity.Deletion.API {
     public static func response(
-        delete: Identity.Consumer.API.Delete
+        delete: Identity.Deletion.API
     ) async throws -> Response {
 
-        @Dependency(\.identity.consumer.client) var client
+        @Dependency(\.identity) var identity
+        let client = identity.delete.client
 
         switch delete {
         case .request(let request):
             do {
-                try await client.delete.request(request)
+                try await client.request(request)
                 return Response.success(true)
             } catch {
                 throw Abort(.internalServerError, reason: "Failed to delete account")
@@ -26,7 +27,7 @@ extension Identity.Consumer.API.Delete {
 
         case .cancel:
             do {
-                try await client.delete.cancel()
+                try await client.cancel()
                 return Response.success(true)
             } catch {
                 throw Abort(.internalServerError, reason: "Failed to cancel account deletion")
@@ -34,7 +35,7 @@ extension Identity.Consumer.API.Delete {
 
         case .confirm:
             do {
-                try await client.delete.confirm()
+                try await client.confirm()
                 return Response.success(true)
             } catch {
                 throw Abort(.internalServerError, reason: "Failed to confirm account deletion")

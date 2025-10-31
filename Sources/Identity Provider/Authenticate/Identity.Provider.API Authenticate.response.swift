@@ -14,7 +14,7 @@ extension Identity.Provider.API.Authenticate {
         authenticate: Identity.Provider.API.Authenticate
     ) async throws -> Response {
 
-        @Dependency(\.identity.provider.client) var identity
+        @Dependency(\.identity) var identity
 
         switch authenticate {
         case .credentials(let credentials):

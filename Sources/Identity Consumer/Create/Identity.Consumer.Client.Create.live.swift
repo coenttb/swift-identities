@@ -13,11 +13,10 @@ import IdentitiesTypes
 import JWT
 import Throttling
 
-extension Identity.Consumer.Client.Create {
+extension Identity.Creation.Client {
     public static func live(
-        makeRequest: @escaping @Sendable (_ route: Identity.Consumer.API.Create) throws -> URLRequest
+        makeRequest: @escaping @Sendable (_ route: Identity.Creation.API) throws -> URLRequest
     ) -> Self {
-        @Dependency(\.identity.consumer.client) var client
         @Dependency(URLRequest.Handler.Identity.self) var handleRequest
 
         return .init(

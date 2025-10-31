@@ -8,13 +8,16 @@
 import ServerFoundationVapor
 import IdentitiesTypes
 
-extension Identity.Consumer.API.Authenticate {
+extension Identity.Authentication.API {
     package static func response(
-        authenticate: Identity.Consumer.API.Authenticate
+        authenticate: Identity.Authentication.API
     ) async throws -> Response {
 
-        @Dependency(\.identity.consumer.client) var client
+        @Dependency(\.identity) var identity
         @Dependency(\.logger) var logger
+
+        let client = identity.authenticate.client
+        let tokenClient = identity.authenticate.token
 
         do {
             switch authenticate {
@@ -22,25 +25,20 @@ extension Identity.Consumer.API.Authenticate {
                 switch token {
                 case .access(let access):
                     do {
-                        return try await Response.success(true)
-                            .withTokens(
-                                for: client.login(
-                                    accessToken: access.compactSerialization(),
-                                    refreshToken: \.cookies.refreshToken?.string
-                                )
-                            )
+                        try await tokenClient.access(access)
+                        return Response.success(true)
                     } catch {
-                        logger.error("Access token authentication failed", metadata: [
+                        logger.error("Access token validation failed", metadata: [
                             "component": "Consumer.Authenticate",
                             "operation": "accessToken",
                             "error": "\(error)"
                         ])
-                        throw Abort(.internalServerError, reason: "Failed to authenticate account: \(error)")
+                        throw Abort(.unauthorized, reason: "Invalid access token")
                     }
 
                 case .refresh(let refresh):
                     do {
-                        let identityAuthenticationResponse = try await client.authenticate.token.refresh(refresh)
+                        let identityAuthenticationResponse = try await tokenClient.refresh(refresh)
 
                         return Response.success(true)
                             .withTokens(for: identityAuthenticationResponse)
@@ -50,14 +48,14 @@ extension Identity.Consumer.API.Authenticate {
                             "operation": "refreshToken",
                             "error": "\(error)"
                         ])
-                        throw Abort(.internalServerError, reason: "Failed to authenticate account: \(error)")
+                        throw Abort(.unauthorized, reason: "Invalid refresh token")
                     }
                 }
 
             case .credentials(let credentials):
                 do {
 
-                    let identityAuthenticationResponse = try await client.authenticate.credentials(credentials)
+                    let identityAuthenticationResponse = try await client.credentials(credentials)
 
                     return Response.success(true)
                         .withTokens(for: identityAuthenticationResponse)
@@ -67,12 +65,12 @@ extension Identity.Consumer.API.Authenticate {
                         "operation": "credentials",
                         "error": "\(error)"
                     ])
-                    throw Abort(.internalServerError, reason: "Failed to authenticate account: \(error)")
+                    throw Abort(.unauthorized, reason: "Invalid credentials")
                 }
 
             case .apiKey(let apiKey):
                 do {
-                    let identityAuthenticationResponse = try await client.authenticate.apiKey(apiKey: apiKey.token)
+                    let identityAuthenticationResponse = try await client.apiKey(apiKey.token)
 
                     return Response.success(true)
                         .withTokens(for: identityAuthenticationResponse)
@@ -82,11 +80,11 @@ extension Identity.Consumer.API.Authenticate {
                         "operation": "apiKey",
                         "error": "\(error)"
                     ])
-                    throw Abort(.internalServerError, reason: "Failed to authenticate account: \(error)")
+                    throw Abort(.unauthorized, reason: "Invalid API key")
                 }
             }
         } catch {
-            let response = Response.success(false, message: "Failed to authenticate with error: \(error)")
+            let response = Response.success(false, message: "Authentication failed")
             response.expire(cookies: .identity)
             return response
         }

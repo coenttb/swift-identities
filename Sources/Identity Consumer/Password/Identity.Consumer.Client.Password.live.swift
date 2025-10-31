@@ -13,12 +13,11 @@ import IdentitiesTypes
 import JWT
 import Throttling
 
-extension Identity.Consumer.Client.Password {
+extension Identity.Password.Client {
     public static func live(
-        makeRequest: @escaping @Sendable (_ route: Identity.Consumer.API.Password) throws -> URLRequest
+        makeRequest: @escaping @Sendable (_ route: Identity.Password.API) throws -> URLRequest
     ) -> Self {
 
-        @Dependency(\.identity.consumer.client) var client
         @Dependency(URLRequest.Handler.Identity.self) var handleRequest
         return .init(
             reset: .init(
@@ -45,7 +44,7 @@ extension Identity.Consumer.Client.Password {
                 request: { currentPassword, newPassword in
                     do {
                         try await handleRequest(
-                            for: makeRequest(.change(.request(change: .init(currentPassword: currentPassword, newPassword: newPassword))))
+                            for: makeRequest(.change(.request(.init(currentPassword: currentPassword, newPassword: newPassword))))
                         )
                     } catch {
                         throw Abort(.unauthorized)

@@ -5,6 +5,10 @@
 //  Created by Coen ten Thije Boonkkamp on 18/02/2025.
 //
 
+// NOTE: This file is deprecated. Identity.Client no longer exists.
+// Token-based authentication logic has been moved to Identity.Authentication.Token.Client.
+
+/*
 import Identity_Shared
 import ServerFoundationVapor
 import Dependencies
@@ -96,3 +100,4 @@ extension Identity.Client.Authenticate {
         case unauthorizedAccess
     }
 }
+*/

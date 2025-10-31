@@ -15,8 +15,9 @@ extension Identity.Route {
     public static func consumerResponse(
         route: Identity.Route
     ) async throws -> any AsyncResponseEncodable {
-        
-        @Dependency(\.identity.consumer) var configuration
+
+        @Dependency(Identity.Consumer.Configuration.self) var config
+        let configuration = config.consumer
         
         switch route {
         case .create(let createRoute):
@@ -36,12 +37,20 @@ extension Identity.Route {
             
         case .mfa(let mfaRoute):
             return try await handleMFA(mfaRoute, configuration: configuration)
-            
-        case .logout:
+
+        case .logout(let logoutRoute):
+            // Logout only has view, no API
             return try await Identity.View.consumerResponse(view: .logout)
-            
+
         case .reauthorize(let reauth):
-            return try await Identity.API.response(api: .reauthorize(reauth))
+            switch reauth {
+            case .api(let api):
+                return try await Identity.API.response(api: .reauthorize(api))
+            }
+
+        case .oauth(let oauthRoute):
+            // OAuth handling would go here
+            throw Abort(.notImplemented, reason: "OAuth not yet implemented in Consumer")
         }
     }
     
@@ -49,146 +58,146 @@ extension Identity.Route {
     
     private static func handleCreate(
         _ route: Identity.Creation.Route,
-        configuration: Identity.Consumer.Configuration
+        configuration: Identity.Consumer.Configuration.Consumer
     ) async throws -> any AsyncResponseEncodable {
         switch route {
         case .api(let api):
             return try await Identity.API.response(api: .create(api))
         case .view(let view):
-            return try await Identity.View.consumerResponse(view: .create(mapCreateView(view)))
+            return try await Identity.View.consumerResponse(view: mapCreateView(view))
         }
     }
-    
+
     private static func handleAuthenticate(
         _ route: Identity.Authentication.Route,
-        configuration: Identity.Consumer.Configuration
+        configuration: Identity.Consumer.Configuration.Consumer
     ) async throws -> any AsyncResponseEncodable {
         switch route {
         case .api(let api):
             return try await Identity.API.response(api: .authenticate(api))
         case .view(let view):
-            return try await Identity.View.consumerResponse(view: .authenticate(mapAuthView(view)))
+            return try await Identity.View.consumerResponse(view: mapAuthView(view))
         }
     }
-    
+
     private static func handleDelete(
         _ route: Identity.Deletion.Route,
-        configuration: Identity.Consumer.Configuration
+        configuration: Identity.Consumer.Configuration.Consumer
     ) async throws -> any AsyncResponseEncodable {
         switch route {
         case .api(let api):
             return try await Identity.API.response(api: .delete(api))
-        case .view(_):
-            return try await Identity.View.consumerResponse(view: .delete)
+        case .view(let view):
+            return try await Identity.View.consumerResponse(view: .delete(view))
         }
     }
-    
+
     private static func handleEmail(
         _ route: Identity.Email.Route,
-        configuration: Identity.Consumer.Configuration
+        configuration: Identity.Consumer.Configuration.Consumer
     ) async throws -> any AsyncResponseEncodable {
         switch route {
         case .api(let api):
             return try await Identity.API.response(api: .email(api))
         case .view(let view):
-            return try await Identity.View.consumerResponse(view: .email(mapEmailView(view)))
+            return try await Identity.View.consumerResponse(view: mapEmailView(view))
         }
     }
-    
+
     private static func handlePassword(
         _ route: Identity.Password.Route,
-        configuration: Identity.Consumer.Configuration
+        configuration: Identity.Consumer.Configuration.Consumer
     ) async throws -> any AsyncResponseEncodable {
         switch route {
         case .api(let api):
             return try await Identity.API.response(api: .password(api))
         case .view(let view):
-            return try await Identity.View.consumerResponse(view: .password(mapPasswordView(view)))
+            return try await Identity.View.consumerResponse(view: mapPasswordView(view))
         }
     }
-    
+
     private static func handleMFA(
         _ route: Identity.MFA.Route,
-        configuration: Identity.Consumer.Configuration
+        configuration: Identity.Consumer.Configuration.Consumer
     ) async throws -> any AsyncResponseEncodable {
         switch route {
         case .api(let api):
             return try await Identity.API.response(api: .mfa(api))
         case .view(let view):
-            return try await Identity.View.consumerResponse(view: .mfa(mapMFAView(view)))
+            return try await Identity.View.consumerResponse(view: mapMFAView(view))
         }
     }
     
     // MARK: - View Mapping Helpers
-    
-    private static func mapCreateView(_ view: Identity.Creation.View) -> Identity.View.Create {
+
+    private static func mapCreateView(_ view: Identity.Creation.View) -> Identity.View {
         switch view {
         case .request:
-            return .request
+            return .create(.request)
         case .verify:
-            return .verify
+            return .create(.verify)
         }
     }
-    
-    private static func mapAuthView(_ view: Identity.Authentication.View) -> Identity.View.Authenticate {
+
+    private static func mapAuthView(_ view: Identity.Authentication.View) -> Identity.View {
         switch view {
         case .credentials:
-            return .credentials
+            return .authenticate(.credentials)
         }
     }
-    
-    private static func mapEmailView(_ view: Identity.Email.View) -> Identity.View.Email {
+
+    private static func mapEmailView(_ view: Identity.Email.View) -> Identity.View {
         switch view {
         case .change(let change):
             switch change {
             case .request:
-                return .change(.request)
+                return .email(.change(.request))
             case .confirm:
-                return .change(.confirm)
+                return .email(.change(.confirm))
             case .reauthorization:
-                return .change(.reauthorization)
+                return .email(.change(.reauthorization))
             }
         }
     }
-    
-    private static func mapPasswordView(_ view: Identity.Password.View) -> Identity.View.Password {
+
+    private static func mapPasswordView(_ view: Identity.Password.View) -> Identity.View {
         switch view {
         case .reset(let reset):
             switch reset {
             case .request:
-                return .reset(.request)
+                return .password(.reset(.request))
             case .confirm:
-                return .reset(.confirm)
+                return .password(.reset(.confirm))
             }
         case .change(let change):
             switch change {
             case .request:
-                return .change(.request)
+                return .password(.change(.request))
             }
         }
     }
-    
-    private static func mapMFAView(_ view: Identity.MFA.View) -> Identity.View.MFA {
+
+    private static func mapMFAView(_ view: Identity.MFA.View) -> Identity.View {
         switch view {
         case .verify(let challenge):
-            return .verify(challenge)
+            return .mfa(.verify(challenge))
         case .manage:
-            return .manage
+            return .mfa(.manage)
         case .totp(let totp):
             switch totp {
             case .setup:
-                return .totp(.setup)
+                return .mfa(.totp(.setup))
             case .confirmSetup:
-                return .totp(.confirmSetup)
+                return .mfa(.totp(.confirmSetup))
             case .manage:
-                return .totp(.manage)
+                return .mfa(.totp(.manage))
             }
         case .backupCodes(let codes):
             switch codes {
             case .display:
-                return .backupCodes(.display)
+                return .mfa(.backupCodes(.display))
             case .verify(let challenge):
-                return .backupCodes(.verify(challenge))
+                return .mfa(.backupCodes(.verify(challenge)))
             }
         }
     }

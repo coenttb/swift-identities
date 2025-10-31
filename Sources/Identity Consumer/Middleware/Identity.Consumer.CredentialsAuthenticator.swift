@@ -22,8 +22,8 @@ extension Identity.Consumer {
             try await withDependencies {
                 $0.request = request
             } operation: {
-                @Dependency(\.identity.consumer.client) var client
-                _ = try await client.authenticate.credentials(
+                @Dependency(\.identity) var identity
+                _ = try await identity.authenticate.client.credentials(
                     .init(
                         email: try .init(basic.username),
                         password: basic.password

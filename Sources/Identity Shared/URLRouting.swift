@@ -75,7 +75,7 @@ extension ParserPrinter where Input == URLRequestData {
         transform { urlRequestData in
             if let token = token {
                 var data = urlRequestData
-                data.headers.authorization = ["Bearer \(token)"][...].map { Substring($0) }[...]
+                data.headers["authorization"] = ["Bearer \(token)"][...].map { Substring($0) }[...]
                 return data
             }
             return urlRequestData
