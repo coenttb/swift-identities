@@ -132,18 +132,9 @@ let package = Package(
             ]
         ),
         .testTarget(
-            name: .identityConsumer.tests,
+            name: .identityBackend.tests,
             dependencies: [
-                .identityConsumer,
-                .identityProvider,
-                .dependenciesTestSupport
-            ]
-        ),
-        .testTarget(
-            name: .identityProvider.tests,
-            dependencies: [
-                .identityProvider,
-                .dependenciesTestSupport
+                .identityBackend
             ]
         )
     ],
