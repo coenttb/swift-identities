@@ -1,8 +1,7 @@
 # swift-identities
 
-[![Swift](https://img.shields.io/badge/Swift-6.0-orange.svg)](https://swift.org)
-[![License](https://img.shields.io/badge/License-AGPL%203.0-blue.svg)](LICENSE.md)
-[![Version](https://img.shields.io/badge/version-0.1.0-green.svg)](https://github.com/coenttb/swift-identities/releases)
+[![CI](https://github.com/coenttb/swift-identities/workflows/CI/badge.svg)](https://github.com/coenttb/swift-identities/actions/workflows/ci.yml)
+![Development Status](https://img.shields.io/badge/status-active--development-blue.svg)
 
 A complete, production-ready identity authentication and management system for Swift server applications.
 
@@ -10,13 +9,13 @@ A complete, production-ready identity authentication and management system for S
 
 `swift-identities` provides a comprehensive authentication system with:
 
-- 🔐 **Complete Authentication**: Email/password, token-based, and API key authentication
-- 📧 **Email Workflows**: Verification, password reset, email change with proper confirmation flows
-- 🔑 **Multi-Factor Authentication**: Support for TOTP, SMS, Email, WebAuthn, and backup codes
-- 🎫 **Token Management**: Secure token generation, validation, and lifecycle management
-- 🗄️ **Database Integration**: Ready-to-use PostgreSQL implementation
-- 📨 **Email Integration**: Pluggable email system (see [swift-identities-mailgun](https://github.com/coenttb/swift-identities-mailgun))
-- 🌐 **API & Web Support**: Both JSON API and HTML form handling
+- **Complete Authentication**: Email/password, token-based, and API key authentication
+- **Email Workflows**: Verification, password reset, email change with proper confirmation flows
+- **Multi-Factor Authentication**: Support for TOTP, SMS, Email, WebAuthn, and backup codes
+- **Token Management**: Secure token generation, validation, and lifecycle management
+- **Database Integration**: Ready-to-use PostgreSQL implementation
+- **Email Integration**: Pluggable email system (see [swift-identities-mailgun](https://github.com/coenttb/swift-identities-mailgun))
+- **API & Web Support**: Both JSON API and HTML form handling
 
 ## Installation
 
