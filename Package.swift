@@ -134,7 +134,10 @@ let package = Package(
         .testTarget(
             name: .identityBackend.tests,
             dependencies: [
-                .identityBackend
+                .identityBackend,
+                .identitiesTypes,
+                .dependenciesTestSupport,
+                .product(name: "RecordsTestSupport", package: "swift-records")
             ]
         )
     ],
