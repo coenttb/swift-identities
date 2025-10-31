@@ -91,34 +91,7 @@ extension Identity.Record {
 }
 
 extension Identity.Record {
-    
-//    /// Batch invalidate sessions for multiple identities
-//    /// Returns count of identities updated
-//    package static func invalidateSessionsBatch(identityIds: [UUID]) async throws -> Int {
-//        @Dependency(\.defaultDatabase) var db
-//        @Dependency(\.date) var date
-//
-//        guard !identityIds.isEmpty else { return 0 }
-//
-//        var updatedCount = 0
-//
-//        try await db.write { db in
-//            // TODO: When swift-structured-queries supports WHERE IN, replace with single query
-//            for identityId in identityIds {
-//                try await Identity.Record
-//                    .where { $0.id.eq(identityId) }
-//                    .update { identity in
-//                        identity.sessionVersion = identity.sessionVersion + 1
-//                        identity.updatedAt = date()
-//                    }
-//                    .execute(db)
-//                updatedCount += 1
-//            }
-//        }
-//
-//        return updatedCount
-//    }
-    
+
     /// Check multiple emails exist in a single optimized query
     ///
     /// Uses PostgreSQL IN clause to check all emails in one database roundtrip.
