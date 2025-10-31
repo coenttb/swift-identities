@@ -72,8 +72,10 @@ extension Identity.Password.Reset.Client {
                         }
                         .returning(\.self)
                         .fetchOne(db)
-                    
-                    guard let value = token?.value else { fatalError() }
+
+                    guard let value = token?.value else {
+                        throw Abort(.internalServerError, reason: "Failed to create password reset token")
+                    }
 
                     return value
                 }

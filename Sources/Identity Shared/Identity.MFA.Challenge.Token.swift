@@ -10,10 +10,14 @@ extension Identity.MFA.Challenge {
         public let jwt: JWT
         
         /// The identity ID that needs to complete MFA
+        /// - Note: This should never fail for properly created tokens, but returns a sentinel value
+        ///         if the token is malformed. For validation, use `init(jwt:)` which properly throws.
         public var identityId: Identity.ID {
             guard let sub = jwt.payload.sub,
                   let id = UUID(uuidString: sub) else {
-                fatalError("Invalid MFA session token: missing or invalid subject")
+                // Return sentinel UUID for invalid tokens
+                // This allows the token to fail validation downstream rather than crashing
+                return Identity.ID(UUID(uuidString: "00000000-0000-0000-0000-000000000000")!)
             }
             return Identity.ID(id)
         }

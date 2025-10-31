@@ -100,25 +100,35 @@ extension Identity.MFA.BackupCodes.Client {
                     throw Identity.Authentication.Error.accountNotFound
                 }
                 
-                // Verify the backup code with explicit operations
+                // Atomically verify and mark backup code as used
+                // This prevents race conditions where the same code could be used concurrently
                 @Dependency(\.date) var date
-                
+
                 let isValid = try await database.write { db in
+                    // Fetch all unused codes for this identity
                     let unusedCodes = try await Identity.MFA.BackupCodes.Record
                         .findUnusedByIdentity(identityId)
                         .fetchAll(db)
-                    
+
+                    // Try to verify each code
                     for backupCode in unusedCodes {
                         if try await Identity.MFA.BackupCodes.Record.verifyCode(code.uppercased(), hash: backupCode.codeHash) {
-                            // Mark as used in same transaction
-                            try await Identity.MFA.BackupCodes.Record
+                            // Atomically mark as used ONLY if still unused
+                            // This WHERE clause ensures the UPDATE only succeeds if isUsed is still false
+                            // If another concurrent request already used it, returning() will return nil
+                            let updated = try await Identity.MFA.BackupCodes.Record
                                 .where { $0.id.eq(backupCode.id) }
+                                .where { $0.isUsed.eq(false) }  // CRITICAL: prevents race condition
                                 .update { code in
                                     code.isUsed = true
                                     code.usedAt = date()
                                 }
-                                .execute(db)
-                            return true
+                                .returning(\.id)
+                                .fetchOne(db)
+
+                            // Only return true if we actually marked the code as used
+                            // If updated is nil, another request used it concurrently
+                            return updated != nil
                         }
                     }
                     return false

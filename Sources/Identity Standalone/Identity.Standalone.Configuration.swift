@@ -94,7 +94,7 @@ extension Identity.Standalone {
 
 extension Identity.Standalone.Configuration: TestDependencyKey {
     public static var testValue: Self {
-        fatalError()
+        fatalError("Identity.Standalone.Configuration.testValue not implemented - use withDependencies to provide test configuration")
     }
 }
 

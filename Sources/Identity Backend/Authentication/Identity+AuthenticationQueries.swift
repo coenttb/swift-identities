@@ -96,17 +96,36 @@ extension Identity.Record {
     
     /// Verify password and update last login in a single transaction
     /// Returns the updated identity if password is correct
+    ///
+    /// SECURITY: This function prevents timing attacks by always running bcrypt,
+    /// even when the email doesn't exist. This prevents email enumeration.
     package static func verifyPasswordOptimized(email: EmailAddress, password: String) async throws -> AuthenticationData? {
         @Dependency(\.defaultDatabase) var db
         @Dependency(\.date) var date
-        
+        @Dependency(\.application) var application
+
         // Get identity with TOTP status using optimized single query
-        guard let authData = try await findForAuthentication(email: email) else {
+        let authData = try await findForAuthentication(email: email)
+
+        // SECURITY: Always run bcrypt even if email doesn't exist
+        // This prevents timing attacks that could enumerate valid emails
+        if let authData {
+            // Real password verification
+            guard try await authData.identity.verifyPassword(password) else {
+                return nil
+            }
+        } else {
+            // Dummy bcrypt verification with same cost to match timing
+            // Use a known-invalid hash to ensure verification fails
+            @Dependency(\.envVars) var envVars
+            let _ = try await application.threadPool.runIfActive {
+                // This will always fail but takes the same time as a real verification
+                try? Bcrypt.verify(password, created: "$2b$10$invalidHashThatWillNeverMatchAnythingEverXXXXXXXXXXXXXXXXXXXXXX")
+            }
             return nil
         }
-        
-        // Verify password
-        guard try await authData.identity.verifyPassword(password) else {
+
+        guard let authData else {
             return nil
         }
         

@@ -45,20 +45,28 @@ extension Identity.API.Profile {
                     .findByIdentity(identity.id)
                     .fetchOne(db)!
             }
-            
-            //TODO: FIX THIS
-            fatalError()
-            
-//            let profileResponse = Response(
-//                id: profile.id,
-//                identityId: profile.identityId,
-//                displayName: profile.displayName,
-//                email: identity.email,
-//                createdAt: profile.createdAt,
-//                updatedAt: profile.updatedAt
-//            )
-//            
-//            return Vapor.Response.success(true, data: profileResponse)
+
+            // Return profile data as JSON
+            // Use the response structure for consistency with updateDisplayName
+            struct ProfileResponse: Codable {
+                let id: UUID
+                let identityId: UUID
+                let displayName: String?
+                let email: String
+                let createdAt: Date
+                let updatedAt: Date
+            }
+
+            let response = ProfileResponse(
+                id: profile.id.rawValue,
+                identityId: profile.identityId.rawValue,
+                displayName: profile.displayName,
+                email: identity.email.description,
+                createdAt: profile.createdAt,
+                updatedAt: profile.updatedAt
+            )
+
+            return Vapor.Response.success(true, data: response)
             
         case .updateDisplayName(let request):
             @Dependency(\.request) var vaporRequest
