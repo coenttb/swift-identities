@@ -7,13 +7,12 @@
 // This file contains shared utilities for Frontend view responses.
 // Feature-specific handlers are in their respective Identity.<Feature>.response.swift files.
 
-import ServerFoundationVapor
-import IdentitiesTypes
-import HTML
-import ServerFoundationVapor
-import Identity_Views
 import Dependencies
+import HTML
+import IdentitiesTypes
+import Identity_Views
 import Language
+import ServerFoundationVapor
 import Vapor
 
 // This file is now mostly empty as feature-specific handlers have been moved

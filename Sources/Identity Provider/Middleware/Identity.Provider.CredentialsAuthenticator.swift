@@ -5,31 +5,34 @@
 //  Created by Coen ten Thije Boonkkamp on 06/02/2025.
 //
 
-import Identity_Shared
 import Dependencies
 import EmailAddress
+import Identity_Shared
 import JWT
 @preconcurrency import Vapor
 
 extension Identity.Provider {
-    public struct CredentialsAuthenticator: AsyncBasicAuthenticator {
+  public struct CredentialsAuthenticator: AsyncBasicAuthenticator {
 
-        public init() {}
+    public init() {}
 
-        public func authenticate(
-            basic: BasicAuthorization,
-            for request: Request
-        ) async throws {
-            do {
-                try await withDependencies {
-                    $0.request = request
-                } operation: {
-                    @Dependency(\.identity) var identity
-                    _ = try await identity.authenticate.client.credentials(username: basic.username, password: basic.password)
-                }
-            } catch {
-
-            }
+    public func authenticate(
+      basic: BasicAuthorization,
+      for request: Request
+    ) async throws {
+      do {
+        try await withDependencies {
+          $0.request = request
+        } operation: {
+          @Dependency(\.identity) var identity
+          _ = try await identity.authenticate.client.credentials(
+            username: basic.username,
+            password: basic.password
+          )
         }
+      } catch {
+
+      }
     }
+  }
 }

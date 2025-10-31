@@ -5,36 +5,36 @@
 //  Created by Coen ten Thije Boonkkamp on 10/09/2024.
 //
 
-import ServerFoundationVapor
 import Foundation
 import IdentitiesTypes
+import ServerFoundationVapor
 
 extension Identity.Authentication.API {
-    package static func providerResponse(
-        authenticate: Identity.Authentication.API
-    ) async throws -> Response {
+  package static func providerResponse(
+    authenticate: Identity.Authentication.API
+  ) async throws -> Response {
 
-        @Dependency(\.identity) var identity
+    @Dependency(\.identity) var identity
 
-        switch authenticate {
-        case .credentials(let credentials):
-            let identityAuthenticationResponse = try await identity.authenticate.credentials(credentials)
-            return Response.success(true, data: identityAuthenticationResponse)
+    switch authenticate {
+    case .credentials(let credentials):
+      let identityAuthenticationResponse = try await identity.authenticate.credentials(credentials)
+      return Response.success(true, data: identityAuthenticationResponse)
 
-        case .token(let token):
-            switch token {
-            case .access(let access):
-                try await identity.authenticate.token.access(access)
-                return Response.success(true)
+    case .token(let token):
+      switch token {
+      case .access(let access):
+        try await identity.authenticate.token.access(access)
+        return Response.success(true)
 
-            case .refresh(let refresh):
-                let identityAuthenticationResponse = try await identity.authenticate.token.refresh(refresh)
-                return Response.success(true, data: identityAuthenticationResponse)
-            }
-        case .apiKey(let apiKey):
-            let identityAuthenticationResponse = try await identity.authenticate.apiKey(apiKey.token)
-            return Response.success(true, data: identityAuthenticationResponse)
+      case .refresh(let refresh):
+        let identityAuthenticationResponse = try await identity.authenticate.token.refresh(refresh)
+        return Response.success(true, data: identityAuthenticationResponse)
+      }
+    case .apiKey(let apiKey):
+      let identityAuthenticationResponse = try await identity.authenticate.apiKey(apiKey.token)
+      return Response.success(true, data: identityAuthenticationResponse)
 
-        }
     }
+  }
 }

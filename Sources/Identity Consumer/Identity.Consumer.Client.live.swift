@@ -1,9 +1,9 @@
-import Identity_Shared
-import ServerFoundationVapor
 import Dependencies
 import EmailAddress
 import IdentitiesTypes
+import Identity_Shared
 import JWT
+import ServerFoundationVapor
 import Throttling
 
 // NOTE: Identity.Consumer.Client.live is deprecated.

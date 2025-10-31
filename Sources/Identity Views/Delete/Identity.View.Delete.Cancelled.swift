@@ -6,102 +6,104 @@
 //
 
 import Foundation
-import IdentitiesTypes
 import HTML
 import HTMLWebsite
+import IdentitiesTypes
 import ServerFoundationVapor
 
 extension Identity.Deletion {
-    package enum Cancelled {}
+  package enum Cancelled {}
 }
 
 extension Identity.Deletion.Cancelled {
-    package struct View: HTML {
-        let homeHref: URL
-        
-        package init(
-            homeHref: URL
-        ) {
-            self.homeHref = homeHref
-        }
-        
-        private static var cancellationId: String { "delete-cancellation-id" }
-        
-        package var body: some HTML {
-            PageModule(theme: .authenticationFlow) {
-                VStack {
-                    div {
-                        TranslatedString(
-                            dutch: "✓ Verwijdering geannuleerd",
-                            english: "✓ Deletion cancelled"
-                        )
-                    }
-                    .fontWeight(.bold)
-                    .color(.text.success)
-                    .textAlign(.center)
-                    .margin(bottom: .rem(1))
-                    
-                    HTMLComponents.Paragraph {
-                        TranslatedString(
-                            dutch: "Uw verzoek om uw account te verwijderen is succesvol geannuleerd.",
-                            english: "Your request to delete your account has been successfully cancelled."
-                        )
-                    }
-                    .font(.body)
-                    .textAlign(.center)
-                    .margin(bottom: .rem(1))
-                    .color(.text.primary)
-                    
-                    HTMLComponents.Paragraph {
-                        TranslatedString(
-                            dutch: "Uw account blijft actief en al uw gegevens zijn behouden.",
-                            english: "Your account remains active and all your data has been preserved."
-                        )
-                    }
-                    .font(.body(.small))
-                    .textAlign(.center)
-                    .color(.text.secondary)
-                    .margin(bottom: .rem(2))
-                    .color(.text.primary)
-                    
-                    Link(href: .init(homeHref.relativePath)) {
-                        TranslatedString(
-                            dutch: "Terug naar home",
-                            english: "Back to Home"
-                        ).description
-                    }
-                    .linkColor(.branding.primary)
-                    .fontWeight(.medium)
-                    .font(.body(.small))
-                    .textAlign(.center)
-                }
-                .width(.percent(100))
-                .maxWidth(.identityComponentDesktop)
-                .maxWidth(.identityComponentMobile, media: .mobile)
-                .margin(horizontal: .auto)
-                .textAlign(.center)
-            } title: {
-                Header(3) {
-                    TranslatedString(
-                        dutch: "Verwijdering Geannuleerd",
-                        english: "Deletion Cancelled"
-                    )
-                }
-                .color(.text.primary)
-                .display(.inlineBlock)
-                .textAlign(.center)
-            }
-            .id(Self.cancellationId)
-            .width(.percent(100))
-            
-            script {#"""
-                document.addEventListener('DOMContentLoaded', function() {
-                    // Auto-redirect after 3 seconds
-                    setTimeout(function() {
-                        window.location.href = '\#(homeHref.absoluteString)';
-                    }, 3000);
-                });
-            """#}
-        }
+  package struct View: HTML {
+    let homeHref: URL
+
+    package init(
+      homeHref: URL
+    ) {
+      self.homeHref = homeHref
     }
+
+    private static var cancellationId: String { "delete-cancellation-id" }
+
+    package var body: some HTML {
+      PageModule(theme: .authenticationFlow) {
+        VStack {
+          div {
+            TranslatedString(
+              dutch: "✓ Verwijdering geannuleerd",
+              english: "✓ Deletion cancelled"
+            )
+          }
+          .fontWeight(.bold)
+          .color(.text.success)
+          .textAlign(.center)
+          .margin(bottom: .rem(1))
+
+          HTMLComponents.Paragraph {
+            TranslatedString(
+              dutch: "Uw verzoek om uw account te verwijderen is succesvol geannuleerd.",
+              english: "Your request to delete your account has been successfully cancelled."
+            )
+          }
+          .font(.body)
+          .textAlign(.center)
+          .margin(bottom: .rem(1))
+          .color(.text.primary)
+
+          HTMLComponents.Paragraph {
+            TranslatedString(
+              dutch: "Uw account blijft actief en al uw gegevens zijn behouden.",
+              english: "Your account remains active and all your data has been preserved."
+            )
+          }
+          .font(.body(.small))
+          .textAlign(.center)
+          .color(.text.secondary)
+          .margin(bottom: .rem(2))
+          .color(.text.primary)
+
+          Link(href: .init(homeHref.relativePath)) {
+            TranslatedString(
+              dutch: "Terug naar home",
+              english: "Back to Home"
+            ).description
+          }
+          .linkColor(.branding.primary)
+          .fontWeight(.medium)
+          .font(.body(.small))
+          .textAlign(.center)
+        }
+        .width(.percent(100))
+        .maxWidth(.identityComponentDesktop)
+        .maxWidth(.identityComponentMobile, media: .mobile)
+        .margin(horizontal: .auto)
+        .textAlign(.center)
+      } title: {
+        Header(3) {
+          TranslatedString(
+            dutch: "Verwijdering Geannuleerd",
+            english: "Deletion Cancelled"
+          )
+        }
+        .color(.text.primary)
+        .display(.inlineBlock)
+        .textAlign(.center)
+      }
+      .id(Self.cancellationId)
+      .width(.percent(100))
+
+      script {
+        #"""
+            document.addEventListener('DOMContentLoaded', function() {
+                // Auto-redirect after 3 seconds
+                setTimeout(function() {
+                    window.location.href = '\#(homeHref.absoluteString)';
+                }, 3000);
+            });
+        """#
+      }
+    }
+  }
 }

@@ -9,24 +9,24 @@ import Foundation
 import IdentitiesTypes
 
 extension Identity.Authentication {
-    /// Errors that can occur during authentication operations.
-    package enum Error: Swift.Error, Sendable {
-        case invalidCredentials
-        case accountNotFound
-        case accountLocked
-        case tokenExpired
-        case tokenInvalid
-        case emailNotVerified
-        case notAuthenticated
-    }
-    
-    /// Errors that can occur during validation operations.
-    package enum ValidationError: Swift.Error, Sendable {
-        case invalidInput(String)
-        case passwordTooWeak
-        case emailInvalid
-        case emailAlreadyInUse
-        case invalidToken
-        case internalError
-    }
+  /// Errors that can occur during authentication operations.
+  package enum Error: Swift.Error, Sendable {
+    case invalidCredentials
+    case accountNotFound
+    case accountLocked
+    case tokenExpired
+    case tokenInvalid
+    case emailNotVerified
+    case notAuthenticated
+  }
+
+  /// Errors that can occur during validation operations.
+  package enum ValidationError: Swift.Error, Sendable {
+    case invalidInput(String)
+    case passwordTooWeak
+    case emailInvalid
+    case emailAlreadyInUse
+    case invalidToken
+    case internalError
+  }
 }

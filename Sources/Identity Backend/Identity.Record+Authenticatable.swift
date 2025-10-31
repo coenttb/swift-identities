@@ -9,5 +9,5 @@ import Foundation
 import ServerFoundationVapor
 
 extension Identity.Record: Authenticatable {
-    
+
 }

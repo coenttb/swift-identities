@@ -6,7 +6,7 @@
 //  Use @Dependency(\.identity.require) for accessing identity context.
 //
 
-import ServerFoundationVapor
-import IdentitiesTypes
 import Foundation
+import IdentitiesTypes
+import ServerFoundationVapor
 //

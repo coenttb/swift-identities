@@ -8,16 +8,16 @@ import IdentitiesTypes
 // Configuration moved to Identity Backend
 
 extension Identity.MFA.TOTP.Client: @retroactive TestDependencyKey {
-    public static var testValue: Self {
-        Self()
-    }
+  public static var testValue: Self {
+    Self()
+  }
 }
 
 // MARK: - Dependency Values
 
 extension DependencyValues {
-    public var totpClient: Identity.MFA.TOTP.Client {
-        get { self[Identity.MFA.TOTP.Client.self] }
-        set { self[Identity.MFA.TOTP.Client.self] = newValue }
-    }
+  public var totpClient: Identity.MFA.TOTP.Client {
+    get { self[Identity.MFA.TOTP.Client.self] }
+    set { self[Identity.MFA.TOTP.Client.self] = newValue }
+  }
 }

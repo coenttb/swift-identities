@@ -9,15 +9,15 @@ import Foundation
 import ServerFoundation
 
 extension URLRequest.Handler {
-    package enum Identity {}
+  package enum Identity {}
 }
 
 extension URLRequest.Handler.Identity: DependencyKey {
-    public static var liveValue: URLRequest.Handler {
-        .init(debug: false)
-    }
-    
-    public static var testValue: URLRequest.Handler {
-        .init(debug: true)
-    }
+  public static var liveValue: URLRequest.Handler {
+    .init(debug: false)
+  }
+
+  public static var testValue: URLRequest.Handler {
+    .init(debug: true)
+  }
 }

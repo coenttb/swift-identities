@@ -10,26 +10,26 @@ import HTML
 import HTMLWebsite
 
 extension PageModule.Theme {
-    public static var authenticationFlow: Self {
-        Self(
-            topMargin: .rem(5),
-            topMarginDesktop: .rem(18),
-            bottomMargin: .rem(4),
-            leftRightMargin: .rem(2),
-            leftRightMarginDesktop: .rem(3),
-            itemAlignment: .center
-        )
-    }
+  public static var authenticationFlow: Self {
+    Self(
+      topMargin: .rem(5),
+      topMarginDesktop: .rem(18),
+      bottomMargin: .rem(4),
+      leftRightMargin: .rem(2),
+      leftRightMarginDesktop: .rem(3),
+      itemAlignment: .center
+    )
+  }
 }
 
 extension PageModule.Theme {
-    public static var mfaSetup: Self {
-        Self(
-            topMargin: .rem(3),
-            bottomMargin: .rem(4),
-            leftRightMargin: .rem(2),
-            leftRightMarginDesktop: .rem(3),
-            itemAlignment: .center
-        )
-    }
+  public static var mfaSetup: Self {
+    Self(
+      topMargin: .rem(3),
+      bottomMargin: .rem(4),
+      leftRightMargin: .rem(2),
+      leftRightMarginDesktop: .rem(3),
+      itemAlignment: .center
+    )
+  }
 }
