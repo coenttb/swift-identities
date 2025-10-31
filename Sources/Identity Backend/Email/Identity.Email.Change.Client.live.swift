@@ -90,7 +90,7 @@ extension Identity.Email.Change.Client {
                         // Use UPSERT to handle multiple change requests gracefully
                         // This ensures only one pending email change request per identity
                         try await Identity.Email.Change.Request.Record
-                            .insert {
+                            .upsert {
                                 Identity.Email.Change.Request.Record.Draft(
                                     identityId: identity.id,
                                     newEmail: newEmailAddress,
@@ -100,16 +100,6 @@ extension Identity.Email.Change.Client {
                                     confirmedAt: nil,
                                     cancelledAt: nil
                                 )
-                            } onConflict: { cols in
-                                cols.identityId
-                            } doUpdate: { updates, excluded in
-                                // Replace the entire request with the new one
-                                updates.newEmail = excluded.newEmail
-                                updates.verificationToken = excluded.verificationToken
-                                updates.requestedAt = excluded.requestedAt
-                                updates.expiresAt = excluded.expiresAt
-                                updates.confirmedAt = nil  // Reset confirmation
-                                updates.cancelledAt = nil  // Reset cancellation
                             }
                             .execute(db)
                         
