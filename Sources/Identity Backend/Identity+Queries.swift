@@ -91,29 +91,40 @@ extension Identity.Record {
     
     // MARK: - Batch Operations
     
-    /// Check multiple emails exist in single query (optimized version)
-    /// Returns set of emails that exist in the database
+    /// Check multiple emails exist - WARNING: Not Actually Optimized (N+1 Query)
+    ///
+    /// Despite the "Optimized" name, this function currently performs N database queries (one per email)
+    /// due to lack of IN clause support in swift-structured-queries.
+    ///
+    /// - Warning: Performance will degrade with large email lists. Consider this limitation when
+    ///            using for batch email validation.
+    ///
+    /// - Parameter emails: List of email addresses to check
+    /// - Returns: Set of email addresses that exist in the database
+    ///
+    /// - Performance: O(N) database queries where N = number of emails
+    ///
+    /// - Note: When swift-structured-queries supports IN clause, this can be optimized to:
+    ///         `SELECT email FROM identities WHERE email IN (email1, email2, ...)`
+    @available(*, deprecated, message: "This function is not actually optimized - it performs N queries. Use emailsExist() or wait for IN clause support.")
     package static func emailsExistOptimized(_ emails: [EmailAddress]) async throws -> Set<EmailAddress> {
         @Dependency(\.defaultDatabase) var db
-        
+
         guard !emails.isEmpty else { return [] }
-        
-        // For now, we need to check each email individually
-        // When swift-records supports IN clause, this can be optimized to a single query
-        
+
         return try await db.read { db in
             var existingEmails = Set<EmailAddress>()
-            
+
             for email in emails {
                 let exists = try await Identity.Record
                     .where { $0.email.eq(email) }
                     .fetchCount(db) > 0
-                
+
                 if exists {
                     existingEmails.insert(email)
                 }
             }
-            
+
             return existingEmails
         }
     }

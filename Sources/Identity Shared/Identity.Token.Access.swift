@@ -11,22 +11,31 @@ extension Identity.Token {
         public let jwt: JWT
         
         /// The identity ID extracted from the subject claim
+        /// - Note: This should never fail for properly created tokens, but returns a sentinel value
+        ///         if the token is malformed. For validation, use `init(jwt:)` which properly throws.
         public var identityId: Identity.ID {
             guard let sub = jwt.payload.sub,
                   let components = Self.parseSubject(sub),
                   let id = UUID(uuidString: components.id) else {
-                fatalError()
+                // Return sentinel UUID for invalid tokens
+                // This allows the token to fail validation downstream rather than crashing
+                return Identity.ID(UUID(uuidString: "00000000-0000-0000-0000-000000000000")!)
             }
             return Identity.ID(id)
         }
-        
+
         /// The email address extracted from the subject claim
+        /// - Note: This should never fail for properly created tokens, but returns a placeholder
+        ///         if the token is malformed. For validation, use `init(jwt:)` which properly throws.
         public var email: EmailAddress {
             guard let sub = jwt.payload.sub,
-                  let components = Self.parseSubject(sub) else {
-                fatalError()
+                  let components = Self.parseSubject(sub),
+                  let emailAddress = try? EmailAddress(components.email) else {
+                // Return placeholder email for invalid tokens
+                // This allows the token to fail validation downstream rather than crashing
+                return try! EmailAddress("invalid@token.invalid")
             }
-            return try! .init(components.email)
+            return emailAddress
         }
         
         /// The display name (only available in Standalone deployments)

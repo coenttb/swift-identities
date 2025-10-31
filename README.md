@@ -11,7 +11,7 @@ A complete, production-ready identity authentication and management system for S
 
 - **Complete Authentication**: Email/password, token-based, and API key authentication
 - **Email Workflows**: Verification, password reset, email change with proper confirmation flows
-- **Multi-Factor Authentication**: Support for TOTP, SMS, Email, WebAuthn, and backup codes
+- **Multi-Factor Authentication**: TOTP (Google Authenticator) and backup codes - production ready. SMS, Email, WebAuthn in development.
 - **Token Management**: Secure token generation, validation, and lifecycle management
 - **Database Integration**: Ready-to-use PostgreSQL implementation
 - **Email Integration**: Pluggable email system (see [swift-identities-mailgun](https://github.com/coenttb/swift-identities-mailgun))
@@ -73,11 +73,13 @@ let identityClient = Identity.Client.mailgun(
 
 ### Multi-Factor Authentication (MFA)
 
-- **TOTP**: Time-based one-time passwords (Google Authenticator, etc.)
-- **SMS**: Text message verification codes
-- **Email**: Email-based verification codes
-- **WebAuthn**: Hardware security keys and biometric authentication
-- **Backup Codes**: Recovery codes for when primary MFA is unavailable
+- **TOTP**: ✅ Time-based one-time passwords (Google Authenticator, etc.) - **Production Ready**
+- **Backup Codes**: ✅ Recovery codes for when primary MFA is unavailable - **Production Ready**
+- **SMS**: 🚧 Text message verification codes - **In Development**
+- **Email**: 🚧 Email-based verification codes - **In Development**
+- **WebAuthn**: 🚧 Hardware security keys and biometric authentication - **Planned**
+
+> **Note**: Currently, only TOTP and Backup Codes are fully implemented and production-ready. SMS, Email, and WebAuthn MFA methods have configuration infrastructure in place but require implementation of the verification logic.
 
 ### Security Features
 
