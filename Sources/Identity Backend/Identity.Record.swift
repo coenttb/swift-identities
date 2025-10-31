@@ -119,41 +119,35 @@ extension Identity.Record {
 //        return updatedCount
 //    }
     
-    /// Check multiple emails exist - WARNING: N+1 Query Performance Issue
+    /// Check multiple emails exist in a single optimized query
     ///
-    /// - Warning: This function performs N database queries (one per email) due to lack of IN clause support.
-    ///            Performance will degrade with large email lists. For production use with large lists,
-    ///            consider batching or implementing when IN clause is available in swift-structured-queries.
+    /// Uses PostgreSQL IN clause to check all emails in one database roundtrip.
     ///
     /// - Parameter emails: List of email addresses to check
     /// - Returns: Dictionary mapping each email to its existence status
     ///
-    /// - Performance: O(N) database queries where N = number of emails
+    /// - Performance: O(1) database query regardless of number of emails
+    /// - Complexity: Single query: `SELECT email FROM identities WHERE email IN (...)`
     package static func emailsExist(_ emails: [EmailAddress]) async throws -> [EmailAddress: Bool] {
         @Dependency(\.defaultDatabase) var db
 
         guard !emails.isEmpty else { return [:] }
 
-        // NOTE: This performs N separate queries - not truly optimized
-        // TODO: When swift-structured-queries supports IN clause:
-        //   SELECT email FROM identities WHERE email IN (email1, email2, ...)
-        let existingEmails = try await db.read { db in
-            var results: Set<String> = []
-            for email in emails {
-                let exists = try await Identity.Record
-                    .where { $0.email.eq(email) }
-                    .fetchCount(db) > 0
-                if exists {
-                    results.insert(email.rawValue)
-                }
-            }
-            return results
+        // Single query using IN clause - fetches all matching emails at once
+        let existingEmailStrings = try await db.read { db in
+            try await Identity.Record
+                .where { $0.email.in(emails) }
+                .select { $0.email }
+                .fetchAll(db)
+                .map { $0.rawValue }
         }
+
+        let existingSet = Set(existingEmailStrings)
 
         // Build result dictionary
         var result: [EmailAddress: Bool] = [:]
         for email in emails {
-            result[email] = existingEmails.contains(email.rawValue)
+            result[email] = existingSet.contains(email.rawValue)
         }
 
         return result
