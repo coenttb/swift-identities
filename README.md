@@ -29,24 +29,43 @@ dependencies: [
 
 ## Quick Start
 
-### Basic Setup
+### Standalone Identity Server
+
+The simplest way to get started is with the standalone identity server:
 
 ```swift
-import Identities
-import IdentitiesBackend
+import Vapor
+import IdentitiesStandalone
+import Records
+import Dependencies
 
-// Configure your identity system
-let identityConfig = Identity.Configuration(
-    requireEmailVerification: true,
-    allowPasswordReset: true,
-    tokenLifetime: .hours(24)
-)
+// Configure your Vapor app
+let app = Application()
 
-// Initialize with database
-let identitySystem = try Identity.System(
-    database: database,
-    configuration: identityConfig
-)
+// Set up database and identity configuration
+try await withDependencies {
+    // Configure database
+    $0.defaultDatabase = try Database.pool(configuration: databaseConfig)
+
+    // Configure identity
+    $0[Identity.Standalone.Configuration.self] = .init(
+        baseURL: URL(string: "https://identity.example.com")!,
+        router: Identity.Route.Router(),
+        jwt: .live(signingKey: jwtSigningKey),
+        cookies: .default,
+        branding: .init(appName: "My App", logoURL: nil),
+        navigation: .default,
+        redirect: .default,
+        rateLimiters: nil,
+        email: .mailgun(/* email configuration */)
+    )
+} operation: {
+    // Run migrations and configure
+    try await Identity.Standalone.configure(app, runMigrations: true)
+
+    // Start the server
+    try app.run()
+}
 ```
 
 ### With Email Integration
@@ -54,11 +73,13 @@ let identitySystem = try Identity.System(
 For production email support, use [swift-identities-mailgun](https://github.com/coenttb/swift-identities-mailgun):
 
 ```swift
-import IdentitiesMailgunLive
+import IdentitiesMailgun
 
-let identityClient = Identity.Client.mailgun(
-    business: businessDetails,
-    router: identityRouter
+let emailConfig = Identity.Backend.Configuration.Email.mailgun(
+    domain: "mg.example.com",
+    apiKey: mailgunApiKey,
+    fromEmail: "noreply@example.com",
+    fromName: "My App"
 )
 ```
 
@@ -112,17 +133,39 @@ Includes migrations for:
 
 ### With Vapor
 
+For a complete standalone identity server with Vapor:
+
 ```swift
 import Vapor
-import Identities
+import IdentitiesStandalone
+import Records
 
-func configure(_ app: Application) throws {
-    // Add identity routes
-    try app.register(collection: IdentityController())
-    
-    // Add authentication middleware
-    app.middleware.use(Identity.TokenAuthenticator())
+func configure(_ app: Application) async throws {
+    // Set up dependencies (database, configuration, etc.)
+    // See Quick Start section for full configuration
+
+    // Configure Identity Standalone (runs migrations, registers middleware)
+    try await Identity.Standalone.configure(app, runMigrations: true)
+
+    // Add your application routes
+    // Identity handles authentication at /identity/*
 }
+```
+
+For integrating identity into an existing app (Consumer mode):
+
+```swift
+import IdentitiesConsumer
+
+// Configure consumer to talk to identity server
+$0[Identity.Consumer.Configuration.self] = .init(
+    identityServerURL: URL(string: "https://identity.example.com")!,
+    apiKey: identityAPIKey,
+    router: Identity.Route.Router()
+)
+
+// Add consumer middleware for local authentication checking
+app.middleware.use(Identity.Consumer.Authenticator())
 ```
 
 ### With Dependencies
@@ -130,21 +173,42 @@ func configure(_ app: Application) throws {
 Uses [swift-dependencies](https://github.com/pointfreeco/swift-dependencies) for dependency injection:
 
 ```swift
-@Dependency(\.identityClient) var identityClient
+@Dependency(\.identity) var identity
+@Dependency(\.defaultDatabase) var database
+
+// Use identity operations
+let authResponse = try await identity.authenticate.login(email, password)
 ```
 
 ## Testing
 
-Includes comprehensive test utilities:
+Test with dependency injection and isolated test databases:
 
 ```swift
-import IdentitiesTestSupport
+import Testing
+import Records
+import Dependencies
 
 @Test
 func testAuthentication() async throws {
-    let testDB = Identity.TestDatabase()
-    let identity = try await testDB.createVerifiedIdentity()
-    // Test your authentication logic
+    try await withDependencies {
+        // Each test gets isolated database schema
+        $0.defaultDatabase = try Database.testPool()
+        $0[Identity.Backend.Configuration.self] = .testValue
+    } operation: {
+        @Dependency(\.defaultDatabase) var db
+
+        // Create test identity
+        let identity = try await db.write { db in
+            try await Identity.Record
+                .insert { Identity.Record.Draft(email: "test@example.com", passwordHash: hash) }
+                .returning(\.self)
+                .fetchOne(db)
+        }
+
+        // Test authentication logic
+        #expect(identity != nil)
+    }
 }
 ```
 
