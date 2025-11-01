@@ -33,7 +33,10 @@ extension Identity.MFA.TOTP.Record {
     let sealedBox = try AES.GCM.seal(data, using: key)
 
     // Prefix with "v1:" for version tracking
-    return "v1:" + sealedBox.combined!.base64EncodedString()
+    guard let combined = sealedBox.combined else {
+      throw TOTPError.encryptionFailed
+    }
+    return "v1:" + combined.base64EncodedString()
   }
 
   /// Decrypt the secret for use

@@ -93,7 +93,11 @@ extension Identity.Email.Change.Client {
               )
             }
             .returning(\.self)
-            .fetchOne(db)!
+            .fetchOne(db)
+
+          guard let token else {
+            throw Abort(.internalServerError, reason: "Failed to create verification token")
+          }
 
           // Use UPSERT to handle multiple change requests gracefully
           // This ensures only one pending email change request per identity

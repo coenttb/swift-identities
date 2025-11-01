@@ -176,9 +176,17 @@ extension Identity.Creation.Client {
             try await onIdentityCreationSuccess((identityId, identityEmail))
           }
         } catch {
+          logger.error(
+            "Verification failed",
+            metadata: [
+              "component": "Backend.Create",
+              "operation": "verify",
+              "error": "\(error)",
+            ]
+          )
           throw Abort(
             .internalServerError,
-            reason: "Verification failed: \(error.localizedDescription)"
+            reason: "Verification failed. Please try again later."
           )
         }
       }

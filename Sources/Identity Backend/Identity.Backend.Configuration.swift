@@ -13,6 +13,9 @@ import URLRouting
 
 extension Identity.Backend {
   /// Backend configuration containing all necessary services and callbacks
+  ///
+  /// Note: Uses `@unchecked Sendable` because the `router` property is type-erased (`any URLRouting.Router`).
+  /// All closure properties are marked `@Sendable` and the struct is intended for concurrent use after initialization.
   public struct Configuration: @unchecked Sendable {
     /// JWT token client for generating and verifying tokens
     public var jwt: Identity.Token.Client
