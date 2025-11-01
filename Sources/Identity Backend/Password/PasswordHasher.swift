@@ -50,6 +50,36 @@ extension PasswordHasher: TestDependencyKey {
   public static let previewValue = testValue
 }
 
+// Fallback implementation when Vapor is not available
+#if !canImport(Vapor)
+extension PasswordHasher: DependencyKey {
+  public static let liveValue: PasswordHasher = Self(
+    hash: { password, cost in
+      // When Vapor is not available, you must provide your own implementation
+      // This could be Argon2, pure Swift bcrypt, or another hashing algorithm
+      fatalError(
+        """
+        PasswordHasher.liveValue not implemented without Vapor trait.
+        Either:
+        1. Enable the Vapor trait in Package.swift, or
+        2. Provide a custom PasswordHasher implementation via withDependencies
+        """
+      )
+    },
+    verify: { password, hash in
+      fatalError(
+        """
+        PasswordHasher.liveValue not implemented without Vapor trait.
+        Either:
+        1. Enable the Vapor trait in Package.swift, or
+        2. Provide a custom PasswordHasher implementation via withDependencies
+        """
+      )
+    }
+  )
+}
+#endif
+
 extension DependencyValues {
   public var passwordHasher: PasswordHasher {
     get { self[PasswordHasher.self] }

@@ -25,7 +25,14 @@ extension Target.Dependency {
 
 extension Target.Dependency {
     static var identitiesTypes: Self { .product(name: "IdentitiesTypes", package: "swift-identities-types") }
-    static var serverFoundationVapor: Self { .product(name: "ServerFoundationVapor", package: "swift-server-foundation-vapor") }
+    static var serverFoundation: Self { .product(name: "ServerFoundation", package: "swift-server-foundation") }
+    static var serverFoundationVapor: Self {
+        .product(
+            name: "ServerFoundationVapor",
+            package: "swift-server-foundation-vapor",
+            condition: .when(traits: ["Vapor"])
+        )
+    }
     static var html: Self { .product(name: "HTML", package: "swift-html") }
     static var htmlEmail: Self { .product(name: "HTMLEmail", package: "swift-html") }
     static var htmlMarkdown: Self { .product(name: "HTMLMarkdown", package: "swift-html") }
@@ -50,7 +57,19 @@ let package = Package(
         .library(name: .identityBackend, targets: [.identityBackend]),
         .library(name: .identityFrontend, targets: [.identityFrontend])
     ],
+    traits: [
+        .trait(
+            name: "Vapor",
+            description: "Enable Vapor framework integration for server-side password hashing (Bcrypt) and HTTP utilities."
+        ),
+        .default(
+            enabledTraits: [
+                "Vapor"
+            ]
+        ),
+    ],
     dependencies: [
+        .package(url: "https://github.com/coenttb/swift-server-foundation", from: "0.0.1"),
         .package(url: "https://github.com/coenttb/swift-server-foundation-vapor", from: "0.0.1"),
         .package(url: "https://github.com/coenttb/swift-records", from: "0.1.0"),
         .package(
@@ -68,6 +87,7 @@ let package = Package(
             name: .identityShared,
             dependencies: [
                 .identitiesTypes,
+                .serverFoundation,
                 .serverFoundationVapor,
                 .totp
             ]
@@ -80,6 +100,7 @@ let package = Package(
                 .htmlEmail,
                 .htmlWebsite,
                 .htmlMarkdown,
+                .serverFoundation,
                 .serverFoundationVapor
             ]
         ),
@@ -87,6 +108,7 @@ let package = Package(
             name: .identityBackend,
             dependencies: [
                 .identityShared,
+                .serverFoundation,
                 .serverFoundationVapor,
                 .records,
                 .htmlEmail
@@ -98,6 +120,7 @@ let package = Package(
                 .identitiesTypes,
                 .identityShared,
                 .identityViews,
+                .serverFoundation,
                 .serverFoundationVapor
             ]
         ),
@@ -108,6 +131,7 @@ let package = Package(
                 .identityShared,
                 .identityViews,
                 .identityFrontend,
+                .serverFoundation,
                 .serverFoundationVapor
             ]
         ),
@@ -117,6 +141,7 @@ let package = Package(
                 .identitiesTypes,
                 .identityShared,
                 .identityBackend,
+                .serverFoundation,
                 .serverFoundationVapor
             ]
         ),
@@ -128,6 +153,7 @@ let package = Package(
                 .identityBackend,
                 .identityViews,
                 .identityFrontend,
+                .serverFoundation,
                 .serverFoundationVapor
             ]
         ),

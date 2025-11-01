@@ -5,6 +5,7 @@
 //  Vapor implementation of PasswordHasher using Bcrypt
 //
 
+#if canImport(Vapor)
 import Dependencies
 import Vapor
 
@@ -13,6 +14,8 @@ extension PasswordHasher {
   ///
   /// This implementation uses Vapor's Application thread pool to run bcrypt
   /// operations on a background thread, preventing blocking of async contexts.
+  ///
+  /// This is automatically used when the Vapor trait is enabled in Package.swift.
   public static var vapor: Self {
     Self(
       hash: { password, cost in
@@ -36,3 +39,4 @@ extension PasswordHasher {
 extension PasswordHasher: DependencyKey {
   public static let liveValue: PasswordHasher = .vapor
 }
+#endif
