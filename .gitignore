@@ -49,3 +49,6 @@ CLAUDE.MD
 # Temporary files
 *.tmp
 *.temp
+# Test output files
+test_output.txt
+*_output.txt
