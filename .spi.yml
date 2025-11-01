@@ -2,5 +2,10 @@ version: 1
 builder:
   configs:
   - documentation_targets:
-    - Identities
-    - IdentitiesTypes
+    - Identity Backend
+    - Identity Frontend
+    - Identity Shared
+    - Identity Views
+    - Identity Consumer
+    - Identity Provider
+    - Identity Standalone
