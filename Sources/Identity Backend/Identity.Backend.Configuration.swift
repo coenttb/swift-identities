@@ -36,13 +36,17 @@ extension Identity.Backend {
     /// OAuth configuration
     public var oauth: Identity.OAuth?
 
+    /// Timeout and duration configuration
+    public var timeouts: Timeouts
+
     public init(
       jwt: Identity.Token.Client,
       router: any URLRouting.Router<Identity.Authentication.Route>,
       email: Identity.Backend.Configuration.Email,
       tokenEnrichment: Identity.Backend.Configuration.TokenEnrichment? = nil,
       mfa: Identity.MFA? = nil,
-      oauth: Identity.OAuth? = nil
+      oauth: Identity.OAuth? = nil,
+      timeouts: Timeouts = .default
     ) {
       self.jwt = jwt
       self.router = router
@@ -50,7 +54,72 @@ extension Identity.Backend {
       self.tokenEnrichment = tokenEnrichment
       self.mfa = mfa
       self.oauth = oauth
+      self.timeouts = timeouts
     }
+  }
+}
+
+// MARK: - Timeouts Configuration
+
+extension Identity.Backend.Configuration {
+  /// Configurable timeouts and durations for tokens and sessions
+  public struct Timeouts: Sendable, Equatable {
+    /// Maximum MFA verification attempts allowed
+    public var mfaMaxAttempts: Int
+
+    /// MFA session timeout (seconds)
+    public var mfaSessionTimeout: TimeInterval
+
+    /// Email verification token validity (seconds)
+    public var emailVerificationTokenValidity: TimeInterval
+
+    /// Password reset token validity (seconds)
+    public var passwordResetTokenValidity: TimeInterval
+
+    /// Access token validity (seconds)
+    public var accessTokenValidity: TimeInterval
+
+    /// Refresh token validity (seconds)
+    public var refreshTokenValidity: TimeInterval
+
+    public init(
+      mfaMaxAttempts: Int = 3,
+      mfaSessionTimeout: TimeInterval = 300,  // 5 minutes
+      emailVerificationTokenValidity: TimeInterval = 86400,  // 24 hours
+      passwordResetTokenValidity: TimeInterval = 3600,  // 1 hour
+      accessTokenValidity: TimeInterval = 86400,  // 24 hours
+      refreshTokenValidity: TimeInterval = 2_592_000  // 30 days
+    ) {
+      self.mfaMaxAttempts = mfaMaxAttempts
+      self.mfaSessionTimeout = mfaSessionTimeout
+      self.emailVerificationTokenValidity = emailVerificationTokenValidity
+      self.passwordResetTokenValidity = passwordResetTokenValidity
+      self.accessTokenValidity = accessTokenValidity
+      self.refreshTokenValidity = refreshTokenValidity
+    }
+
+    /// Default production timeouts
+    public static let `default` = Timeouts()
+
+    /// Shorter timeouts for development/testing
+    public static let development = Timeouts(
+      mfaMaxAttempts: 5,
+      mfaSessionTimeout: 600,  // 10 minutes
+      emailVerificationTokenValidity: 86400,  // 24 hours
+      passwordResetTokenValidity: 7200,  // 2 hours
+      accessTokenValidity: 86400,  // 24 hours
+      refreshTokenValidity: 2_592_000  // 30 days
+    )
+
+    /// Strict timeouts for high-security environments
+    public static let strict = Timeouts(
+      mfaMaxAttempts: 3,
+      mfaSessionTimeout: 180,  // 3 minutes
+      emailVerificationTokenValidity: 3600,  // 1 hour
+      passwordResetTokenValidity: 900,  // 15 minutes
+      accessTokenValidity: 3600,  // 1 hour
+      refreshTokenValidity: 604_800  // 7 days
+    )
   }
 }
 
@@ -140,7 +209,8 @@ extension Identity.Backend.Configuration: TestDependencyKey {
       email: .noop,
       tokenEnrichment: nil,
       mfa: nil,
-      oauth: nil
+      oauth: nil,
+      timeouts: .development
     )
   }
 }

@@ -11,7 +11,6 @@ import Foundation
 import IdentitiesTypes
 import Records
 import ServerFoundationVapor
-import Vapor
 
 extension Identity.Record {
   public enum Get {
@@ -35,7 +34,7 @@ extension Identity.Record {
             .fetchOne(db)
         })
       else {
-        throw Abort(.notFound, reason: "Identity not found for id \(id)")
+        throw Identity.Backend.Error.identityNotFound(identifier: .id(id))
       }
       return identity
 
@@ -48,7 +47,7 @@ extension Identity.Record {
             .fetchOne(db)
         })
       else {
-        throw Abort(.notFound, reason: "Identity not found for email \(email)")
+        throw Identity.Backend.Error.identityNotFound(identifier: .email(email.rawValue))
       }
       return identity
 
@@ -63,7 +62,7 @@ extension Identity.Record {
             "operation": "get.auth",
           ]
         )
-        throw Abort.requestUnavailable
+        throw Identity.Backend.Error.requestUnavailable
       }
 
       // First check for Identity.Token.Access (used by Standalone/Consumer)
@@ -78,7 +77,7 @@ extension Identity.Record {
       }
 
       // No authentication found
-      throw Abort(.unauthorized, reason: "Not authenticated1")
+      throw Identity.Backend.Error.notAuthenticated
     }
   }
 }

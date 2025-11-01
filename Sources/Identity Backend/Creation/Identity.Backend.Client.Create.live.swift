@@ -10,7 +10,6 @@ import EmailAddress
 import IdentitiesTypes
 import Records
 import ServerFoundation
-import Vapor
 
 @Selection
 struct EmailVerificationData: Sendable {
@@ -72,7 +71,7 @@ extension Identity.Creation.Client {
               .fetchOne(db)
 
             guard let identity = identity else {
-              throw Abort(.internalServerError, reason: "Failed to create identity")
+              throw Identity.Backend.Error.failedToCreateIdentity
             }
 
             let token = try await Identity.Token.Record
@@ -87,7 +86,7 @@ extension Identity.Creation.Client {
               .fetchOne(db)
 
             guard let tokenValue = token?.value else {
-              throw Abort(.internalServerError, reason: "Failed to create verification token")
+              throw Identity.Backend.Error.failedToCreateToken(type: .emailVerification)
             }
 
             return (identity, tokenValue)
@@ -143,12 +142,12 @@ extension Identity.Creation.Client {
               .fetchOne(db)
 
             guard let data else {
-              throw Abort(.notFound, reason: "Invalid or expired token")
+              throw Identity.Backend.Error.invalidToken(type: .emailVerification)
             }
 
             // Verify email matches
             guard data.identity.email == emailAddress else {
-              throw Abort(.badRequest, reason: "Email mismatch")
+              throw Identity.Backend.Error.emailMismatch
             }
 
             // Update identity verification status
@@ -175,6 +174,9 @@ extension Identity.Creation.Client {
           await fireAndForget {
             try await onIdentityCreationSuccess((identityId, identityEmail))
           }
+        } catch let error as Identity.Backend.Error {
+          // Re-throw domain errors as-is
+          throw error
         } catch {
           logger.error(
             "Verification failed",
@@ -184,10 +186,8 @@ extension Identity.Creation.Client {
               "error": "\(error)",
             ]
           )
-          throw Abort(
-            .internalServerError,
-            reason: "Verification failed. Please try again later."
-          )
+          // Wrap unexpected errors
+          throw Identity.Backend.Error.unexpected("Verification failed")
         }
       }
     )
