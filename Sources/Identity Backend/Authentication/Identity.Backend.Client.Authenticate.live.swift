@@ -29,7 +29,7 @@ extension Identity.Authentication.Client {
         let email: EmailAddress = try .init(username)
 
         @Dependency(\.request) var request
-        guard let request else { throw Abort.requestUnavailable }
+        guard let request else { throw Identity.Backend.Error.requestUnavailable }
         @Dependency(\.date) var date
 
         do {
@@ -41,14 +41,14 @@ extension Identity.Authentication.Client {
             )
           else {
             logger.warning("Login attempt failed: Invalid credentials for email: \(email)")
-            throw Abort(.unauthorized, reason: "Invalid credentials")
+            throw Identity.Backend.Error.invalidCredentials
           }
 
           let identity = authData.identity
 
           guard identity.emailVerificationStatus == .verified else {
             logger.warning("Login attempt failed: Email not verified for: \(email)")
-            throw Abort(.unauthorized, reason: "Email not verified")
+            throw Identity.Backend.Error.emailNotVerified
           }
 
           // MFA status already included in authData
@@ -99,9 +99,12 @@ extension Identity.Authentication.Client {
           // Re-throw MFA required - this is not an error, it's part of the flow
           logger.info("Re-throwing MFA required for propagation")
           throw mfaRequired
+        } catch let error as Identity.Backend.Error {
+          // Re-throw domain errors as-is
+          throw error
         } catch {
           logger.warning("Login attempt failed: \(error)")
-          throw Abort(.unauthorized, reason: "Invalid credentials")
+          throw Identity.Backend.Error.invalidCredentials
         }
       },
       apiKey: { apiKeyString in
@@ -110,7 +113,7 @@ extension Identity.Authentication.Client {
         @Dependency(\.date) var date
         @Dependency(\.tokenClient) var tokenClient
         @Dependency(\.defaultDatabase) var db
-        guard let request else { throw Abort.requestUnavailable }
+        guard let request else { throw Identity.Backend.Error.requestUnavailable }
 
         do {
           // Single transaction for API key authentication with JOIN
@@ -165,7 +168,7 @@ extension Identity.Authentication.Client {
                 "reason": "keyNotFound",
               ]
             )
-            throw Abort(.unauthorized, reason: "Invalid API key")
+            throw Identity.Backend.Error.invalidAPIKey
           }
 
           let identity = authData.identity
@@ -181,7 +184,7 @@ extension Identity.Authentication.Client {
                 }
                 .execute(db)
             }
-            throw Abort(.unauthorized, reason: "API key has expired")
+            throw Identity.Backend.Error.apiKeyExpired
           }
 
           let (accessToken, refreshToken) = try await tokenClient.generateTokenPair(
@@ -200,11 +203,19 @@ extension Identity.Authentication.Client {
           logger.notice("API key authentication successful for identity: \(identity.id)")
 
           return response
+        } catch let error as Identity.Backend.Error {
+          // Re-throw domain errors as-is
+          throw error
         } catch {
           logger.error(
-            "Unexpected error during api key verification: \(error.localizedDescription)"
+            "Unexpected error during api key verification",
+            metadata: [
+              "component": "Backend.Authenticate",
+              "operation": "apiKeyAuth",
+              "error": "\(error)",
+            ]
           )
-          throw Abort(.internalServerError, reason: "Unexpected error during api key verification")
+          throw Identity.Backend.Error.unexpected("API key verification failed")
         }
       }
     )

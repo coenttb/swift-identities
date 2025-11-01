@@ -10,7 +10,6 @@ import EmailAddress
 import IdentitiesTypes
 import Records
 import ServerFoundation
-import Vapor
 
 extension Identity.Email.Change.Client {
   package static func live(
@@ -30,7 +29,7 @@ extension Identity.Email.Change.Client {
       @Dependency(\.tokenClient) var tokenClient
       do {
         @Dependency(\.request) var request
-        guard let request else { throw Abort.requestUnavailable }
+        guard let request else { throw Identity.Backend.Error.requestUnavailable }
 
         // Check for reauthorization token in headers or cookies
         let token =
@@ -96,7 +95,7 @@ extension Identity.Email.Change.Client {
             .fetchOne(db)
 
           guard let token else {
-            throw Abort(.internalServerError, reason: "Failed to create verification token")
+            throw Identity.Backend.Error.failedToCreateToken(type: .emailChange)
           }
 
           // Use UPSERT to handle multiple change requests gracefully

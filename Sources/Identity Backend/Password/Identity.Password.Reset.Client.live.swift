@@ -10,7 +10,6 @@ import EmailAddress
 import IdentitiesTypes
 import Records
 import ServerFoundation
-import Vapor
 
 extension Identity.Password.Reset.Client {
   package static func live(
@@ -80,7 +79,7 @@ extension Identity.Password.Reset.Client {
             .fetchOne(db)
 
           guard let value = token?.value else {
-            throw Abort(.internalServerError, reason: "Failed to create password reset token")
+            throw Identity.Backend.Error.failedToCreateToken(type: .passwordReset)
           }
 
           return value

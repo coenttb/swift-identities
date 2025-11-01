@@ -8,7 +8,6 @@
 import Dependencies
 import Foundation
 import IdentitiesTypes
-import Vapor
 
 extension Identity.MFA.BackupCodes.Client {
   package static func live(
@@ -24,7 +23,7 @@ extension Identity.MFA.BackupCodes.Client {
         logger.debug("Backup codes regeneration initiated")
 
         // Get current identity (requires authentication)
-        guard let request else { throw Abort.requestUnavailable }
+        guard let request else { throw Identity.Backend.Error.requestUnavailable }
         guard let identity = request.auth.get(Identity.Record.self) else {
           logger.error("Not authenticated for backup code regeneration")
           throw Identity.Authentication.Error.notAuthenticated
@@ -165,7 +164,7 @@ extension Identity.MFA.BackupCodes.Client {
         logger.debug("Fetching remaining backup codes count")
 
         // Get current identity (requires authentication)
-        guard let request else { throw Abort.requestUnavailable }
+        guard let request else { throw Identity.Backend.Error.requestUnavailable }
         guard let identity = request.auth.get(Identity.Record.self) else {
           logger.error("Not authenticated for backup code count")
           throw Identity.Authentication.Error.notAuthenticated

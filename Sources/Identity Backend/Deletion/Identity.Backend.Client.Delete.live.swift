@@ -9,7 +9,6 @@ import Dependencies
 import EmailAddress
 import IdentitiesTypes
 import ServerFoundation
-import Vapor
 
 extension Identity.Deletion.Client {
   package static func live(
@@ -30,7 +29,7 @@ extension Identity.Deletion.Client {
 
         // Verify token belongs to this identity
         guard reauthorizationToken.identityId == identity.id else {
-          throw Abort(.unauthorized, reason: "Invalid reauthorization token")
+          throw Identity.Backend.Error.invalidReauthorizationToken
         }
 
         // Single transaction for all deletion operations
@@ -43,7 +42,7 @@ extension Identity.Deletion.Client {
 
           if let existingDeletion = existingDeletion {
             if existingDeletion.status == .pending {
-              throw Abort(.badRequest, reason: "User is already pending deletion")
+              throw Identity.Backend.Error.alreadyPendingDeletion
             } else if existingDeletion.status == .cancelled {
               // Reactivate the cancelled deletion
               @Dependency(\.date) var date
@@ -123,7 +122,7 @@ extension Identity.Deletion.Client {
               .fetchOne(db),
             deletion.status == .pending
           else {
-            throw Abort(.badRequest, reason: "User is not pending deletion")
+            throw Identity.Backend.Error.notPendingDeletion
           }
 
           // Cancel the deletion request
@@ -160,20 +159,14 @@ extension Identity.Deletion.Client {
               .fetchOne(db),
             deletion.status == .pending
           else {
-            throw Abort(.badRequest, reason: "User is not pending deletion")
+            throw Identity.Backend.Error.notPendingDeletion
           }
 
           // Check grace period has expired
           let currentDate = date()
 
           guard currentDate >= deletion.scheduledFor else {
-            let remainingTime = deletion.scheduledFor.timeIntervalSince(currentDate)
-            let secondsPerDay = TimeInterval(24 * 60 * 60)
-            let remainingDays = Int(ceil(remainingTime / secondsPerDay))
-            throw Abort(
-              .badRequest,
-              reason: "Grace period has not yet expired. \(remainingDays) days remaining."
-            )
+            throw Identity.Backend.Error.deletionGracePeriodNotExpired
           }
 
           // Confirm the deletion

@@ -20,7 +20,7 @@ extension Identity.Authentication.Token.Client {
       access: { token in
         @Dependency(\.logger) var logger
         @Dependency(\.request) var request
-        guard let request else { throw Abort.requestUnavailable }
+        guard let request else { throw Identity.Backend.Error.requestUnavailable }
         @Dependency(\.tokenClient) var tokenClient
         @Dependency(\.date) var date
         @Dependency(\.defaultDatabase) var db
@@ -43,15 +43,15 @@ extension Identity.Authentication.Token.Client {
                 .where({ $0.id.eq(payload.identityId) })
                 .fetchOne(db)
             else {
-              throw Abort(.unauthorized, reason: "Identity not found")
+              throw Identity.Backend.Error.identityNotFound(identifier: .id(payload.identityId))
             }
 
             guard identity.email == payload.email else {
-              throw Abort(.unauthorized, reason: "Identity details have changed")
+              throw Identity.Backend.Error.identityDetailsChanged
             }
 
             guard identity.sessionVersion == payload.sessionVersion else {
-              throw Abort(.unauthorized, reason: "Session has been invalidated")
+              throw Identity.Backend.Error.sessionInvalidated
             }
 
             // Update last login in same transaction
@@ -86,13 +86,13 @@ extension Identity.Authentication.Token.Client {
               "error": "\(error)",
             ]
           )
-          throw Abort(.unauthorized, reason: "Invalid access token")
+          throw Identity.Backend.Error.invalidToken(type: .access)
         }
       },
       refresh: { token in
         @Dependency(\.logger) var logger
         @Dependency(\.request) var request
-        guard let request else { throw Abort.requestUnavailable }
+        guard let request else { throw Identity.Backend.Error.requestUnavailable }
         @Dependency(\.tokenClient) var tokenClient
         @Dependency(\.defaultDatabase) var db
 
@@ -106,11 +106,11 @@ extension Identity.Authentication.Token.Client {
                 .where({ $0.id.eq(payload.identityId) })
                 .fetchOne(db)
             else {
-              throw Abort(.unauthorized, reason: "Identity not found")
+              throw Identity.Backend.Error.identityNotFound(identifier: .id(payload.identityId))
             }
 
             guard identity.sessionVersion == payload.sessionVersion else {
-              throw Abort(.unauthorized, reason: "Token has been revoked")
+              throw Identity.Backend.Error.tokenRevoked
             }
 
             return identity
@@ -147,7 +147,7 @@ extension Identity.Authentication.Token.Client {
               "error": "\(error)",
             ]
           )
-          throw Abort(.unauthorized, reason: "Invalid refresh token")
+          throw Identity.Backend.Error.invalidToken(type: .refresh)
         }
       }
     )

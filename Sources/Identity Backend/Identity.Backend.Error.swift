@@ -82,6 +82,9 @@ extension Identity.Backend {
     /// Request context is unavailable
     case requestUnavailable
 
+    /// Configuration error
+    case configurationError(String)
+
     /// Unexpected error occurred
     case unexpected(String)
 
@@ -156,6 +159,8 @@ extension Identity.Backend.Error: CustomStringConvertible {
       return "Failed to create \(type.rawValue) token"
     case .requestUnavailable:
       return "Request context unavailable"
+    case .configurationError(let message):
+      return "Configuration error: \(message)"
     case .unexpected(let message):
       return "Unexpected error: \(message)"
     }

@@ -41,9 +41,8 @@ extension Identity.Backend {
           "environment": "production",
         ]
       )
-      throw Abort(
-        .internalServerError,
-        reason: "IDENTITIES_ENCRYPTION_KEY environment variable is required in production"
+      throw Identity.Backend.Error.configurationError(
+        "IDENTITIES_ENCRYPTION_KEY environment variable is required in production"
       )
     }
 
