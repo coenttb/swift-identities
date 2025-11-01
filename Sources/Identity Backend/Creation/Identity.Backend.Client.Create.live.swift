@@ -10,7 +10,6 @@ import EmailAddress
 import IdentitiesTypes
 import Records
 import ServerFoundation
-import Vapor
 
 @Selection
 struct EmailVerificationData: Sendable {
@@ -38,12 +37,10 @@ extension Identity.Creation.Client {
           @Dependency(\.uuid) var uuid
           @Dependency(\.date) var date
           @Dependency(\.envVars) var envVars
-          @Dependency(\.application) var application
+          @Dependency(\.passwordHasher) var passwordHasher
           @Dependency(\.defaultDatabase) var db
 
-          let passwordHash: String = try await application.threadPool.runIfActive {
-            try Bcrypt.hash(password, cost: envVars.bcryptCost)
-          }
+          let passwordHash = try await passwordHasher.hash(password, envVars.bcryptCost)
 
           // Single transaction for EVERYTHING
           let (identity, tokenValue) = try await db.write { db in

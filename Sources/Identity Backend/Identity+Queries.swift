@@ -2,7 +2,6 @@ import Dependencies
 import EmailAddress
 import Foundation
 import Records
-import Vapor
 
 // MARK: - Optimized Database Operations
 
@@ -18,7 +17,6 @@ extension Identity.Record {
   ) async throws -> Identity.Record? {
     @Dependency(\.defaultDatabase) var db
     @Dependency(\.date) var date
-    @Dependency(\.application) var application
 
     // Single query to get identity
     let identity = try await db.read { db in
@@ -29,12 +27,8 @@ extension Identity.Record {
 
     guard let identity else { return nil }
 
-    // Verify password (CPU-bound, not I/O)
-    let isValid = try await application.threadPool.runIfActive {
-      try Bcrypt.verify(password, created: identity.passwordHash)
-    }
-
-    guard isValid else { return nil }
+    // Verify password
+    guard try await identity.verifyPassword(password) else { return nil }
 
     // Update last login in single write
     let now = date()

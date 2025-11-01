@@ -3,7 +3,6 @@ import EmailAddress
 import EnvironmentVariables
 import Foundation
 import Records
-import Vapor
 
 extension Identity {
   @Table("identities")
@@ -54,22 +53,15 @@ extension EmailAddress: @retroactive QueryBindable {}
 extension Identity.Record {
   package mutating func setPassword(_ password: String) async throws {
     @Dependency(\.envVars) var envVars
-    @Dependency(\.application) var application
+    @Dependency(\.passwordHasher) var passwordHasher
 
-    let passwordHash: String = try await application.threadPool.runIfActive {
-      try Bcrypt.hash(password, cost: envVars.bcryptCost)
-    }
-
-    self.passwordHash = passwordHash
+    self.passwordHash = try await passwordHasher.hash(password, envVars.bcryptCost)
     self.updatedAt = Date()
   }
 
   package func verifyPassword(_ password: String) async throws -> Bool {
-    @Dependency(\.application) var application
-
-    return try await application.threadPool.runIfActive {
-      try Bcrypt.verify(password, created: self.passwordHash)
-    }
+    @Dependency(\.passwordHasher) var passwordHasher
+    return try await passwordHasher.verify(password, self.passwordHash)
   }
 }
 

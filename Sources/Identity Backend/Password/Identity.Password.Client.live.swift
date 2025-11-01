@@ -10,7 +10,6 @@ import EmailAddress
 import IdentitiesTypes
 import Records
 import ServerFoundation
-import Vapor
 
 extension Identity.Password.Client {
   package static func live(

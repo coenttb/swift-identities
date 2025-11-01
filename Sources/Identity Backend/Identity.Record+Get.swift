@@ -11,7 +11,6 @@ import Foundation
 import IdentitiesTypes
 import Records
 import ServerFoundationVapor
-import Vapor
 
 extension Identity.Record {
   public enum Get {
@@ -91,11 +90,14 @@ extension Identity.Record {
     email: EmailAddress,
     password: String,
     emailVerificationStatus: Identity.Record.EmailVerificationStatus = .unverified
-  ) throws {
+  ) async throws {
+    @Dependency(\.passwordHasher) var passwordHasher
+    @Dependency(\.envVars) var envVars
+
     self.init(
       id: id,
       email: email,
-      passwordHash: try Bcrypt.hash(password),
+      passwordHash: try await passwordHasher.hash(password, envVars.bcryptCost),
       emailVerificationStatus: emailVerificationStatus
     )
   }

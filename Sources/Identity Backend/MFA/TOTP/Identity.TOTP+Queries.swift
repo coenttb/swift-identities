@@ -4,7 +4,6 @@ import Foundation
 import RFC_6238
 import Records
 import TOTP
-import Vapor
 
 // MARK: - Helper Functions
 

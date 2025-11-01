@@ -11,7 +11,6 @@ import EmailAddress
 import Foundation
 import Logging
 import Records
-import Vapor
 
 extension Identity.Backend {
   /// Returns a configured Migrator with all Identity migrations registered.
@@ -259,6 +258,8 @@ extension Identity.Backend {
         async throws
       {
         @Dependency(\.logger) var logger
+        @Dependency(\.passwordHasher) var passwordHasher
+        @Dependency(\.envVars) var envVars
 
         let testEmail: EmailAddress = try! .init("test@test.com")
         let testPassword = "test"
@@ -270,7 +271,7 @@ extension Identity.Backend {
 
         if existingUser == nil {
           // Hash the password
-          let passwordHash = try Bcrypt.hash(testPassword)
+          let passwordHash = try await passwordHasher.hash(testPassword, envVars.bcryptCost)
 
           try await Identity.Record.insert {
             Identity.Record.Draft(

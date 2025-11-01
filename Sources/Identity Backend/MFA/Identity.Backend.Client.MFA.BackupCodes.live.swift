@@ -60,9 +60,11 @@ extension Identity.MFA.BackupCodes.Client {
 
           // Create new codes
           for code in codes {
+            let codeHash = try await Identity.MFA.BackupCodes.Record.hashCode(code)
+
             let backupCode = Identity.MFA.BackupCodes.Record.Draft(
               identityId: identity.id,
-              codeHash: try Identity.MFA.BackupCodes.Record.hashCode(code)
+              codeHash: codeHash
             )
 
             try await Identity.MFA.BackupCodes.Record

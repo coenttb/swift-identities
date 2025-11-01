@@ -10,7 +10,6 @@ import EmailAddress
 import IdentitiesTypes
 import Records
 import ServerFoundation
-import Vapor
 
 extension Identity.Password.Change.Client {
   package static func live(
@@ -32,12 +31,10 @@ extension Identity.Password.Change.Client {
         @Dependency(\.defaultDatabase) var db
         @Dependency(\.date) var date
         @Dependency(\.envVars) var envVars
-        @Dependency(\.application) var application
+        @Dependency(\.passwordHasher) var passwordHasher
 
         // Hash the new password
-        let passwordHash: String = try await application.threadPool.runIfActive {
-          try Bcrypt.hash(newPassword, cost: envVars.bcryptCost)
-        }
+        let passwordHash = try await passwordHasher.hash(newPassword, envVars.bcryptCost)
 
         // Update password and increment session version atomically
         try await db.write { db in

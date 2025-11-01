@@ -10,7 +10,6 @@ import EmailAddress
 import IdentitiesTypes
 import Records
 import ServerFoundation
-import Vapor
 
 extension Identity.Password.Reset.Client {
   package static func live(
@@ -131,11 +130,9 @@ extension Identity.Password.Reset.Client {
 
             // Hash the new password
             @Dependency(\.envVars) var envVars
-            @Dependency(\.application) var application
+            @Dependency(\.passwordHasher) var passwordHasher
 
-            let passwordHash: String = try await application.threadPool.runIfActive {
-              try Bcrypt.hash(newPassword, cost: envVars.bcryptCost)
-            }
+            let passwordHash = try await passwordHasher.hash(newPassword, envVars.bcryptCost)
 
             // Update password and increment session version atomically
             try await Identity.Record

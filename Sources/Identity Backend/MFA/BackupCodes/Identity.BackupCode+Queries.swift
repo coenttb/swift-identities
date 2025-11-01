@@ -2,7 +2,6 @@ import Crypto
 import Dependencies
 import Foundation
 import Records
-import Vapor
 
 // MARK: - Database Operations
 
@@ -21,18 +20,18 @@ extension Identity.MFA.BackupCodes.Record {
 
 extension Identity.MFA.BackupCodes.Record {
   /// Hash a backup code for storage
-  package static func hashCode(_ code: String) throws -> String {
-    // Use Bcrypt like passwords for secure hashing
-    return try Bcrypt.hash(code)
+  package static func hashCode(_ code: String) async throws -> String {
+    @Dependency(\.passwordHasher) var passwordHasher
+    @Dependency(\.envVars) var envVars
+
+    // Use password hasher like passwords for secure hashing
+    return try await passwordHasher.hash(code, envVars.bcryptCost)
   }
 
   /// Verify a code against its hash
   package static func verifyCode(_ code: String, hash: String) async throws -> Bool {
-    @Dependency(\.application) var application
-
-    return try await application.threadPool.runIfActive {
-      try Bcrypt.verify(code, created: hash)
-    }
+    @Dependency(\.passwordHasher) var passwordHasher
+    return try await passwordHasher.verify(code, hash)
   }
 
   /// Generate a random backup code

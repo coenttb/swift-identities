@@ -252,19 +252,19 @@ extension Identity.MFA.TOTP.Client {
             .where { $0.identityId.eq(identityId) }
             .execute(db)
 
-          // Hash codes once before storing
-          let hashedCodes = try codes.map { try Identity.MFA.BackupCodes.Record.hashCode($0) }
+          // Hash codes and insert one by one
+          for code in codes {
+            let codeHash = try await Identity.MFA.BackupCodes.Record.hashCode(code)
 
-          try await Identity.MFA.BackupCodes.Record
-            .insert {
-              for codeHash in hashedCodes {
+            try await Identity.MFA.BackupCodes.Record
+              .insert {
                 Identity.MFA.BackupCodes.Record.Draft(
                   identityId: identityId,
                   codeHash: codeHash
                 )
               }
-            }
-            .execute(db)
+              .execute(db)
+          }
         }
 
         return codes

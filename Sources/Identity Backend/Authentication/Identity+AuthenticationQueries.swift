@@ -2,7 +2,6 @@ import Dependencies
 import EmailAddress
 import Foundation
 import Records
-import Vapor
 
 // MARK: - Selection Types for Combined Queries
 
@@ -107,12 +106,12 @@ extension Identity.Record {
   {
     @Dependency(\.defaultDatabase) var db
     @Dependency(\.date) var date
-    @Dependency(\.application) var application
+    @Dependency(\.passwordHasher) var passwordHasher
 
     // Get identity with TOTP status using optimized single query
     let authData = try await findForAuthentication(email: email)
 
-    // SECURITY: Always run bcrypt even if email doesn't exist
+    // SECURITY: Always run password verification even if email doesn't exist
     // This prevents timing attacks that could enumerate valid emails
     if let authData {
       // Real password verification
@@ -120,16 +119,12 @@ extension Identity.Record {
         return nil
       }
     } else {
-      // Dummy bcrypt verification with same cost to match timing
+      // Dummy password verification with same cost to match timing
       // Use a known-invalid hash to ensure verification fails
-      @Dependency(\.envVars) var envVars
-      let _ = try await application.threadPool.runIfActive {
-        // This will always fail but takes the same time as a real verification
-        try? Bcrypt.verify(
-          password,
-          created: "$2b$10$invalidHashThatWillNeverMatchAnythingEverXXXXXXXXXXXXXXXXXXXXXX"
-        )
-      }
+      let _ = try? await passwordHasher.verify(
+        password,
+        "$2b$10$invalidHashThatWillNeverMatchAnythingEverXXXXXXXXXXXXXXXXXXXXXX"
+      )
       return nil
     }
 
@@ -254,7 +249,7 @@ extension Identity.MFA.BackupCodes.Record {
     @Dependency(\.date) var date
 
     // Hash the code to compare with stored hash
-    let codeHash = try Identity.MFA.BackupCodes.Record.hashCode(code)
+    let codeHash = try await Identity.MFA.BackupCodes.Record.hashCode(code)
 
     // Atomic check-and-update within a single transaction
     return try await db.write { db in
