@@ -10,6 +10,7 @@ import EmailAddress
 import IdentitiesTypes
 import Records
 import ServerFoundation
+import Vapor
 
 @Selection
 struct EmailVerificationData: Sendable {

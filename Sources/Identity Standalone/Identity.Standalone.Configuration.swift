@@ -17,7 +17,10 @@ import URLRouting
 extension Identity.Standalone {
   /// Standalone configuration that includes both Frontend and Backend configurations
   /// This is the central configuration point that orchestrates both
-  public struct Configuration: Sendable {
+  ///
+  /// Note: Uses `@unchecked Sendable` because the `router` property is type-erased (`any URLRouting.Router`).
+  /// All closure properties are marked `@Sendable` and the struct is intended for concurrent use after initialization.
+  public struct Configuration: @unchecked Sendable {
     /// Frontend configuration
     public var baseURL: URL
     public var router: any URLRouting.Router<Identity.Route>
@@ -78,13 +81,14 @@ extension Identity.Standalone {
           else { return "User" }
           return accessToken.displayName
         }
+      nonisolated(unsafe) let unsafeRouter = router
       self.canonicalHref =
         canonicalHref ?? { view in
-          router.url(for: .view(view))
+          unsafeRouter.url(for: .view(view))
         }
       self.hreflang =
         hreflang ?? { view, _ in
-          router.url(for: .view(view))
+          unsafeRouter.url(for: .view(view))
         }
       self.email = email
       self.tokenEnrichment = tokenEnrichment

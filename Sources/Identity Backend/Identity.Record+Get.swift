@@ -11,6 +11,7 @@ import Foundation
 import IdentitiesTypes
 import Records
 import ServerFoundationVapor
+import Vapor
 
 extension Identity.Record {
   public enum Get {

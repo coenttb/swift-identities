@@ -15,35 +15,13 @@ extension Identity.Authentication.ApiKey {
     public let id: Identity.Authentication.ApiKey.Record.ID
     package var name: String
     package var key: String
-    package var scopes: String  // Store as JSON string, maps to jsonb column in PostgreSQL
+    package var scopes: [String]  // Maps to TEXT[] column in PostgreSQL
     package var identityId: Identity.ID
     package var isActive: Bool = true
     package var rateLimit: Int = 1000
     package var validUntil: Date
     package var createdAt: Date = Date()
     package var lastUsedAt: Date?
-
-    // Computed property for working with scopes as array
-    package var scopesArray: [String] {
-      get {
-        guard !scopes.isEmpty,
-          let data = scopes.data(using: .utf8),
-          let array = try? JSONDecoder().decode([String].self, from: data)
-        else {
-          return []
-        }
-        return array
-      }
-      set {
-        if let data = try? JSONEncoder().encode(newValue),
-          let string = String(data: data, encoding: .utf8)
-        {
-          scopes = string
-        } else {
-          scopes = "[]"
-        }
-      }
-    }
 
     package init(
       id: Identity.Authentication.ApiKey.Record.ID,
@@ -60,13 +38,7 @@ extension Identity.Authentication.ApiKey {
       self.id = id
       self.name = name
       self.key = key
-      if let data = try? JSONEncoder().encode(scopes),
-        let string = String(data: data, encoding: .utf8)
-      {
-        self.scopes = string
-      } else {
-        self.scopes = "[]"
-      }
+      self.scopes = scopes
       self.identityId = identityId
       self.isActive = isActive
       self.rateLimit = rateLimit
@@ -89,13 +61,7 @@ extension Identity.Authentication.ApiKey {
       self.name = name
       self.identityId = identityId
       self.key = Self.generateKey()
-      if let data = try? JSONEncoder().encode(scopes),
-        let string = String(data: data, encoding: .utf8)
-      {
-        self.scopes = string
-      } else {
-        self.scopes = "[]"
-      }
+      self.scopes = scopes
       self.isActive = true
       self.rateLimit = rateLimit
       self.validUntil = validUntil ?? date().addingTimeInterval(365 * 24 * 3600)  // Default 1 year
@@ -161,15 +127,15 @@ extension Identity.Authentication.ApiKey.Record {
   }
 
   package func hasScope(_ scope: String) -> Bool {
-    scopesArray.contains(scope)
+    scopes.contains(scope)
   }
 
   package func hasAnyScope(_ scopes: [String]) -> Bool {
-    !Set(self.scopesArray).isDisjoint(with: Set(scopes))
+    !Set(self.scopes).isDisjoint(with: Set(scopes))
   }
 
   package func hasAllScopes(_ scopes: [String]) -> Bool {
-    Set(scopes).isSubset(of: Set(self.scopesArray))
+    Set(scopes).isSubset(of: Set(self.scopes))
   }
 
   package mutating func markAsUsed() {

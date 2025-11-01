@@ -131,6 +131,7 @@ extension Identity.MFA.TOTP.Record {
     case invalidSecret
     case alreadyExists
     case encryptionKeyMissing
+    case encryptionFailed
     case invalidFormat
     case decryptionFailed
   }

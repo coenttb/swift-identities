@@ -10,6 +10,7 @@ import EmailAddress
 import IdentitiesTypes
 import Records
 import ServerFoundation
+import Vapor
 
 extension Identity.Password.Reset.Client {
   package static func live(
