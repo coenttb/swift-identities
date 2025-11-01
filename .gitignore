@@ -37,6 +37,15 @@ Thumbs.db
 .claude
 CLAUDE.MD
 
+# Documentation (opt-in for top-level .md files only)
+/*.md
+!README.md
+!LICENSE.md
+!CHANGELOG.md
+!CONTRIBUTING.md
+!CODE_OF_CONDUCT.md
+!SECURITY.md
+
 # Temporary files
 *.tmp
 *.temp
