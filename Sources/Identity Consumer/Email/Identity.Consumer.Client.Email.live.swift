@@ -14,32 +14,32 @@ import ServerFoundationVapor
 import Throttling
 
 extension Identity.Email.Change.Client {
-  public static func live(
-    makeRequest: @escaping @Sendable (_ route: Identity.Email.Change.API) throws -> URLRequest
-  ) -> Self {
-    @Dependency(URLRequest.Handler.Identity.self) var handleRequest
+    public static func live(
+        makeRequest: @escaping @Sendable (_ route: Identity.Email.Change.API) throws -> URLRequest
+    ) -> Self {
+        @Dependency(URLRequest.Handler.Identity.self) var handleRequest
 
-    return Identity.Email.Change.Client(
-      request: { newEmail in
-        do {
-          return try await handleRequest(
-            for: makeRequest(.request(.init(newEmail: newEmail))),
-            decodingTo: Identity.Email.Change.Request.Result.self
-          )
-        } catch {
-          throw Abort(.unauthorized)
-        }
-      },
-      confirm: { token in
-        do {
-          return try await handleRequest(
-            for: makeRequest(.confirm(.init(token: token))),
-            decodingTo: Identity.Email.Change.Confirmation.Response.self
-          )
-        } catch {
-          throw Abort(.internalServerError)
-        }
-      }
-    )
-  }
+        return Identity.Email.Change.Client(
+            request: { newEmail in
+                do {
+                    return try await handleRequest(
+                        for: makeRequest(.request(.init(newEmail: newEmail))),
+                        decodingTo: Identity.Email.Change.Request.Result.self
+                    )
+                } catch {
+                    throw Abort(.unauthorized)
+                }
+            },
+            confirm: { token in
+                do {
+                    return try await handleRequest(
+                        for: makeRequest(.confirm(.init(token: token))),
+                        decodingTo: Identity.Email.Change.Confirmation.Response.self
+                    )
+                } catch {
+                    throw Abort(.internalServerError)
+                }
+            }
+        )
+    }
 }

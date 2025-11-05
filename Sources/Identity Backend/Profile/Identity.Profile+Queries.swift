@@ -13,9 +13,9 @@ import Records
 
 extension Identity.Profile.Record {
 
-  // REMOVED: Async init that auto-saves to database
-  // REMOVED: getByIdentity() - Use explicit queries at call sites
-  // REMOVED: getOrCreate() - Use UPSERT pattern instead
-  // REMOVED: updateDisplayName() - Make DB updates explicit at call sites
+    // REMOVED: Async init that auto-saves to database
+    // REMOVED: getByIdentity() - Use explicit queries at call sites
+    // REMOVED: getOrCreate() - Use UPSERT pattern instead
+    // REMOVED: updateDisplayName() - Make DB updates explicit at call sites
 
 }

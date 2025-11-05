@@ -11,25 +11,25 @@ import JWT
 import ServerFoundationVapor
 
 extension Identity.Consumer {
-  public struct CredentialsAuthenticator: AsyncBasicAuthenticator {
+    public struct CredentialsAuthenticator: AsyncBasicAuthenticator {
 
-    public init() {}
+        public init() {}
 
-    public func authenticate(
-      basic: BasicAuthorization,
-      for request: Request
-    ) async throws {
-      try await withDependencies {
-        $0.request = request
-      } operation: {
-        @Dependency(\.identity) var identity
-        _ = try await identity.authenticate.client.credentials(
-          .init(
-            email: try .init(basic.username),
-            password: basic.password
-          )
-        )
-      }
+        public func authenticate(
+            basic: BasicAuthorization,
+            for request: Request
+        ) async throws {
+            try await withDependencies {
+                $0.request = request
+            } operation: {
+                @Dependency(\.identity) var identity
+                _ = try await identity.authenticate.client.credentials(
+                    .init(
+                        email: try .init(basic.username),
+                        password: basic.password
+                    )
+                )
+            }
+        }
     }
-  }
 }

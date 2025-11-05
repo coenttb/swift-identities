@@ -9,18 +9,18 @@ import IdentitiesTypes
 import ServerFoundationVapor
 
 extension Identity.Standalone {
-  /// Middleware configuration for standalone identity management.
-  ///
-  /// This provides authentication and authorization middleware for standalone deployments.
-  /// Note: Credentials authentication is handled at the route level, not in middleware.
-  public struct Middleware {
-    /// Token authenticator for JWT-based authentication
-    public let tokenAuthenticator: TokenAuthenticator
+    /// Middleware configuration for standalone identity management.
+    ///
+    /// This provides authentication and authorization middleware for standalone deployments.
+    /// Note: Credentials authentication is handled at the route level, not in middleware.
+    public struct Middleware {
+        /// Token authenticator for JWT-based authentication
+        public let tokenAuthenticator: TokenAuthenticator
 
-    public init(
-      tokenAuthenticator: TokenAuthenticator = .init()
-    ) {
-      self.tokenAuthenticator = tokenAuthenticator
+        public init(
+            tokenAuthenticator: TokenAuthenticator = .init()
+        ) {
+            self.tokenAuthenticator = tokenAuthenticator
+        }
     }
-  }
 }

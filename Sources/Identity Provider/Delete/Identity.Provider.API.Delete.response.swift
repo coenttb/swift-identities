@@ -10,38 +10,38 @@ import IdentitiesTypes
 import ServerFoundationVapor
 
 extension Identity.Deletion.API {
-  package static func providerResponse(
-    delete: Identity.Deletion.API
-  ) async throws -> Response {
+    package static func providerResponse(
+        delete: Identity.Deletion.API
+    ) async throws -> Response {
 
-    @Dependency(\.identity) var identity
+        @Dependency(\.identity) var identity
 
-    switch delete {
-    case .request(let request):
-      if request.reauthToken.isEmpty {
-        throw Abort(.unauthorized, reason: "Invalid token")
-      }
+        switch delete {
+        case .request(let request):
+            if request.reauthToken.isEmpty {
+                throw Abort(.unauthorized, reason: "Invalid token")
+            }
 
-      do {
-        try await identity.delete.request(request)
-        return Response.success(true)
-      } catch {
-        throw Abort(.internalServerError, reason: "Failed to delete")
-      }
-    case .cancel:
-      do {
-        try await identity.delete.cancel()
-        return Response.success(true)
-      } catch {
-        throw Abort(.internalServerError, reason: "Failed to delete")
-      }
-    case .confirm:
-      do {
-        try await identity.delete.confirm()
-        return Response.success(true)
-      } catch {
-        throw Abort(.internalServerError, reason: "Failed to confirm deletion")
-      }
+            do {
+                try await identity.delete.request(request)
+                return Response.success(true)
+            } catch {
+                throw Abort(.internalServerError, reason: "Failed to delete")
+            }
+        case .cancel:
+            do {
+                try await identity.delete.cancel()
+                return Response.success(true)
+            } catch {
+                throw Abort(.internalServerError, reason: "Failed to delete")
+            }
+        case .confirm:
+            do {
+                try await identity.delete.confirm()
+                return Response.success(true)
+            } catch {
+                throw Abort(.internalServerError, reason: "Failed to confirm deletion")
+            }
+        }
     }
-  }
 }

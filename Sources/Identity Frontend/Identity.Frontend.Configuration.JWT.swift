@@ -12,5 +12,5 @@ import URLRouting
 
 /// Cookie presets for Standalone identity systems
 extension Identity.Frontend.Configuration {
-  public typealias JWT = Identity.Token.Client.Configuration
+    public typealias JWT = Identity.Token.Client.Configuration
 }

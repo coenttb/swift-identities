@@ -13,20 +13,20 @@ import Vapor
 // MARK: - Response Handler
 
 extension Identity.Logout {
-  /// Handles the logout process.
-  public static func response(
-    client: Identity.Logout.Client,
-    redirect: Identity.Frontend.Configuration.Redirect
-  ) async throws -> any AsyncResponseEncodable {
-    try? await client.current()
+    /// Handles the logout process.
+    public static func response(
+        client: Identity.Logout.Client,
+        redirect: Identity.Frontend.Configuration.Redirect
+    ) async throws -> any AsyncResponseEncodable {
+        try? await client.current()
 
-    @Dependency(\.request) var request
-    guard let request else { throw Abort.requestUnavailable }
+        @Dependency(\.request) var request
+        guard let request else { throw Abort.requestUnavailable }
 
-    let response = try await request.redirect(to: redirect.logoutSuccess().absoluteString)
+        let response = try await request.redirect(to: redirect.logoutSuccess().absoluteString)
 
-    response.expire(cookies: .identity)
+        response.expire(cookies: .identity)
 
-    return response
-  }
+        return response
+    }
 }

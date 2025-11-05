@@ -9,38 +9,38 @@ import Foundation
 import ServerFoundationVapor
 
 extension HTTPCookies {
-  public var accessToken: HTTPCookies.Value? {
-    get {
-      self["access_token"]
+    public var accessToken: HTTPCookies.Value? {
+        get {
+            self["access_token"]
+        }
+        set {
+            self["access_token"] = newValue
+        }
     }
-    set {
-      self["access_token"] = newValue
-    }
-  }
 
-  public var refreshToken: HTTPCookies.Value? {
-    get {
-      self["refresh_token"]
+    public var refreshToken: HTTPCookies.Value? {
+        get {
+            self["refresh_token"]
+        }
+        set {
+            self["refresh_token"] = newValue
+        }
     }
-    set {
-      self["refresh_token"] = newValue
-    }
-  }
 
-  public var reauthorizationToken: HTTPCookies.Value? {
-    get {
-      self["reauthorization_token"]
+    public var reauthorizationToken: HTTPCookies.Value? {
+        get {
+            self["reauthorization_token"]
+        }
+        set {
+            self["reauthorization_token"] = newValue
+        }
     }
-    set {
-      self["reauthorization_token"] = newValue
-    }
-  }
 }
 
 extension [WritableKeyPath<HTTPCookies, HTTPCookies.Value?>] {
-  public static let identity: Self = [
-    \.accessToken,
-    \.refreshToken,
-    \.reauthorizationToken,
-  ]
+    public static let identity: Self = [
+        \.accessToken,
+        \.refreshToken,
+        \.reauthorizationToken,
+    ]
 }

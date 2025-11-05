@@ -5,45 +5,45 @@ import Foundation
 import Records
 
 extension Identity {
-  @Table("identities")
-  public struct Record: Codable, Equatable, Identifiable, Sendable {
-    public let id: Identity.ID
-    @Column("email")
-    package var email: EmailAddress
-    package var passwordHash: String
-    package var emailVerificationStatus: EmailVerificationStatus = .unverified
-    package var sessionVersion: Int = 0
-    package var createdAt: Date = Date()
-    package var updatedAt: Date = Date()
-    package var lastLoginAt: Date?
+    @Table("identities")
+    public struct Record: Codable, Equatable, Identifiable, Sendable {
+        public let id: Identity.ID
+        @Column("email")
+        package var email: EmailAddress
+        package var passwordHash: String
+        package var emailVerificationStatus: EmailVerificationStatus = .unverified
+        package var sessionVersion: Int = 0
+        package var createdAt: Date = Date()
+        package var updatedAt: Date = Date()
+        package var lastLoginAt: Date?
 
-    public enum EmailVerificationStatus: String, Codable, QueryBindable, Sendable {
-      case unverified
-      case pending
-      case verified
-      case failed
-    }
+        public enum EmailVerificationStatus: String, Codable, QueryBindable, Sendable {
+            case unverified
+            case pending
+            case verified
+            case failed
+        }
 
-    package init(
-      id: Identity.ID,
-      email: EmailAddress,
-      passwordHash: String,
-      emailVerificationStatus: EmailVerificationStatus = .unverified,
-      sessionVersion: Int = 0,
-      createdAt: Date = Date(),
-      updatedAt: Date = Date(),
-      lastLoginAt: Date? = nil
-    ) {
-      self.id = id
-      self.email = email
-      self.passwordHash = passwordHash
-      self.emailVerificationStatus = emailVerificationStatus
-      self.sessionVersion = sessionVersion
-      self.createdAt = createdAt
-      self.updatedAt = updatedAt
-      self.lastLoginAt = lastLoginAt
+        package init(
+            id: Identity.ID,
+            email: EmailAddress,
+            passwordHash: String,
+            emailVerificationStatus: EmailVerificationStatus = .unverified,
+            sessionVersion: Int = 0,
+            createdAt: Date = Date(),
+            updatedAt: Date = Date(),
+            lastLoginAt: Date? = nil
+        ) {
+            self.id = id
+            self.email = email
+            self.passwordHash = passwordHash
+            self.emailVerificationStatus = emailVerificationStatus
+            self.sessionVersion = sessionVersion
+            self.createdAt = createdAt
+            self.updatedAt = updatedAt
+            self.lastLoginAt = lastLoginAt
+        }
     }
-  }
 }
 
 extension EmailAddress: @retroactive QueryBindable {}
@@ -51,84 +51,85 @@ extension EmailAddress: @retroactive QueryBindable {}
 // MARK: - Password Management
 
 extension Identity.Record {
-  package mutating func setPassword(_ password: String) async throws {
-    @Dependency(\.envVars) var envVars
-    @Dependency(\.passwordHasher) var passwordHasher
+    package mutating func setPassword(_ password: String) async throws {
+        @Dependency(\.envVars) var envVars
+        @Dependency(\.passwordHasher) var passwordHasher
 
-    self.passwordHash = try await passwordHasher.hash(password, envVars.bcryptCost)
-    self.updatedAt = Date()
-  }
+        self.passwordHash = try await passwordHasher.hash(password, envVars.bcryptCost)
+        self.updatedAt = Date()
+    }
 
-  package func verifyPassword(_ password: String) async throws -> Bool {
-    @Dependency(\.passwordHasher) var passwordHasher
-    return try await passwordHasher.verify(password, self.passwordHash)
-  }
+    package func verifyPassword(_ password: String) async throws -> Bool {
+        @Dependency(\.passwordHasher) var passwordHasher
+        return try await passwordHasher.verify(password, self.passwordHash)
+    }
 }
 
 // MARK: - Query Helpers
 
 extension Identity.Record {
-  package static var verified: Where<Identity.Record> {
-    Self.where { $0.emailVerificationStatus.eq(EmailVerificationStatus.verified) }
-  }
+    package static var verified: Where<Identity.Record> {
+        Self.where { $0.emailVerificationStatus.eq(EmailVerificationStatus.verified) }
+    }
 
-  package static var unverified: Where<Identity.Record> {
-    Self.where { $0.emailVerificationStatus.eq(EmailVerificationStatus.unverified) }
-  }
+    package static var unverified: Where<Identity.Record> {
+        Self.where { $0.emailVerificationStatus.eq(EmailVerificationStatus.unverified) }
+    }
 
-  package static var pending: Where<Identity.Record> {
-    Self.where { $0.emailVerificationStatus.eq(EmailVerificationStatus.pending) }
-  }
+    package static var pending: Where<Identity.Record> {
+        Self.where { $0.emailVerificationStatus.eq(EmailVerificationStatus.pending) }
+    }
 }
 
 extension Identity.Record {
 
-  /// Check multiple emails exist in a single optimized query
-  ///
-  /// Uses PostgreSQL IN clause to check all emails in one database roundtrip.
-  ///
-  /// - Parameter emails: List of email addresses to check
-  /// - Returns: Dictionary mapping each email to its existence status
-  ///
-  /// - Performance: O(1) database query regardless of number of emails
-  /// - Complexity: Single query: `SELECT email FROM identities WHERE email IN (...)`
-  package static func emailsExist(_ emails: [EmailAddress]) async throws -> [EmailAddress: Bool] {
-    @Dependency(\.defaultDatabase) var db
+    /// Check multiple emails exist in a single optimized query
+    ///
+    /// Uses PostgreSQL IN clause to check all emails in one database roundtrip.
+    ///
+    /// - Parameter emails: List of email addresses to check
+    /// - Returns: Dictionary mapping each email to its existence status
+    ///
+    /// - Performance: O(1) database query regardless of number of emails
+    /// - Complexity: Single query: `SELECT email FROM identities WHERE email IN (...)`
+    package static func emailsExist(_ emails: [EmailAddress]) async throws -> [EmailAddress: Bool] {
+        @Dependency(\.defaultDatabase) var db
 
-    guard !emails.isEmpty else { return [:] }
+        guard !emails.isEmpty else { return [:] }
 
-    // Single query using IN clause - fetches all matching emails at once
-    let existingEmailStrings = try await db.read { db in
-      try await Identity.Record
-        .where { $0.email.in(emails) }
-        .select { $0.email }
-        .fetchAll(db)
-        .map { $0.rawValue }
+        // Single query using IN clause - fetches all matching emails at once
+        let existingEmailStrings = try await db.read { db in
+            try await Identity.Record
+                .where { $0.email.in(emails) }
+                .select { $0.email }
+                .fetchAll(db)
+                .map { $0.rawValue }
+        }
+
+        let existingSet = Set(existingEmailStrings)
+
+        // Build result dictionary
+        var result: [EmailAddress: Bool] = [:]
+        for email in emails {
+            result[email] = existingSet.contains(email.rawValue)
+        }
+
+        return result
     }
-
-    let existingSet = Set(existingEmailStrings)
-
-    // Build result dictionary
-    var result: [EmailAddress: Bool] = [:]
-    for email in emails {
-      result[email] = existingSet.contains(email.rawValue)
-    }
-
-    return result
-  }
 }
 
 extension Identity.Record {
-  package static func update(from identity: Identity.Record) -> (inout Updates<Identity.Record>) ->
-    Void
-  {
-    return { updates in
-      updates.email = identity.email
-      updates.passwordHash = identity.passwordHash
-      updates.emailVerificationStatus = identity.emailVerificationStatus
-      updates.sessionVersion = identity.sessionVersion
-      updates.updatedAt = identity.updatedAt
-      updates.lastLoginAt = identity.lastLoginAt
+    package static func update(from identity: Identity.Record) -> (inout Updates<Identity.Record>)
+        ->
+        Void
+    {
+        return { updates in
+            updates.email = identity.email
+            updates.passwordHash = identity.passwordHash
+            updates.emailVerificationStatus = identity.emailVerificationStatus
+            updates.sessionVersion = identity.sessionVersion
+            updates.updatedAt = identity.updatedAt
+            updates.lastLoginAt = identity.lastLoginAt
+        }
     }
-  }
 }

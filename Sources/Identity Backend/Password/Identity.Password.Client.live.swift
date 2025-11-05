@@ -12,22 +12,24 @@ import Records
 import ServerFoundation
 
 extension Identity.Password.Client {
-  package static func live(
-    sendPasswordResetEmail: @escaping @Sendable (_ email: EmailAddress, _ token: String)
-      async throws -> Void,
-    sendPasswordChangeNotification: @escaping @Sendable (_ email: EmailAddress) async throws -> Void
-  ) -> Self {
-    @Dependency(\.logger) var logger
-    @Dependency(\.passwordValidation.validate) var validatePassword
+    package static func live(
+        sendPasswordResetEmail:
+            @escaping @Sendable (_ email: EmailAddress, _ token: String)
+            async throws -> Void,
+        sendPasswordChangeNotification:
+            @escaping @Sendable (_ email: EmailAddress) async throws -> Void
+    ) -> Self {
+        @Dependency(\.logger) var logger
+        @Dependency(\.passwordValidation.validate) var validatePassword
 
-    return .init(
-      reset: .live(
-        sendPasswordResetEmail: sendPasswordResetEmail,
-        sendPasswordChangeNotification: sendPasswordChangeNotification
-      ),
-      change: .live(
-        sendPasswordChangeNotification: sendPasswordChangeNotification
-      )
-    )
-  }
+        return .init(
+            reset: .live(
+                sendPasswordResetEmail: sendPasswordResetEmail,
+                sendPasswordChangeNotification: sendPasswordChangeNotification
+            ),
+            change: .live(
+                sendPasswordChangeNotification: sendPasswordChangeNotification
+            )
+        )
+    }
 }

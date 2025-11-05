@@ -14,30 +14,30 @@ import ServerFoundationVapor
 import Throttling
 
 extension Identity.Creation.Client {
-  public static func live(
-    makeRequest: @escaping @Sendable (_ route: Identity.Creation.API) throws -> URLRequest
-  ) -> Self {
-    @Dependency(URLRequest.Handler.Identity.self) var handleRequest
+    public static func live(
+        makeRequest: @escaping @Sendable (_ route: Identity.Creation.API) throws -> URLRequest
+    ) -> Self {
+        @Dependency(URLRequest.Handler.Identity.self) var handleRequest
 
-    return .init(
-      request: { email, password in
-        do {
-          try await handleRequest(
-            for: makeRequest(.request(.init(email: email, password: password)))
-          )
-        } catch {
-          throw Abort(.internalServerError)
-        }
-      },
-      verify: { email, token in
-        do {
-          try await handleRequest(
-            for: makeRequest(.verify(.init(token: token, email: email)))
-          )
-        } catch {
-          throw Abort(.internalServerError)
-        }
-      }
-    )
-  }
+        return .init(
+            request: { email, password in
+                do {
+                    try await handleRequest(
+                        for: makeRequest(.request(.init(email: email, password: password)))
+                    )
+                } catch {
+                    throw Abort(.internalServerError)
+                }
+            },
+            verify: { email, token in
+                do {
+                    try await handleRequest(
+                        for: makeRequest(.verify(.init(token: token, email: email)))
+                    )
+                } catch {
+                    throw Abort(.internalServerError)
+                }
+            }
+        )
+    }
 }

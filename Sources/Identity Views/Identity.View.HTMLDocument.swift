@@ -5,13 +5,13 @@
 //  Created by Coen ten Thije Boonkkamp on 16/08/2024.
 //
 
-import IdentitiesTypes
-import Identity_Shared
-import ServerFoundation
 import HTML
 import HTMLTheme
 import HTMLWebsite
+import IdentitiesTypes
+import Identity_Shared
 import Language
+import ServerFoundation
 
 extension Identity.View {
     public struct HTMLDocument<
@@ -21,30 +21,30 @@ extension Identity.View {
         let title: (Identity.View) -> String
         let description: (Identity.View) -> String
         let _body: Body
-//        let favicons: Favicons
+        //        let favicons: Favicons
         let canonicalHref: (Identity.View) -> URL?
         let hreflang: (Identity.View, Language) -> URL
         let footer_links: [(TranslatedString, URL)]
-        
+
         @Dependency(\.language) var language
         @Dependency(\.languages) var languages
         @Dependency(\.theme.branding.primary) var themeColor
-        
+
         package init(
             view: Identity.View,
             title: @escaping (Identity.View) -> String,
             description: @escaping (Identity.View) -> String,
-//            favicons: Favicons,
+            //            favicons: Favicons,
             canonicalHref: @escaping (Identity.View) -> URL?,
             hreflang: @escaping (Identity.View, Language) -> URL,
             footer_links: [(TranslatedString, URL)],
-            @HTMLBuilder body: () async throws  -> Body
+            @HTMLBuilder body: () async throws -> Body
         ) async throws {
             self.view = view
             self.title = title
             self.description = description
             self._body = try await body()
-//            self.favicons = favicons
+            //            self.favicons = favicons
             self.canonicalHref = canonicalHref
             self.hreflang = hreflang
             self.footer_links = footer_links
@@ -52,16 +52,16 @@ extension Identity.View {
 
         public var head: some HTML {
             meta(charset: .utf8)()
-            
+
             BaseStyles()
-            
+
             if let canonicalHref = canonicalHref(view) {
                 link(
                     href: .init(canonicalHref.absoluteString),
                     rel: .canonical
                 )()
             }
-            
+
             HTMLForEach(self.languages.filter { $0 != language }) { lx in
                 link(
                     href: .init(hreflang(view, lx).absoluteString),
@@ -69,37 +69,39 @@ extension Identity.View {
                     rel: .alternate,
                 )()
             }
-            
+
             meta(
                 name: .themeColor,
                 content: .init(themeColor.light.description),
                 media: "(prefers-color-scheme: light)"
             )()
-            
+
             meta(
                 name: .themeColor,
                 content: .init(themeColor.dark.description),
                 media: "(prefers-color-scheme: dark)"
             )()
-            
+
             meta(
                 name: .viewport,
                 content: "width=device-width, initial-scale=1.0, viewport-fit=cover"
             )()
-            
-            Style {"""
 
-            body, html {
-                background: \(HTMLColor.theme.background.primary.light.description);
-            }
+            Style {
+                """
 
-            @media (prefers-color-scheme: dark) {
                 body, html {
-                    background: \(HTMLColor.theme.background.primary.dark.description);
+                    background: \(HTMLColor.theme.background.primary.light.description);
                 }
-            }
 
-            """}
+                @media (prefers-color-scheme: dark) {
+                    body, html {
+                        background: \(HTMLColor.theme.background.primary.dark.description);
+                    }
+                }
+
+                """
+            }
         }
 
         public var body: some HTML {

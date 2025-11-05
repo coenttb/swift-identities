@@ -11,27 +11,27 @@ import HTMLWebsite
 import IdentitiesTypes
 
 extension Identity.View {
-  public struct Logo: HTML, Sendable {
-    let logo: any HTML & Sendable
-    let href: URL
+    public struct Logo: HTML, Sendable {
+        let logo: any HTML & Sendable
+        let href: URL
 
-    public init(
-      logo: any HTML & Sendable,
-      href: URL
-    ) {
-      self.logo = logo
-      self.href = href
-    }
-
-    public var body: some HTML {
-      VStack {
-        Link(href: .init(href.relativePath)) {
-          AnyHTML(logo)
+        public init(
+            logo: any HTML & Sendable,
+            href: URL
+        ) {
+            self.logo = logo
+            self.href = href
         }
-        .linkColor(.text.primary)
-        .display(.inlineBlock)
-        .margin(horizontal: .auto)
-      }
+
+        public var body: some HTML {
+            VStack {
+                Link(href: .init(href.relativePath)) {
+                    AnyHTML(logo)
+                }
+                .linkColor(.text.primary)
+                .display(.inlineBlock)
+                .margin(horizontal: .auto)
+            }
+        }
     }
-  }
 }

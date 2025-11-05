@@ -14,33 +14,35 @@ import ServerFoundationVapor
 import Throttling
 
 extension Identity.Deletion.Client {
-  public static func live(
-    makeRequest: @escaping @Sendable (_ route: Identity.Deletion.API) throws -> URLRequest
-  ) -> Self {
-    @Dependency(URLRequest.Handler.Identity.self) var handleRequest
+    public static func live(
+        makeRequest: @escaping @Sendable (_ route: Identity.Deletion.API) throws -> URLRequest
+    ) -> Self {
+        @Dependency(URLRequest.Handler.Identity.self) var handleRequest
 
-    return .init(
-      request: { reauthToken in
-        do {
-          try await handleRequest(for: makeRequest(.request(.init(reauthToken: reauthToken))))
-        } catch {
-          throw Abort(.unauthorized)
-        }
-      },
-      cancel: {
-        do {
-          try await handleRequest(for: makeRequest(.cancel))
-        } catch {
-          throw Abort(.unauthorized)
-        }
-      },
-      confirm: {
-        do {
-          try await handleRequest(for: makeRequest(.confirm))
-        } catch {
-          throw Abort(.unauthorized)
-        }
-      }
-    )
-  }
+        return .init(
+            request: { reauthToken in
+                do {
+                    try await handleRequest(
+                        for: makeRequest(.request(.init(reauthToken: reauthToken)))
+                    )
+                } catch {
+                    throw Abort(.unauthorized)
+                }
+            },
+            cancel: {
+                do {
+                    try await handleRequest(for: makeRequest(.cancel))
+                } catch {
+                    throw Abort(.unauthorized)
+                }
+            },
+            confirm: {
+                do {
+                    try await handleRequest(for: makeRequest(.confirm))
+                } catch {
+                    throw Abort(.unauthorized)
+                }
+            }
+        )
+    }
 }

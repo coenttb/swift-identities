@@ -6,6 +6,6 @@ import Records
 
 extension Identity.Authentication.ApiKey.Record {
 
-  // REMOVED: Async init that auto-saves to database
-  // Create API keys inline within transactions for proper atomicity
+    // REMOVED: Async init that auto-saves to database
+    // Create API keys inline within transactions for proper atomicity
 }

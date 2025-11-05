@@ -6,9 +6,9 @@
 //  by extracting it from its own configuration
 //
 
+import Dependencies
 import Identity_Backend
 import Identity_Shared
-import Dependencies
 import URLRouting
 
 extension Identity.Backend.Configuration: DependencyKey {
@@ -21,8 +21,8 @@ extension Identity.Backend.Configuration: DependencyKey {
             router: configuration.router.authentication.eraseToAnyParserPrinter(),
             email: configuration.email,
             tokenEnrichment: configuration.tokenEnrichment,
-//            mfa: configuration.mfa,
-//            oauth: configuration.oauth
+            //            mfa: configuration.mfa,
+            //            oauth: configuration.oauth
         )
     }
 }
