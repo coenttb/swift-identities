@@ -51,7 +51,7 @@ extension Target.Dependency {
 }
 
 let package = Package(
-    name: "swift-identities",
+    name: "swift-authentication",
     platforms: [
         .macOS(.v26),
         .iOS(.v26)
