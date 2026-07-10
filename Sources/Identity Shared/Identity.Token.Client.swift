@@ -1,19 +1,17 @@
 import Crypto
 import Dependencies
-import DependenciesMacros
 import Foundation
 import JWT
 import ServerFoundation
 
 extension Identity.Token {
     /// Client for managing JWT tokens with support for both old and new formats
-    @DependencyClient
+    @Witness
     public struct Client: @unchecked Sendable {
 
         // MARK: - Access Token Operations
 
         /// Generate an access token
-        @DependencyEndpoint
         public var generateAccess:
             (
                 _ identityId: Identity.ID,
@@ -22,13 +20,11 @@ extension Identity.Token {
             ) async throws -> String
 
         /// Parse and verify an access token
-        @DependencyEndpoint
         public var verifyAccess: (_ token: String) async throws -> Identity.Token.Access
 
         // MARK: - Refresh Token Operations
 
         /// Generate a refresh token
-        @DependencyEndpoint
         public var generateRefresh:
             (
                 _ identityId: Identity.ID,
@@ -36,11 +32,9 @@ extension Identity.Token {
             ) async throws -> String
 
         /// Parse and verify a refresh token
-        @DependencyEndpoint
         public var verifyRefresh: (_ token: String) async throws -> Identity.Token.Refresh
 
         /// Refresh an access token using a refresh token
-        @DependencyEndpoint
         public var refreshAccess:
             (
                 _ refreshToken: String,
@@ -52,7 +46,6 @@ extension Identity.Token {
         // MARK: - MFA Session Token Operations
 
         /// Generate an MFA session token
-        @DependencyEndpoint
         public var generateMFASession:
             (
                 _ identityId: Identity.ID,
@@ -62,13 +55,11 @@ extension Identity.Token {
             ) async throws -> String
 
         /// Parse and verify an MFA session token
-        @DependencyEndpoint
         public var verifyMFASession: (_ token: String) async throws -> Identity.MFA.Challenge.Token
 
         // MARK: - Reauthorization Token Operations
 
         /// Generate a reauthorization token
-        @DependencyEndpoint
         public var generateReauthorization:
             (
                 _ identityId: Identity.ID,
@@ -78,14 +69,12 @@ extension Identity.Token {
             ) async throws -> String
 
         /// Parse and verify a reauthorization token
-        @DependencyEndpoint
         public var verifyReauthorization:
             (_ token: String) async throws -> Identity.Token.Reauthorization
 
         // MARK: - Token Pair Operations
 
         /// Generate both access and refresh tokens
-        @DependencyEndpoint
         public var generateTokenPair:
             (
                 _ identityId: Identity.ID,
@@ -96,11 +85,9 @@ extension Identity.Token {
         // MARK: - Generic Token Operations
 
         /// Verify any token and return its type
-        @DependencyEndpoint
         public var identifyTokenType: (_ token: String) async throws -> TokenType
 
         /// Check if a token is expired without full verification
-        @DependencyEndpoint
         public var isExpired: (_ token: String) async throws -> Bool
 
         public enum TokenType: String, Sendable {
@@ -332,7 +319,7 @@ extension Identity.Token.Client {
 
 // MARK: - Test Implementation
 
-extension Identity.Token.Client: TestDependencyKey {
+extension Identity.Token.Client: Dependency.Key.Test {
     public static var testValue: Self {
         Self.live(
             configuration: .init(
@@ -346,7 +333,7 @@ extension Identity.Token.Client: TestDependencyKey {
 
 // MARK: - Dependency Values
 
-extension DependencyValues {
+extension Dependency.Values {
     public var tokenClient: Identity.Token.Client {
         get { self[Identity.Token.Client.self] }
         set { self[Identity.Token.Client.self] = newValue }

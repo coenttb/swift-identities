@@ -1,4 +1,4 @@
-// swift-tools-version:6.1
+// swift-tools-version: 6.3.1
 
 import Foundation
 import PackageDescription
@@ -33,29 +33,42 @@ extension Target.Dependency {
             condition: .when(traits: ["Vapor"])
         )
     }
-    static var html: Self { .product(name: "HTML", package: "swift-html") }
-    static var htmlEmail: Self { .product(name: "HTMLEmail", package: "swift-html") }
-    static var htmlMarkdown: Self { .product(name: "HTMLMarkdown", package: "swift-html") }
-    static var htmlWebsite: Self { .product(name: "HTMLWebsite", package: "swift-html") }
-    static var records: Self { .product(name: "Records", package: "swift-records") }
-    static var totp: Self { .product(name: "TOTP", package: "swift-one-time-password") }
-    static var dependenciesTestSupport: Self { .product(name: "DependenciesTestSupport", package: "swift-dependencies") }
+    static var totp: Self { .product(name: "TOTP", package: "swift-time-based-one-time-password") }
+    static var dependenciesTestSupport: Self { .product(name: "Dependencies Test Support", package: "swift-dependencies") }
+
+    // BLOCKED (institute-transfer wave): the following institute equivalents exist on disk but
+    // their consuming targets cannot yet build against institute-only packages. See notes below.
+    //
+    // swift-html (institute) vends a single consolidated `HTML` module — the coenttb submodule
+    // products HTMLEmail / HTMLMarkdown / HTMLWebsite / HTMLTheme / HTMLCSSPointFreeHTML DO NOT
+    // exist in the institute package, and there is no institute `Language` /
+    // `PointFreeHTMLTranslating` module. This blocks Identity Views/Frontend/Consumer/Standalone
+    // and (via HTMLEmail) Identity Backend/Provider.
+    //
+    // static var html: Self { .product(name: "HTML", package: "swift-html") }
+    // static var records: Self { .product(name: "Records", package: "swift-records") }
+    // static var recordsTestSupport: Self { .product(name: "RecordsTestSupport", package: "swift-records") }
 }
 
 let package = Package(
     name: "swift-identities",
     platforms: [
-        .macOS(.v14),
-        .iOS(.v17)
+        .macOS(.v26),
+        .iOS(.v26)
     ],
     products: [
-        .library(name: .identityProvider, targets: [.identityProvider]),
-        .library(name: .identityConsumer, targets: [.identityConsumer]),
-        .library(name: .identityStandalone, targets: [.identityStandalone]),
+        // ACTIVE (buildable against institute-only packages this wave):
         .library(name: .identityShared, targets: [.identityShared]),
-        .library(name: .identityViews, targets: [.identityViews]),
-        .library(name: .identityBackend, targets: [.identityBackend]),
-        .library(name: .identityFrontend, targets: [.identityFrontend])
+
+        // BLOCKED this wave — depend on missing institute HTML submodules / `Language` module.
+        // Re-enable once swift-html vends HTMLEmail/HTMLWebsite/HTMLMarkdown/HTMLTheme and a
+        // `Language` module lands in the institute ecosystem.
+        // .library(name: .identityProvider, targets: [.identityProvider]),
+        // .library(name: .identityConsumer, targets: [.identityConsumer]),
+        // .library(name: .identityStandalone, targets: [.identityStandalone]),
+        // .library(name: .identityViews, targets: [.identityViews]),
+        // .library(name: .identityBackend, targets: [.identityBackend]),
+        // .library(name: .identityFrontend, targets: [.identityFrontend])
     ],
     traits: [
         .trait(
@@ -69,20 +82,20 @@ let package = Package(
         ),
     ],
     dependencies: [
-        .package(url: "https://github.com/coenttb/swift-server-foundation", from: "0.0.1"),
-        .package(url: "https://github.com/coenttb/swift-server-foundation-vapor", from: "0.0.1"),
-        .package(url: "https://github.com/coenttb/swift-records", from: "0.1.0"),
-        .package(
-            url: "https://github.com/coenttb/swift-structured-queries-postgres",
-            from: "0.0.1",
-            traits: ["StructuredQueriesPostgresTagged"]
-        ),
-        .package(url: "https://github.com/coenttb/swift-identities-types", from: "0.0.1"),
-        .package(url: "https://github.com/coenttb/swift-one-time-password", from: "0.0.1"),
-        .package(url: "https://github.com/pointfreeco/swift-dependencies", from: "1.9.2"),
-        .package(url: "https://github.com/coenttb/swift-html", from: "0.7.0"),
+        .package(url: "https://github.com/swift-foundations/swift-server-foundation.git", branch: "main"),
+        .package(url: "https://github.com/swift-foundations/swift-server-foundation-vapor.git", branch: "main"),
+        .package(url: "https://github.com/swift-foundations/swift-identities-types.git", branch: "main"),
+        .package(url: "https://github.com/swift-foundations/swift-time-based-one-time-password.git", branch: "main"),
+        .package(url: "https://github.com/swift-foundations/swift-dependencies.git", branch: "main"),
+
+        // BLOCKED this wave (institute equivalents exist on disk but only the blocked targets
+        // consume them; declared here for the follow-up wave that re-enables those targets):
+        // .package(url: "https://github.com/swift-foundations/swift-records.git", branch: "main"),
+        // .package(url: "https://github.com/swift-foundations/swift-structured-queries-postgres.git", branch: "main"),
+        // .package(url: "https://github.com/swift-foundations/swift-html.git", branch: "main"),
     ],
     targets: [
+        // ================= ACTIVE =================
         .target(
             name: .identityShared,
             dependencies: [
@@ -90,71 +103,6 @@ let package = Package(
                 .serverFoundation,
                 .serverFoundationVapor,
                 .totp
-            ]
-        ),
-        .target(
-            name: .identityViews,
-            dependencies: [
-                .identityShared,
-                .html,
-                .htmlEmail,
-                .htmlWebsite,
-                .htmlMarkdown,
-                .serverFoundation,
-                .serverFoundationVapor
-            ]
-        ),
-        .target(
-            name: .identityBackend,
-            dependencies: [
-                .identityShared,
-                .serverFoundation,
-                .serverFoundationVapor,
-                .records,
-                .htmlEmail
-            ]
-        ),
-        .target(
-            name: .identityFrontend,
-            dependencies: [
-                .identitiesTypes,
-                .identityShared,
-                .identityViews,
-                .serverFoundation,
-                .serverFoundationVapor
-            ]
-        ),
-        .target(
-            name: .identityConsumer,
-            dependencies: [
-                .identitiesTypes,
-                .identityShared,
-                .identityViews,
-                .identityFrontend,
-                .serverFoundation,
-                .serverFoundationVapor
-            ]
-        ),
-        .target(
-            name: .identityProvider,
-            dependencies: [
-                .identitiesTypes,
-                .identityShared,
-                .identityBackend,
-                .serverFoundation,
-                .serverFoundationVapor
-            ]
-        ),
-        .target(
-            name: .identityStandalone,
-            dependencies: [
-                .identitiesTypes,
-                .identityShared,
-                .identityBackend,
-                .identityViews,
-                .identityFrontend,
-                .serverFoundation,
-                .serverFoundationVapor
             ]
         ),
         .testTarget(
@@ -165,66 +113,105 @@ let package = Package(
                 .dependenciesTestSupport
             ]
         ),
-        .testTarget(
-            name: .identityViews.tests,
-            dependencies: [
-                .identityViews,
-                .identityShared,
-                .identitiesTypes,
-                .dependenciesTestSupport
-            ]
-        ),
-        .testTarget(
-            name: .identityBackend.tests,
-            dependencies: [
-                .identityBackend,
-                .identitiesTypes,
-                .dependenciesTestSupport,
-                .product(name: "RecordsTestSupport", package: "swift-records")
-            ]
-        ),
-        .testTarget(
-            name: .identityFrontend.tests,
-            dependencies: [
-                .identityFrontend,
-                .identityShared,
-                .identitiesTypes,
-                .dependenciesTestSupport
-            ]
-        ),
-        .testTarget(
-            name: .identityConsumer.tests,
-            dependencies: [
-                .identityConsumer,
-                .identityShared,
-                .identityFrontend,
-                .identitiesTypes,
-                .dependenciesTestSupport
-            ]
-        ),
-        .testTarget(
-            name: .identityProvider.tests,
-            dependencies: [
-                .identityProvider,
-                .identityShared,
-                .identityBackend,
-                .identitiesTypes,
-                .dependenciesTestSupport,
-                .product(name: "RecordsTestSupport", package: "swift-records")
-            ]
-        ),
-        .testTarget(
-            name: .identityStandalone.tests,
-            dependencies: [
-                .identityStandalone,
-                .identityShared,
-                .identityBackend,
-                .identityFrontend,
-                .identitiesTypes,
-                .dependenciesTestSupport,
-                .product(name: "RecordsTestSupport", package: "swift-records")
-            ]
-        )
+
+        // ================= BLOCKED (institute-transfer wave) =================
+        // Every target below imports at least one module with no institute equivalent:
+        //   - HTMLWebsite / HTMLMarkdown / HTMLTheme / HTMLCSSPointFreeHTML / HTMLEmail
+        //     (institute swift-html vends only the consolidated `HTML` module)
+        //   - `Language` and `PointFreeHTMLTranslating` (no institute module on disk)
+        // Identity Backend/Provider additionally need HTMLEmail; Identity Backend/Standalone
+        // need Records (institute swift-records still carries coenttb/pointfree edges upstream).
+        // Re-enable target-by-target as the missing institute modules land.
+        //
+        // .target(
+        //     name: .identityViews,
+        //     dependencies: [
+        //         .identityShared,
+        //         .html,
+        //         .htmlEmail,
+        //         .htmlWebsite,
+        //         .htmlMarkdown,
+        //         .serverFoundation,
+        //         .serverFoundationVapor
+        //     ]
+        // ),
+        // .target(
+        //     name: .identityBackend,
+        //     dependencies: [
+        //         .identityShared,
+        //         .serverFoundation,
+        //         .serverFoundationVapor,
+        //         .records,
+        //         .htmlEmail
+        //     ]
+        // ),
+        // .target(
+        //     name: .identityFrontend,
+        //     dependencies: [
+        //         .identitiesTypes,
+        //         .identityShared,
+        //         .identityViews,
+        //         .serverFoundation,
+        //         .serverFoundationVapor
+        //     ]
+        // ),
+        // .target(
+        //     name: .identityConsumer,
+        //     dependencies: [
+        //         .identitiesTypes,
+        //         .identityShared,
+        //         .identityViews,
+        //         .identityFrontend,
+        //         .serverFoundation,
+        //         .serverFoundationVapor
+        //     ]
+        // ),
+        // .target(
+        //     name: .identityProvider,
+        //     dependencies: [
+        //         .identitiesTypes,
+        //         .identityShared,
+        //         .identityBackend,
+        //         .serverFoundation,
+        //         .serverFoundationVapor
+        //     ]
+        // ),
+        // .target(
+        //     name: .identityStandalone,
+        //     dependencies: [
+        //         .identitiesTypes,
+        //         .identityShared,
+        //         .identityBackend,
+        //         .identityViews,
+        //         .identityFrontend,
+        //         .serverFoundation,
+        //         .serverFoundationVapor
+        //     ]
+        // ),
+        // .testTarget(
+        //     name: .identityViews.tests,
+        //     dependencies: [.identityViews, .identityShared, .identitiesTypes, .dependenciesTestSupport]
+        // ),
+        // .testTarget(
+        //     name: .identityBackend.tests,
+        //     dependencies: [.identityBackend, .identitiesTypes, .dependenciesTestSupport, .recordsTestSupport]
+        // ),
+        // .testTarget(
+        //     name: .identityFrontend.tests,
+        //     dependencies: [.identityFrontend, .identityShared, .identitiesTypes, .dependenciesTestSupport]
+        // ),
+        // .testTarget(
+        //     name: .identityConsumer.tests,
+        //     dependencies: [.identityConsumer, .identityShared, .identityFrontend, .identitiesTypes, .dependenciesTestSupport]
+        // ),
+        // .testTarget(
+        //     name: .identityProvider.tests,
+        //     dependencies: [.identityProvider, .identityShared, .identityBackend, .identitiesTypes, .dependenciesTestSupport, .recordsTestSupport]
+        // ),
+        // .testTarget(
+        //     name: .identityStandalone.tests,
+        //     dependencies: [.identityStandalone, .identityShared, .identityBackend, .identityFrontend, .identitiesTypes, .dependenciesTestSupport, .recordsTestSupport]
+        // )
     ],
     swiftLanguageModes: [.v6]
 )

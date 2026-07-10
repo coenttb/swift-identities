@@ -1,5 +1,5 @@
 import Dependencies
-import DependenciesTestSupport
+import Dependencies_Test_Support
 import EmailAddress
 import Foundation
 import Identity_Shared
