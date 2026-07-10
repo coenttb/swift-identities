@@ -1,8 +1,8 @@
 import Dependencies
 import EmailAddress
-import EnvironmentVariables
 import Foundation
 import Records
+import ServerFoundationEnvVars
 
 extension Identity {
     @Table("identities")
