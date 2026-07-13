@@ -7,7 +7,6 @@
 
 import Foundation
 import IdentitiesTypes
-import TypesFoundation
 
 extension Identity.MFA.Email {
     /// Configuration for email-based multi-factor authentication

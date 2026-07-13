@@ -48,6 +48,10 @@ extension Target.Dependency {
     // static var html: Self { .product(name: "HTML", package: "swift-html") }
     // static var records: Self { .product(name: "Records", package: "swift-records") }
     // static var recordsTestSupport: Self { .product(name: "RecordsTestSupport", package: "swift-records") }
+    //
+    // Identity Backend's MFA configuration files use `Tagged` directly (re-pointed off the
+    // dissolving TypesFoundation umbrella, decomposition W2 2026-07-13); declare when re-enabled:
+    // static var tagged: Self { .product(name: "Tagged Primitives", package: "swift-tagged-primitives") }
 }
 
 let package = Package(
@@ -93,6 +97,7 @@ let package = Package(
         // .package(url: "https://github.com/swift-foundations/swift-records.git", branch: "main"),
         // .package(url: "https://github.com/swift-foundations/swift-structured-queries-postgres.git", branch: "main"),
         // .package(url: "https://github.com/swift-foundations/swift-html.git", branch: "main"),
+        // .package(url: "https://github.com/swift-primitives/swift-tagged-primitives.git", branch: "main"),
     ],
     targets: [
         // ================= ACTIVE =================
@@ -142,7 +147,8 @@ let package = Package(
         //         .serverFoundation,
         //         .serverFoundationVapor,
         //         .records,
-        //         .htmlEmail
+        //         .htmlEmail,
+        //         .tagged
         //     ]
         // ),
         // .target(
