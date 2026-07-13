@@ -91,7 +91,7 @@ extension Identity.Token {
             additionalClaims: [String: Any] = [:]  // For Standalone to add displayName
         ) throws {
             // Create subject in format "id:email"
-            let subject = "\(identityId.uuidString):\(email.rawValue)"
+            let subject = "\(identityId.underlying.uuidString):\(email.rawValue)"
 
             var claims: [String: Any] = [
                 "sev": sessionVersion,

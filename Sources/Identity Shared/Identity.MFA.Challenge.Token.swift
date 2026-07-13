@@ -78,7 +78,7 @@ extension Identity.MFA.Challenge {
                 algorithm: .hmacSHA256,
                 key: signingKey,
                 issuer: issuer,
-                subject: identityId.uuidString,
+                subject: identityId.underlying.uuidString,
                 expiresIn: expiresIn,
                 jti: UUID().uuidString,
                 claims: claims

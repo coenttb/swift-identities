@@ -68,7 +68,7 @@ extension Identity.Token {
                 algorithm: .hmacSHA256,
                 key: signingKey,
                 issuer: issuer,
-                subject: identityId.uuidString,
+                subject: identityId.underlying.uuidString,
                 expiresIn: expiresIn,
                 jti: tokenId,
                 claims: [
