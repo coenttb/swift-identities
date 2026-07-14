@@ -208,7 +208,7 @@ extension Identity.Backend.Configuration {
 
 // MARK: - Test Configuration
 
-extension Identity.Backend.Configuration: TestDependencyKey {
+extension Identity.Backend.Configuration: Dependency.Key.Test {
     public static var testValue: Self {
         Self(
             jwt: .test(),

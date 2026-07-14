@@ -36,22 +36,19 @@ extension Target.Dependency {
     static var totp: Self { .product(name: "TOTP", package: "swift-time-based-one-time-password") }
     static var dependenciesTestSupport: Self { .product(name: "Dependencies Test Support", package: "swift-dependencies") }
 
-    // BLOCKED (institute-transfer wave): the following institute equivalents exist on disk but
-    // their consuming targets cannot yet build against institute-only packages. See notes below.
-    //
-    // swift-html (institute) vends a single consolidated `HTML` module — the coenttb submodule
-    // products HTMLEmail / HTMLMarkdown / HTMLWebsite / HTMLTheme / HTMLCSSPointFreeHTML DO NOT
-    // exist in the institute package, and there is no institute `Language` /
-    // `PointFreeHTMLTranslating` module. This blocks Identity Views/Frontend/Consumer/Standalone
-    // and (via HTMLEmail) Identity Backend/Provider.
-    //
-    // static var html: Self { .product(name: "HTML", package: "swift-html") }
-    // static var records: Self { .product(name: "Records", package: "swift-records") }
-    // static var recordsTestSupport: Self { .product(name: "RecordsTestSupport", package: "swift-records") }
-    //
+    static var records: Self { .product(name: "Records", package: "swift-records") }
     // Identity Backend's MFA configuration files use `Tagged` directly (re-pointed off the
-    // dissolving TypesFoundation umbrella, decomposition W2 2026-07-13); declare when re-enabled:
-    // static var tagged: Self { .product(name: "Tagged Primitives", package: "swift-tagged-primitives") }
+    // dissolving TypesFoundation umbrella, decomposition W2 2026-07-13):
+    static var tagged: Self { .product(name: "Tagged Primitives", package: "swift-tagged-primitives") }
+    // Needed by the still-red Frontend/Consumer/Standalone (declared ready for the HTML-tower arc;
+    // Language EXISTS: swift-translating/Package.swift:45):
+    static var language: Self { .product(name: "Language", package: "swift-translating") }
+
+    // Still-red presentation deps (HTML-tower arc re-enables; institute swift-html vends the
+    // consolidated `HTML` umbrella — the heritage HTMLEmail/HTMLWebsite/HTMLMarkdown/HTMLTheme/
+    // HTMLCSSPointFreeHTML submodules do not exist as institute products):
+    // static var html: Self { .product(name: "HTML", package: "swift-html") }
+    // static var recordsTestSupport: Self { .product(name: "RecordsTestSupport", package: "swift-records") }
 }
 
 let package = Package(
@@ -64,14 +61,15 @@ let package = Package(
         // ACTIVE (buildable against institute-only packages this wave):
         .library(name: .identityShared, targets: [.identityShared]),
 
-        // BLOCKED this wave — depend on missing institute HTML submodules / `Language` module.
-        // Re-enable once swift-html vends HTMLEmail/HTMLWebsite/HTMLMarkdown/HTMLTheme and a
-        // `Language` module lands in the institute ecosystem.
-        // .library(name: .identityProvider, targets: [.identityProvider]),
+        // Re-enabled by the identity-reuse arc (2026-07-14): server-side sign-up/login surface.
+        .library(name: .identityBackend, targets: [.identityBackend]),
+        .library(name: .identityProvider, targets: [.identityProvider]),
+
+        // DELIBERATELY still red — presentation stack, owned by the HTML-tower arc (sequenced
+        // after identity-reuse; see Workspace/handoffs/DECISIONS-pass2/identity-html.md §5-W5):
         // .library(name: .identityConsumer, targets: [.identityConsumer]),
         // .library(name: .identityStandalone, targets: [.identityStandalone]),
         // .library(name: .identityViews, targets: [.identityViews]),
-        // .library(name: .identityBackend, targets: [.identityBackend]),
         // .library(name: .identityFrontend, targets: [.identityFrontend])
     ],
     traits: [
@@ -92,12 +90,13 @@ let package = Package(
         .package(url: "https://github.com/swift-foundations/swift-time-based-one-time-password.git", branch: "main"),
         .package(url: "https://github.com/swift-foundations/swift-dependencies.git", branch: "main"),
 
-        // BLOCKED this wave (institute equivalents exist on disk but only the blocked targets
-        // consume them; declared here for the follow-up wave that re-enables those targets):
-        // .package(url: "https://github.com/swift-foundations/swift-records.git", branch: "main"),
+        .package(url: "https://github.com/swift-foundations/swift-records.git", branch: "main"),
+        .package(url: "https://github.com/swift-primitives/swift-tagged-primitives.git", branch: "main"),
+        .package(url: "https://github.com/swift-foundations/swift-translating.git", branch: "main"),
+
+        // Still-red targets' deps (HTML-tower arc re-enables):
         // .package(url: "https://github.com/swift-foundations/swift-structured-queries-postgres.git", branch: "main"),
         // .package(url: "https://github.com/swift-foundations/swift-html.git", branch: "main"),
-        // .package(url: "https://github.com/swift-primitives/swift-tagged-primitives.git", branch: "main"),
     ],
     targets: [
         // ================= ACTIVE =================
@@ -119,36 +118,42 @@ let package = Package(
             ]
         ),
 
-        // ================= BLOCKED (institute-transfer wave) =================
-        // Every target below imports at least one module with no institute equivalent:
-        //   - HTMLWebsite / HTMLMarkdown / HTMLTheme / HTMLCSSPointFreeHTML / HTMLEmail
-        //     (institute swift-html vends only the consolidated `HTML` module)
-        //   - `Language` and `PointFreeHTMLTranslating` (no institute module on disk)
-        // Identity Backend/Provider additionally need HTMLEmail; Identity Backend/Standalone
-        // need Records (institute swift-records still carries coenttb/pointfree edges upstream).
-        // Re-enable target-by-target as the missing institute modules land.
+        // ================= ACTIVE (identity-reuse arc, 2026-07-14) =================
+        .target(
+            name: .identityBackend,
+            dependencies: [
+                .identityShared,
+                .serverFoundation,
+                .serverFoundationVapor,
+                .records,
+                .tagged
+            ]
+        ),
+        .target(
+            name: .identityProvider,
+            dependencies: [
+                .identitiesTypes,
+                .identityShared,
+                .identityBackend,
+                .serverFoundation,
+                .serverFoundationVapor
+            ]
+        ),
+
+        // ================= DELIBERATELY RED (HTML-tower arc) =================
+        // The presentation stack is written against the retired protocol-era HTML surface
+        // (heritage submodules HTMLWebsite/HTMLMarkdown/HTMLTheme/HTMLCSSPointFreeHTML/
+        // PointFreeHTMLTranslating). The HTML-tower arc ports it onto the institute doctrine
+        // (`HTML.View`/`HTML.Document` + swift-webpage + the swift-html `Translating` trait);
+        // see Workspace/handoffs/DECISIONS-pass2/identity-html.md §1/§5-W5.
         //
         // .target(
         //     name: .identityViews,
         //     dependencies: [
         //         .identityShared,
         //         .html,
-        //         .htmlEmail,
-        //         .htmlWebsite,
-        //         .htmlMarkdown,
         //         .serverFoundation,
         //         .serverFoundationVapor
-        //     ]
-        // ),
-        // .target(
-        //     name: .identityBackend,
-        //     dependencies: [
-        //         .identityShared,
-        //         .serverFoundation,
-        //         .serverFoundationVapor,
-        //         .records,
-        //         .htmlEmail,
-        //         .tagged
         //     ]
         // ),
         // .target(
@@ -157,6 +162,7 @@ let package = Package(
         //         .identitiesTypes,
         //         .identityShared,
         //         .identityViews,
+        //         .language,
         //         .serverFoundation,
         //         .serverFoundationVapor
         //     ]
@@ -168,16 +174,7 @@ let package = Package(
         //         .identityShared,
         //         .identityViews,
         //         .identityFrontend,
-        //         .serverFoundation,
-        //         .serverFoundationVapor
-        //     ]
-        // ),
-        // .target(
-        //     name: .identityProvider,
-        //     dependencies: [
-        //         .identitiesTypes,
-        //         .identityShared,
-        //         .identityBackend,
+        //         .language,
         //         .serverFoundation,
         //         .serverFoundationVapor
         //     ]

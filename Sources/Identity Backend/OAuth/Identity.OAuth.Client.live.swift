@@ -15,13 +15,13 @@ import Records
 import ServerFoundation
 import ServerFoundationVapor
 
-extension Identity.OAuth.ProviderRegistry: DependencyKey {
+extension Identity.OAuth.ProviderRegistry: Dependency.Key {
     public static var liveValue: Identity.OAuth.ProviderRegistry {
         .init()
     }
 }
 
-extension Identity.OAuth.State.Manager: DependencyKey {
+extension Identity.OAuth.State.Manager: Dependency.Key {
     public static var liveValue: Identity.OAuth.State.Manager {
         .init()
     }

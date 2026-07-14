@@ -5,8 +5,6 @@
 //  Created by Coen ten Thije Boonkkamp on 10/10/2024.
 //
 
-import HTML
-import HTMLEmail
 import IdentitiesTypes
 import ServerFoundation
 

@@ -36,7 +36,7 @@
         }
     }
 
-    extension PasswordHasher: DependencyKey {
+    extension PasswordHasher: Dependency.Key {
         public static let liveValue: PasswordHasher = .vapor
     }
 #endif

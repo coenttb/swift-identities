@@ -6,14 +6,13 @@
 //
 
 import Dependencies
-import DependenciesMacros
 import Foundation
 
 /// Protocol for password hashing operations
 ///
 /// This abstraction allows the identity backend to work with different
 /// password hashing implementations without coupling to specific frameworks.
-@DependencyClient
+@Witness
 public struct PasswordHasher: Sendable {
     /// Hash a plaintext password
     ///
@@ -34,7 +33,7 @@ public struct PasswordHasher: Sendable {
     public var verify: @Sendable (_ password: String, _ hash: String) async throws -> Bool
 }
 
-extension PasswordHasher: TestDependencyKey {
+extension PasswordHasher: Dependency.Key.Test {
     public static let testValue = Self(
         hash: { password, cost in
             // Test implementation returns predictable hash
@@ -52,7 +51,7 @@ extension PasswordHasher: TestDependencyKey {
 
 // Fallback implementation when Vapor is not available
 #if !canImport(Vapor)
-    extension PasswordHasher: DependencyKey {
+    extension PasswordHasher: Dependency.Key {
         public static let liveValue: PasswordHasher = Self(
             hash: { password, cost in
                 // When Vapor is not available, you must provide your own implementation
@@ -80,7 +79,7 @@ extension PasswordHasher: TestDependencyKey {
     }
 #endif
 
-extension DependencyValues {
+extension Dependency.Values {
     public var passwordHasher: PasswordHasher {
         get { self[PasswordHasher.self] }
         set { self[PasswordHasher.self] = newValue }
