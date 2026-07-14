@@ -5,7 +5,6 @@
 //  Created by Coen ten Thije Boonkkamp on 29/01/2025.
 //
 
-import CasePaths
 import Foundation
 import IdentitiesTypes
 import ServerFoundation
@@ -15,8 +14,7 @@ extension Identity.Standalone {
     ///
     /// Includes all standard Identity.API endpoints plus profile management
     /// that is only available in Standalone deployments.
-    @CasePathable
-    @dynamicMemberLookup
+    @Cases
     public enum API: Equatable, Sendable {
 
         /// Profile management endpoints (Standalone only)
@@ -33,7 +31,7 @@ extension Identity.Standalone.API {
         public var body: some URLRouting.Router<Identity.Standalone.API> {
             OneOf {
                 // Profile routes (check first to avoid conflict with identity routes)
-                URLRouting.Route(.case(Identity.Standalone.API.profile)) {
+                URLRouting.Route(.case(Identity.Standalone.API.cases.profile)) {
                     Path { "profile" }
                     Identity.API.Profile.Router()
                 }

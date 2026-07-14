@@ -9,10 +9,10 @@
 import Dependencies
 import Identity_Frontend
 
-extension Identity.Frontend.Configuration: DependencyKey {
+extension Identity.Frontend.Configuration: Dependency.Key {
     /// In Standalone mode, Frontend configuration is extracted from Standalone configuration
     public static var liveValue: Self {
-        @Dependency(Identity.Standalone.Configuration.self) var configuration
+        @Dependency(\.identityStandaloneConfiguration) var configuration
         @Dependency(\.identity) var identity
 
         // Extract Frontend-specific fields from Standalone configuration

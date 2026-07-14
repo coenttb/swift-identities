@@ -15,7 +15,7 @@ import JWT
 import Records
 import ServerFoundation
 
-extension Identity.Token.Client: DependencyKey {
+extension Identity.Token.Client: Dependency.Key {
     /// Default JWT token client configuration for Standalone deployments.
     /// Enriches tokens with displayName when available.
     public static var liveValue: Self {
@@ -58,7 +58,7 @@ extension Identity.Token.Client {
             generateAccess: { identityId, email, sessionVersion in
                 // For Standalone, try to fetch the profile to add displayName
                 @Dependency(\.defaultDatabase) var database
-                @Dependency(Identity.Standalone.Configuration.self) var standaloneConfig
+                @Dependency(\.identityStandaloneConfiguration) var standaloneConfig
 
                 var additionalClaims: [String: Any] = [:]
 
@@ -143,7 +143,7 @@ extension Identity.Token.Client {
 
                 // For refresh, also try to add displayName and custom claims
                 @Dependency(\.defaultDatabase) var database
-                @Dependency(Identity.Standalone.Configuration.self) var standaloneConfig
+                @Dependency(\.identityStandaloneConfiguration) var standaloneConfig
 
                 var additionalClaims: [String: Any] = [:]
 
@@ -223,7 +223,7 @@ extension Identity.Token.Client {
             generateTokenPair: { identityId, email, sessionVersion in
                 // For token pairs, also try to add displayName and custom claims
                 @Dependency(\.defaultDatabase) var database
-                @Dependency(Identity.Standalone.Configuration.self) var standaloneConfig
+                @Dependency(\.identityStandaloneConfiguration) var standaloneConfig
 
                 var additionalClaims: [String: Any] = [:]
 

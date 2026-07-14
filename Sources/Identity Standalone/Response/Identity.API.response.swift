@@ -18,7 +18,7 @@ extension Identity.API {
         api: Identity.API,
     ) async throws -> any AsyncResponseEncodable {
 
-        @Dependency(Identity.Standalone.Configuration.self) var configuration
+        @Dependency(\.identityStandaloneConfiguration) var configuration
 
         @Dependency(\.identity) var identity
 
@@ -390,7 +390,7 @@ extension Identity.API {
                 )
 
                 @Dependency(\.request) var request
-                @Dependency(Identity.Standalone.Configuration.self) var configuration
+                @Dependency(\.identityStandaloneConfiguration) var configuration
 
                 // Check if this is a browser request (form submission)
                 let isFormSubmission =

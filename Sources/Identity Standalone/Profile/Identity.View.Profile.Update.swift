@@ -16,7 +16,7 @@ extension Identity.View {
 }
 
 extension Identity.View.Profile {
-    public struct Update: HTML {
+    public struct Update: HTML.View {
         let currentDisplayName: String?
         let email: EmailAddress
         let updateDisplayNameAction: URL
@@ -37,7 +37,7 @@ extension Identity.View.Profile {
         private static var pagemodule_profile_update_id: String { "pagemodule-profile-update" }
         private static var displayname_form_id: String { "form-update-displayname" }
 
-        public var body: some HTML {
+        public var body: some HTML.View {
             PageModule(theme: .authenticationFlow) {
                 VStack {
                     // Profile Information Section

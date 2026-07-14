@@ -21,7 +21,7 @@ extension Identity.View {
         view: Identity.View
     ) async throws -> any AsyncResponseEncodable {
 
-        @Dependency(Identity.Standalone.Configuration.self) var configuration
+        @Dependency(\.identityStandaloneConfiguration) var configuration
         @Dependency(\.identity) var identity
         @Dependency(\.identity.router) var router
         @Dependency(\.request) var request
@@ -142,7 +142,7 @@ extension Identity.View {
     private static func handleMFAView(
         mfa: Identity.MFA.View,
     ) async throws -> any AsyncResponseEncodable {
-        @Dependency(Identity.Standalone.Configuration.self) var configuration
+        @Dependency(\.identityStandaloneConfiguration) var configuration
         @Dependency(\.identity.router) var router
         @Dependency(\.identity) var identity
         @Dependency(\.request) var request
@@ -194,7 +194,7 @@ extension Identity.View {
                         }
 
                         p {
-                            HTMLText(
+                            HTML.Text(
                                 "Your two-factor authentication has been successfully enabled."
                             )
                         }
@@ -290,7 +290,7 @@ extension Identity.View {
                             .class("text-2xl font-bold mb-4")
 
                         p {
-                            HTMLText(
+                            HTML.Text(
                                 "Enhance your account security by enabling two-factor authentication."
                             )
                         }

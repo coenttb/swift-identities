@@ -11,10 +11,10 @@ import Identity_Backend
 import Identity_Shared
 import URLRouting
 
-extension Identity.Backend.Configuration: DependencyKey {
+extension Identity.Backend.Configuration: Dependency.Key {
     /// In Standalone mode, Backend configuration is extracted from Standalone configuration
     public static var liveValue: Self {
-        @Dependency(Identity.Standalone.Configuration.self) var configuration
+        @Dependency(\.identityStandaloneConfiguration) var configuration
 
         return Self(
             jwt: configuration.jwt,

@@ -19,9 +19,9 @@ import URLRouting
 
 // MARK: - Helper Functions
 
-extension Identity: @retroactive DependencyKey {
+extension Identity: @retroactive Dependency.Key {
     public static var liveValue: Self {
-        @Dependency(Identity.Standalone.Configuration.self) var configuration
+        @Dependency(\.identityStandaloneConfiguration) var configuration
 
         let router = configuration.router
         let emailConfig = configuration.email  // Now required, defaults to .noop

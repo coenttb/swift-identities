@@ -98,7 +98,7 @@ extension Identity.Standalone {
     }
 }
 
-extension Identity.Standalone.Configuration: TestDependencyKey {
+extension Identity.Standalone.Configuration: Dependency.Key.Test {
     public static var testValue: Self {
         fatalError(
             "Identity.Standalone.Configuration.testValue not implemented - use withDependencies to provide test configuration"
@@ -142,5 +142,17 @@ extension Identity.Standalone.Configuration {
             mfa: mfa,
             oauth: oauth
         )
+    }
+}
+
+// MARK: - Dependency Values
+//
+// Keypath access rather than `@Dependency(Identity.Standalone.Configuration.self)`: the property wrapper
+// requires a `liveValue` this app-supplied configuration does not have. See the note in
+// Identity.Frontend.Configuration.swift.
+extension Dependency.Values {
+    public var identityStandaloneConfiguration: Identity.Standalone.Configuration {
+        get { self[Identity.Standalone.Configuration.self] }
+        set { self[Identity.Standalone.Configuration.self] = newValue }
     }
 }

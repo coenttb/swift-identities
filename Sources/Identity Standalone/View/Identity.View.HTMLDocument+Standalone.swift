@@ -23,7 +23,7 @@ extension Identity.View.HTMLDocument {
         title: @escaping (Identity.View) -> String,
         description: @escaping (Identity.View) -> String,
         configuration: Identity.Standalone.Configuration,
-        @HTMLBuilder body: () -> Body
+        @HTML.Builder body: () -> Body
     ) async throws where Self == Identity.View.HTMLDocument<Body> {
         try await self.init(
             view: view,

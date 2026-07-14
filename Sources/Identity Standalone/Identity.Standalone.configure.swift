@@ -36,7 +36,7 @@ extension Identity.Standalone {
             runMigrations: runMigrations
         )
 
-        @Dependency(Identity.Standalone.Configuration.self) var configuration
+        @Dependency(\.identityStandaloneConfiguration) var configuration
         @Dependency(\.identity.oauth?.client.registerProvider) var registerProvider
 
         if let registerProvider,

@@ -5,7 +5,6 @@
 //  Created by Coen ten Thije Boonkkamp on 19/08/2025.
 //
 
-import CasePaths
 import Foundation
 import IdentitiesTypes
 import ServerFoundation
@@ -15,8 +14,7 @@ extension Identity.API {
     ///
     /// These endpoints are only available in Standalone mode and provide
     /// username and profile management capabilities beyond the core identity system.
-    @CasePathable
-    @dynamicMemberLookup
+    @Cases
     public enum Profile: Equatable, Sendable {
         /// Retrieves the current user's profile
         case get
@@ -77,11 +75,11 @@ extension Identity.API.Profile {
 
         public var body: some URLRouting.Router<Identity.API.Profile> {
             OneOf {
-                URLRouting.Route(.case(Identity.API.Profile.get)) {
+                URLRouting.Route(.case(Identity.API.Profile.cases.get)) {
                     Method.get
                 }
 
-                URLRouting.Route(.case(Identity.API.Profile.updateDisplayName)) {
+                URLRouting.Route(.case(Identity.API.Profile.cases.updateDisplayName)) {
                     Path { "display-name" }
                     Method.post
                     Body(.form(Identity.API.Profile.UpdateDisplayName.self, decoder: .identities))
