@@ -18,7 +18,7 @@ struct EmailVerificationData: Sendable {
 }
 
 extension Identity.Creation.Client {
-    package static func live(
+    public static func live(
         sendVerificationEmail:
             @escaping @Sendable (_ email: EmailAddress, _ token: String) async throws
             -> Void,

@@ -13,7 +13,7 @@ import Records
 import ServerFoundationVapor
 
 extension Identity.Authentication.Token.Client {
-    package static func live() -> Self {
+    public static func live() -> Self {
         @Dependency(\.logger) var logger
 
         return .init(

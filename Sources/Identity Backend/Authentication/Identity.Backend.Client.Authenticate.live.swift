@@ -21,7 +21,7 @@ import ServerFoundation
 import ServerFoundationVapor
 
 extension Identity.Authentication.Client {
-    package static func live() -> Self {
+    public static func live() -> Self {
         @Dependency(\.logger) var logger
 
         return .init(

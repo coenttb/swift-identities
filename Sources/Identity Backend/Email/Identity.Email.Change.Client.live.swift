@@ -12,7 +12,7 @@ import Records
 import ServerFoundation
 
 extension Identity.Email.Change.Client {
-    package static func live(
+    public static func live(
         sendEmailChangeConfirmation:
             @escaping @Sendable (
                 _ currentEmail: EmailAddress, _ newEmail: EmailAddress, _ token: String

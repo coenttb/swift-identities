@@ -12,7 +12,7 @@ import Records
 import ServerFoundation
 
 extension Identity.Password.Change.Client {
-    package static func live(
+    public static func live(
         sendPasswordChangeNotification:
             @escaping @Sendable (_ email: EmailAddress) async throws -> Void
     ) -> Self {

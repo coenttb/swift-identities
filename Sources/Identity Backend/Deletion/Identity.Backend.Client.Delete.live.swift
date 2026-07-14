@@ -11,7 +11,7 @@ import IdentitiesTypes
 import ServerFoundation
 
 extension Identity.Deletion.Client {
-    package static func live(
+    public static func live(
         sendDeletionRequestNotification:
             @escaping @Sendable (_ email: EmailAddress) async throws ->
             Void,

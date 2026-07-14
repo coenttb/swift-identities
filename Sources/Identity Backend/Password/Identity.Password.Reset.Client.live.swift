@@ -12,7 +12,7 @@ import Records
 import ServerFoundation
 
 extension Identity.Password.Reset.Client {
-    package static func live(
+    public static func live(
         sendPasswordResetEmail:
             @escaping @Sendable (_ email: EmailAddress, _ token: String)
             async throws -> Void,

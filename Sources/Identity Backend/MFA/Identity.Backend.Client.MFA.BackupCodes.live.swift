@@ -10,7 +10,7 @@ import Foundation
 import IdentitiesTypes
 
 extension Identity.MFA.BackupCodes.Client {
-    package static func live(
+    public static func live(
         configuration: Identity.MFA.TOTP.Configuration
     ) -> Self {
         @Dependency(\.logger) var logger
