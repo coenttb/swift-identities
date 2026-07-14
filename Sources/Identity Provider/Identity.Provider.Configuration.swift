@@ -44,18 +44,21 @@ extension Identity.Provider.Configuration {
             self.domain = domain
             self.issuer = issuer
             self.tokens = tokens
-            self.router = router.baseURL(baseURL.absoluteString).eraseToAnyParserPrinter()
+            self.router = BaseURLRouter(
+                baseURLString: baseURL.absoluteString,
+                upstream: router
+            ).eraseToAnyParserPrinter()
             self.client = client
             self.rateLimiters = rateLimiters
         }
     }
 }
 
-extension Identity.Provider.Configuration: TestDependencyKey {
+extension Identity.Provider.Configuration: Dependency.Key.Test {
     public static let testValue: Self = .init(provider: .testValue)
 }
 
-extension Identity.Provider.Configuration.Provider: TestDependencyKey {
+extension Identity.Provider.Configuration.Provider: Dependency.Key.Test {
     public static var testValue: Self {
 
         let router = Identity.API.Router().eraseToAnyParserPrinter()
@@ -120,5 +123,29 @@ extension Identity.Provider.Configuration.Tokens {
                 expires: 60 * 5
             )
         )
+    }
+}
+
+// A stateless, declarative `Sendable` router that bakes a base URL into an
+// already-erased upstream router. `router.baseURL(_:)` yields a
+// `RFC_3986.URI.BaseURLPrinter`, which is not `Sendable`, so it cannot be erased
+// directly (`eraseToAnyParserPrinter()` requires `Self: Sendable`). Wrapping the
+// composition in a `Sendable` declarative router — the pattern prescribed by
+// `AnyParserPrinter`'s documentation for non-`Sendable` compositions — restores an
+// honestly-`Sendable` value that can be erased and stored in the `Sendable`
+// `Dependency.Key.Test` configuration.
+private struct BaseURLRouter: ParserPrinter, Sendable {
+    let baseURLString: String
+    let upstream: AnyParserPrinter<URLRequestData, Identity.API>
+
+    var body: some URLRouting.Router<Identity.API> {
+        upstream.baseURL(baseURLString)
+    }
+}
+
+extension Dependency.Values {
+    public var identityProviderConfiguration: Identity.Provider.Configuration {
+        get { self[Identity.Provider.Configuration.self] }
+        set { self[Identity.Provider.Configuration.self] = newValue }
     }
 }

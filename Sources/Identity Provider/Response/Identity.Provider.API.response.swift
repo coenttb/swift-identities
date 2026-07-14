@@ -14,7 +14,7 @@ extension Identity.Provider.API {
         api: Identity.Provider.API
     ) async throws -> Response {
 
-        @Dependency(Identity.Provider.Configuration.self) var configuration
+        @Dependency(\.identityProviderConfiguration) var configuration
         let rateLimiters = configuration.provider.rateLimiters
 
         let rateLimitClient = try await Identity.API.rateLimit(
