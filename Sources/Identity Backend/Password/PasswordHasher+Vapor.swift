@@ -12,23 +12,23 @@
     extension PasswordHasher {
         /// Live implementation using Vapor's Bcrypt on a thread pool
         ///
-        /// This implementation uses Vapor's Application thread pool to run bcrypt
-        /// operations on a background thread, preventing blocking of async contexts.
+        /// Bcrypt work runs on `NIOThreadPool.singleton` so async contexts are never
+        /// blocked — and so hashing needs no `\.application` dependency. The previous
+        /// form read the Vapor Application purely for its thread pool, which made the
+        /// hasher unresolvable in scope-less phases (the Identity Backend migrator's
+        /// DEBUG seed runs during the app's hoisted pre-scope migration and tripped
+        /// the loud Witness test-fallback diagnostic on `VaporApplicationKey`).
         ///
         /// This is automatically used when the Vapor trait is enabled in Package.swift.
         public static var vapor: Self {
             Self(
                 hash: { password, cost in
-                    @Dependency(\.application) var application
-
-                    return try await application.threadPool.runIfActive {
+                    try await NIOThreadPool.singleton.runIfActive {
                         try Bcrypt.hash(password, cost: cost)
                     }
                 },
                 verify: { password, hash in
-                    @Dependency(\.application) var application
-
-                    return try await application.threadPool.runIfActive {
+                    try await NIOThreadPool.singleton.runIfActive {
                         try Bcrypt.verify(password, created: hash)
                     }
                 }
