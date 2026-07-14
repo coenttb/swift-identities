@@ -12,7 +12,7 @@ extension URLRequest.Handler {
     package enum Identity {}
 }
 
-extension URLRequest.Handler.Identity: DependencyKey {
+extension URLRequest.Handler.Identity: Dependency.Key {
     public static var liveValue: URLRequest.Handler {
         .init(debug: false)
     }

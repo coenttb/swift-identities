@@ -27,7 +27,7 @@ extension Identity.Deletion {
 
     /// Handles the account deletion request view.
     public static func handleRequest() async throws -> any AsyncResponseEncodable {
-        @Dependency(Identity.Frontend.Configuration.self) var configuration
+        @Dependency(\.identityFrontendConfiguration) var configuration
         @Dependency(\.identity.router) var router
 
         let homeHref = configuration.navigation.home

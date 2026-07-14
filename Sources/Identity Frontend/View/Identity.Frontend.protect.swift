@@ -47,13 +47,13 @@ extension Identity.Frontend {
                         // Invalid token, redirect to reauthorization
                         //                        throw Abort.redirect(to: "/identity/email/change/reauthorization")
                         throw Abort.redirect(
-                            to: router.path(for: .email(.view(.change(.reauthorization))))
+                            to: try router.path(for: .email(.view(.change(.reauthorization))))
                         )
                     }
                 } else {
                     // No token, redirect to reauthorization
                     throw Abort.redirect(
-                        to: router.path(for: .email(.view(.change(.reauthorization))))
+                        to: try router.path(for: .email(.view(.change(.reauthorization))))
                     )
                 }
             }

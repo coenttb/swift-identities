@@ -16,7 +16,7 @@ extension Identity.Route {
         route: Identity.Route
     ) async throws -> any AsyncResponseEncodable {
 
-        @Dependency(Identity.Consumer.Configuration.self) var config
+        @Dependency(\.identityConsumerConfiguration) var config
         let configuration = config.consumer
 
         switch route {

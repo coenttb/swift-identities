@@ -39,7 +39,7 @@ extension Identity.Email {
 
     /// Handles the email change request view.
     public static func handleChangeRequest() async throws -> any AsyncResponseEncodable {
-        @Dependency(Identity.Frontend.Configuration.self) var configuration
+        @Dependency(\.identityFrontendConfiguration) var configuration
         @Dependency(\.identity.router) var router
         let homeHref = configuration.navigation.home
 
@@ -54,7 +54,7 @@ extension Identity.Email {
 
     /// Handles the email change confirmation view.
     public static func handleChangeConfirm() async throws -> any AsyncResponseEncodable {
-        @Dependency(Identity.Frontend.Configuration.self) var configuration
+        @Dependency(\.identityFrontendConfiguration) var configuration
         let redirect = configuration.redirect
 
         return try await Identity.Frontend.htmlDocument(for: .email(.change(.confirm))) {
@@ -66,7 +66,7 @@ extension Identity.Email {
 
     /// Handles the email change reauthorization view.
     public static func handleChangeReauthorization() async throws -> any AsyncResponseEncodable {
-        @Dependency(Identity.Frontend.Configuration.self) var configuration
+        @Dependency(\.identityFrontendConfiguration) var configuration
         @Dependency(\.identity.router) var router
 
         @Dependency(\.request) var request

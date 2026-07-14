@@ -328,7 +328,7 @@ extension Identity.Frontend {
             // Handle OAuth callback
             let authResponse = try await client.callback(credentials)
 
-            @Dependency(Identity.Frontend.Configuration.self) var config
+            @Dependency(\.identityFrontendConfiguration) var config
             let cookies = config.cookies
 
             // Set authentication cookies

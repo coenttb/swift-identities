@@ -5,7 +5,6 @@
 //  Created by Coen ten Thije Boonkkamp on 07/10/2024.
 //
 
-import CasePaths
 import IdentitiesTypes
 import ServerFoundation
 

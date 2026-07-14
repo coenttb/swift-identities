@@ -18,7 +18,7 @@ extension Identity.View {
         view: Identity.View
     ) async throws -> any AsyncResponseEncodable {
 
-        @Dependency(Identity.Consumer.Configuration.self) var config
+        @Dependency(\.identityConsumerConfiguration) var config
         @Dependency(\.identity) var identity
         let configuration = config.consumer
 

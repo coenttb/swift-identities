@@ -16,7 +16,7 @@ extension Identity.API {
     ) async throws -> Response {
 
         @Dependency(\.identity) var identity
-        @Dependency(Identity.Consumer.Configuration.self) var config
+        @Dependency(\.identityConsumerConfiguration) var config
         let configuration = config.consumer
 
         do {

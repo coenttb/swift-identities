@@ -15,11 +15,11 @@ import ServerFoundationVapor
 extension Identity.Frontend {
     /// Creates an HTML document wrapper for identity views.
     /// This shared utility is used by both Frontend handlers and Standalone handlers.
-    public static func htmlDocument<Content: HTML>(
+    public static func htmlDocument<Content: HTML.View>(
         for view: Identity.View,
-        @HTMLBuilder content: () async throws -> Content
+        @HTML.Builder content: () async throws -> Content
     ) async throws -> any AsyncResponseEncodable {
-        @Dependency(Identity.Frontend.Configuration.self) var configuration
+        @Dependency(\.identityFrontendConfiguration) var configuration
 
         return try await htmlDocument(
             for: view,
@@ -32,13 +32,13 @@ extension Identity.Frontend {
     }
 
     /// Creates an HTML document wrapper with explicit parameters.
-    public static func htmlDocument<Content: HTML>(
+    public static func htmlDocument<Content: HTML.View>(
         for view: Identity.View,
         branding: Identity.Frontend.Configuration.Branding,
         canonicalHref: @Sendable @escaping (Identity.View) -> URL?,
         hreflang: @Sendable @escaping (Identity.View, Translating.Language) -> URL,
         footer_links: [(TranslatedString, URL)],
-        @HTMLBuilder content: () async throws -> Content
+        @HTML.Builder content: () async throws -> Content
     ) async throws -> any AsyncResponseEncodable {
         return try await Identity.View.HTMLDocument(
             view: view,
@@ -76,14 +76,14 @@ extension Identity.Frontend {
     }
 
     /// Creates an HTML document wrapper with custom title and description.
-    public static func htmlDocument<Content: HTML>(
+    public static func htmlDocument<Content: HTML.View>(
         for view: Identity.View,
         title: String,
         description: String,
-        @HTMLBuilder content: () async throws -> Content
+        @HTML.Builder content: () async throws -> Content
     ) async throws -> any AsyncResponseEncodable {
 
-        @Dependency(Identity.Frontend.Configuration.self) var configuration
+        @Dependency(\.identityFrontendConfiguration) var configuration
 
         return try await Identity.View.HTMLDocument(
             view: view,

@@ -19,7 +19,7 @@ extension Identity.OAuth {
     public static func response(
         view: Identity.View.OAuth
     ) async throws -> any AsyncResponseEncodable {
-        @Dependency(Identity.Frontend.Configuration.self) var configuration
+        @Dependency(\.identityFrontendConfiguration) var configuration
         @Dependency(\.identity.router) var router
 
         // Check if OAuth is configured
@@ -52,7 +52,7 @@ extension Identity.OAuth {
 
         ) async throws -> any AsyncResponseEncodable
     {
-        @Dependency(Identity.Frontend.Configuration.self) var configuration
+        @Dependency(\.identityFrontendConfiguration) var configuration
 
         guard let oauth = configuration.identity.oauth else {
             throw Abort(.notImplemented, reason: "OAuth is not configured")
@@ -102,7 +102,7 @@ extension Identity.OAuth {
             title: "Processing OAuth Login",
             description: "Processing your OAuth login"
         ) {
-            @Dependency(Identity.Frontend.Configuration.self) var configuration
+            @Dependency(\.identityFrontendConfiguration) var configuration
 
             Identity.OAuth.Callback.View(
                 provider: callbackRequest.provider,
@@ -116,7 +116,7 @@ extension Identity.OAuth {
 
         ) async throws -> any AsyncResponseEncodable
     {
-        @Dependency(Identity.Frontend.Configuration.self) var configuration
+        @Dependency(\.identityFrontendConfiguration) var configuration
 
         guard let oauth = configuration.identity.oauth else {
             throw Abort(.notImplemented, reason: "OAuth is not configured")
@@ -163,7 +163,7 @@ extension Identity.OAuth {
             title: "OAuth Error",
             description: "An error occurred during OAuth authentication"
         ) {
-            @Dependency(Identity.Frontend.Configuration.self) var configuration
+            @Dependency(\.identityFrontendConfiguration) var configuration
             @Dependency(\.identity.router) var router
 
             return Identity.OAuth.Error.View(

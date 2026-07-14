@@ -74,11 +74,29 @@ let package = Package(
         // the swift-html `Translating` trait).
         .library(name: .identityViews, targets: [.identityViews]),
 
-        // DELIBERATELY still red — later HTML-tower waves (see
-        // Workspace/handoffs/DECISIONS-pass2/identity-html.md §5-W5):
-        // .library(name: .identityConsumer, targets: [.identityConsumer]),
+        // HTML-tower arc, W2 wave (2026-07-14): frontend + consumer, ported onto the institute
+        // doctrine alongside Views. Both gate green.
+        .library(name: .identityConsumer, targets: [.identityConsumer]),
+        .library(name: .identityFrontend, targets: [.identityFrontend])
+
+        // STILL RED — `Identity Standalone`. Its sources carry the W2 port (dep-key, HTML surface,
+        // @Cases), but the target does NOT compile and is held for a ruling.
+        //
+        // Residue: 85 unique source sites across 10 files. (611 anchored compiler diagnostics — a
+        // FLOOR on symptoms, never a cost: errors mask errors, so the class mix will shift as the
+        // dominant class clears.) Largest single file: Router+SubRoutes.swift — 252 diagnostics
+        // over just 12 call sites.
+        //
+        // Root cause (reasoned from source; NOT gate-verified): those 12 sites downcast a router,
+        // `Router<Identity.Route>` -> `Router<Identity.Authentication.Route>`, via
+        // `.convert(apply: \.caseName, unapply: Identity.Route.caseName)`. The institute `.convert`
+        // is backed by `Parser.Conversion.Case`, whose FORWARD direction is the total `embed` and
+        // whose REVERSE is the partial `extract` — a downcast needs exactly the opposite. `apply:`
+        // therefore demands a NON-OPTIONAL `(Identity.Route) -> Identity.Authentication.Route`,
+        // which no case key path can supply: payload extraction is partial by nature. This is a
+        // conversion-FAILABILITY-DIRECTION gap, not a missing-key-path gap — vending case key
+        // paths from `@Cases` would NOT fix it. See drift-map/WAVE2-DRIFT.md §Q-2.
         // .library(name: .identityStandalone, targets: [.identityStandalone]),
-        // .library(name: .identityFrontend, targets: [.identityFrontend])
     ],
     traits: [
         .trait(
@@ -174,30 +192,38 @@ let package = Package(
             ]
         ),
 
-        // ================= DELIBERATELY RED (later HTML-tower waves) =================
-        // .target(
-        //     name: .identityFrontend,
-        //     dependencies: [
-        //         .identitiesTypes,
-        //         .identityShared,
-        //         .identityViews,
-        //         .language,
-        //         .serverFoundation,
-        //         .serverFoundationVapor
-        //     ]
-        // ),
-        // .target(
-        //     name: .identityConsumer,
-        //     dependencies: [
-        //         .identitiesTypes,
-        //         .identityShared,
-        //         .identityViews,
-        //         .identityFrontend,
-        //         .language,
-        //         .serverFoundation,
-        //         .serverFoundationVapor
-        //     ]
-        // ),
+        // ================= ACTIVE (HTML-tower arc, W2 wave 2026-07-14) =================
+        .target(
+            name: .identityFrontend,
+            dependencies: [
+                .identitiesTypes,
+                .identityShared,
+                .identityViews,
+                .language,
+                .serverFoundation,
+                .serverFoundationVapor
+            ]
+        ),
+        .target(
+            name: .identityConsumer,
+            dependencies: [
+                .identitiesTypes,
+                .identityShared,
+                .identityViews,
+                .identityFrontend,
+                .language,
+                .serverFoundation,
+                .serverFoundationVapor
+            ]
+        ),
+        // ================= STILL RED (HTML-tower W2 — held, see WAVE2-DRIFT.md) =================
+        // `Identity Standalone` does NOT compile. Its sources DO carry the W2 port (dep-key
+        // conformances, HTML surface tokens, `@Cases`); the residue is 85 unique sites over 10
+        // files, whose dominant class is the 12 router-downcast `.convert` calls in
+        // `Router+SubRoutes.swift`. That class is a conversion-failability-direction gap in
+        // `.convert` (see the product block above), NOT a missing case-key-path — so it is not a
+        // mechanical fix and is held for a ruling.
+        // ⚠️ The sources below are therefore UNVERIFIED — they have never been type-checked.
         // .target(
         //     name: .identityStandalone,
         //     dependencies: [
@@ -210,6 +236,8 @@ let package = Package(
         //         .serverFoundationVapor
         //     ]
         // ),
+
+        // ================= STILL OFF (test targets — until the port is green) =================
         // .testTarget(
         //     name: .identityViews.tests,
         //     dependencies: [.identityViews, .identityShared, .identitiesTypes, .dependenciesTestSupport]

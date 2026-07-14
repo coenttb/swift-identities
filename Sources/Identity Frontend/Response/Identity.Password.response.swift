@@ -20,14 +20,14 @@ extension Identity.Password {
         view: Identity.Password.View,
 
     ) async throws -> any AsyncResponseEncodable {
-        @Dependency(Identity.Frontend.Configuration.self) var configuration
+        @Dependency(\.identityFrontendConfiguration) var configuration
         @Dependency(\.identity.router) var router
 
         switch view {
         case .reset(let reset):
             switch reset {
             case .request:
-                @Dependency(Identity.Frontend.Configuration.self) var configuration
+                @Dependency(\.identityFrontendConfiguration) var configuration
 
                 return try await Identity.Frontend.htmlDocument(
                     for: .password(.reset(.request))
@@ -57,7 +57,7 @@ extension Identity.Password {
 
         ) async throws -> any AsyncResponseEncodable
     {
-        @Dependency(Identity.Frontend.Configuration.self) var configuration
+        @Dependency(\.identityFrontendConfiguration) var configuration
 
         @Dependency(\.request) var req
 
@@ -73,6 +73,7 @@ extension Identity.Password {
                         dutch: "Stel een nieuw wachtwoord in",
                         english: "Set a new password"
                     )
+                    .css
                     .font(.body(.regular))
 
                     form(
@@ -93,7 +94,7 @@ extension Identity.Password {
                                 required: true
                             )
 
-                            AnyHTML(
+                            HTML.AnyView(
                                 Button.submit {
                                     TranslatedString(
                                         dutch: "Wachtwoord resetten",
@@ -102,11 +103,14 @@ extension Identity.Password {
                                 }
                             )
                         }
-                        .gap(.length(.medium))
+                        .css
+                        .gap(.length(.rem(1.5)))
                     }
                 }
-                .gap(.length(.medium))
+                .css
+                .gap(.length(.rem(1.5)))
             }
+            .css
             .width(.percent(100))
         }
     }
@@ -116,7 +120,7 @@ extension Identity.Password {
 
         ) async throws -> any AsyncResponseEncodable
     {
-        @Dependency(Identity.Frontend.Configuration.self) var configuration
+        @Dependency(\.identityFrontendConfiguration) var configuration
         @Dependency(\.identity.router) var router
         @Dependency(\.identity.require) var requireIdentity
 

@@ -19,7 +19,7 @@ extension Identity.Authentication {
     public static func response(
         view: Identity.Authentication.View
     ) async throws -> any AsyncResponseEncodable {
-        @Dependency(Identity.Frontend.Configuration.self) var configuration
+        @Dependency(\.identityFrontendConfiguration) var configuration
         @Dependency(\.identity.router) var router
 
         switch view {

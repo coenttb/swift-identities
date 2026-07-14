@@ -5,6 +5,7 @@
 //  Created by Coen ten Thije Boonkkamp on 29/01/2025.
 //
 
+import Dependencies
 import Foundation
 import HTML
 @preconcurrency import IdentitiesTypes
@@ -137,7 +138,7 @@ extension Identity.Frontend {
     }
 }
 
-extension Identity.Frontend.Configuration: TestDependencyKey {
+extension Identity.Frontend.Configuration: Dependency.Key.Test {
     public static var testValue: Identity.Frontend.Configuration {
         let baseURL = URL(string: "http://localhost:8080")!
 
@@ -145,6 +146,7 @@ extension Identity.Frontend.Configuration: TestDependencyKey {
             .baseURL(
                 baseURL.absoluteString
             )
+            .eraseToAnyParserPrinter()
 
         return .init(
             baseURL: baseURL,
@@ -231,14 +233,29 @@ extension Identity.Frontend.Configuration.Redirect {
 extension Identity.Frontend.Configuration.Branding {
     public static var `default`: Self {
 
-        struct Test: HTML, Sendable {
-            var body: some HTML {
-                HTMLEmpty()
+        struct Test: HTML.View, Sendable {
+            var body: some HTML.View {
+                HTML.Empty()
             }
         }
 
         return .init(
             logo: .init(logo: Test(), href: .init(string: "/")!)
         )
+    }
+}
+
+// MARK: - Dependency Values
+//
+// `@Dependency(Identity.Frontend.Configuration.self)` cannot be used: the property wrapper's key-taking
+// init requires `Dependency.Key` (= `Witness.Key`), which requires a `liveValue`, and this configuration
+// is app-supplied — it has no meaningful live default. That is why it conforms to `Dependency.Key.Test`
+// only, with the live conformance supplied downstream (see Identity Standalone). Keypath access goes
+// through the `Witness.Key.Test` subscript overload instead. Precedent: `Identity.Provider.Configuration`
+// (Identity Provider) and `Identity.Token.Client` (Identity Shared).
+extension Dependency.Values {
+    public var identityFrontendConfiguration: Identity.Frontend.Configuration {
+        get { self[Identity.Frontend.Configuration.self] }
+        set { self[Identity.Frontend.Configuration.self] = newValue }
     }
 }

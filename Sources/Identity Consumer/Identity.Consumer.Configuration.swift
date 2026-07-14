@@ -32,14 +32,14 @@ extension Identity.Consumer {
     }
 }
 
-extension Identity.Consumer.Configuration: TestDependencyKey {
+extension Identity.Consumer.Configuration: Dependency.Key.Test {
     public static let testValue: Self = .init(
         provider: .testValue,
         consumer: .testValue
     )
 }
 
-extension Identity.Consumer.Configuration.Consumer: TestDependencyKey {
+extension Identity.Consumer.Configuration.Consumer: Dependency.Key.Test {
     public static let testValue: Self = .live(
         baseURL: URL(string: "/")!,
         cookies: Identity.Frontend.Configuration.Cookies(
@@ -66,7 +66,7 @@ extension Identity.Consumer.Configuration {
         public var cookies: Identity.Frontend.Configuration.Cookies
         public var router: AnyParserPrinter<URLRequestData, Identity.Route> {
             didSet {
-                self.router = router.baseURL(self.baseURL.absoluteString).eraseToAnyParserPrinter()
+                self.router = BaseURLRouter(baseURLString: self.baseURL.absoluteString, upstream: router).eraseToAnyParserPrinter()
             }
         }
 
@@ -121,7 +121,7 @@ extension Identity.Consumer.Configuration.Consumer {
         hreflang: @escaping @Sendable (Identity.Consumer.View, Translating.Language) -> URL = {
             view,
             _ in
-            @Dependency(Identity.Consumer.Configuration.self) var config
+            @Dependency(\.identityConsumerConfiguration) var config
             return config.consumer.baseURL
         },
         branding: Identity.Consumer.Configuration.Branding,
@@ -181,25 +181,25 @@ extension Identity.Consumer.Configuration.Redirect {
             return URL(string: "/")!
         },
         createVerificationSuccess: @escaping @Sendable () -> URL = {
-            @Dependency(Identity.Consumer.Configuration.self) var config
+            @Dependency(\.identityConsumerConfiguration) var config
             return config.consumer.router.url(for: .authenticate(.view(.credentials)))
         },
         loginProtected: @escaping @Sendable () -> URL = {
             return URL(string: "/")!
         },
         logoutSuccess: @escaping @Sendable () -> URL = {
-            @Dependency(Identity.Consumer.Configuration.self) var config
+            @Dependency(\.identityConsumerConfiguration) var config
             return config.consumer.router.url(for: .authenticate(.view(.credentials)))
         },
         loginSuccess: @escaping @Sendable () -> URL = {
             return URL(string: "/")!
         },
         passwordResetSuccess: @escaping @Sendable () -> URL = {
-            @Dependency(Identity.Consumer.Configuration.self) var config
+            @Dependency(\.identityConsumerConfiguration) var config
             return config.consumer.router.url(for: .authenticate(.view(.credentials)))
         },
         emailChangeConfirmSuccess: @escaping @Sendable () -> URL = {
-            @Dependency(Identity.Consumer.Configuration.self) var config
+            @Dependency(\.identityConsumerConfiguration) var config
             return config.consumer.router.url(for: .authenticate(.view(.credentials)))
         }
     ) -> Self {
@@ -220,31 +220,31 @@ extension Identity.Consumer.Configuration.Redirect {
     public static func toHome() -> Self {
         return .init(
             createProtected: {
-                @Dependency(Identity.Consumer.Configuration.self) var config
+                @Dependency(\.identityConsumerConfiguration) var config
                 return config.consumer.navigation.home
             },
             createVerificationSuccess: {
-                @Dependency(Identity.Consumer.Configuration.self) var config
+                @Dependency(\.identityConsumerConfiguration) var config
                 return config.consumer.navigation.home
             },
             loginProtected: {
-                @Dependency(Identity.Consumer.Configuration.self) var config
+                @Dependency(\.identityConsumerConfiguration) var config
                 return config.consumer.navigation.home
             },
             logoutSuccess: {
-                @Dependency(Identity.Consumer.Configuration.self) var config
+                @Dependency(\.identityConsumerConfiguration) var config
                 return config.consumer.navigation.home
             },
             loginSuccess: {
-                @Dependency(Identity.Consumer.Configuration.self) var config
+                @Dependency(\.identityConsumerConfiguration) var config
                 return config.consumer.navigation.home
             },
             passwordResetSuccess: {
-                @Dependency(Identity.Consumer.Configuration.self) var config
+                @Dependency(\.identityConsumerConfiguration) var config
                 return config.consumer.navigation.home
             },
             emailChangeConfirmSuccess: {
-                @Dependency(Identity.Consumer.Configuration.self) var config
+                @Dependency(\.identityConsumerConfiguration) var config
                 return config.consumer.navigation.home
             }
         )
@@ -272,12 +272,12 @@ extension Identity.Consumer.Configuration {
         ) {
             self.baseURL = baseURL
             self.domain = domain
-            self.router = router.baseURL(baseURL.absoluteString).eraseToAnyParserPrinter()
+            self.router = BaseURLRouter(baseURLString: baseURL.absoluteString, upstream: router).eraseToAnyParserPrinter()
         }
     }
 }
 
-extension Identity.Consumer.Configuration.Provider: TestDependencyKey {
+extension Identity.Consumer.Configuration.Provider: Dependency.Key.Test {
     public static let testValue: Self = .init(
         baseURL: .init(string: "/")!,
         domain: nil,
@@ -556,5 +556,34 @@ extension Identity.Consumer.Configuration.Branding {
                 english: "Sign in with an external service."
             )
         }
+    }
+}
+
+// MARK: - Dependency Values
+//
+// Keypath access rather than `@Dependency(Identity.Consumer.Configuration.self)`: the property wrapper
+// requires a `liveValue` this app-supplied configuration does not have. See the note in
+// Identity.Frontend.Configuration.swift.
+extension Dependency.Values {
+    public var identityConsumerConfiguration: Identity.Consumer.Configuration {
+        get { self[Identity.Consumer.Configuration.self] }
+        set { self[Identity.Consumer.Configuration.self] = newValue }
+    }
+}
+
+// A stateless, declarative `Sendable` router that bakes a base URL into an already-erased
+// upstream router. `router.baseURL(_:)` yields an `RFC_3986.URI.BaseURLPrinter`, which is NOT
+// `Sendable`, so it cannot be erased directly (`eraseToAnyParserPrinter()` requires
+// `Self: Sendable`). Wrapping the composition in a `Sendable` declarative router restores an
+// honestly-`Sendable` value that can be erased and stored in the `Sendable` configuration.
+// Precedent: `Identity Provider`'s `BaseURLRouter` (Identity.Provider.Configuration.swift:137),
+// generalised over `Output` because Consumer bakes base URLs into both `Identity.Route` and
+// `Identity.API` routers.
+private struct BaseURLRouter<Output: Sendable>: ParserPrinter, Sendable {
+    let baseURLString: String
+    let upstream: AnyParserPrinter<URLRequestData, Output>
+
+    var body: some URLRouting.Router<Output> {
+        upstream.baseURL(baseURLString)
     }
 }

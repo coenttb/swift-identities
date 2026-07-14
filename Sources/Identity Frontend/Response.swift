@@ -22,7 +22,7 @@ extension Vapor.Response {
 
 extension HTTPCookies {
     fileprivate mutating func setTokens(for response: Identity.Authentication.Response) {
-        @Dependency(Identity.Frontend.Configuration.self) var configuration
+        @Dependency(\.identityFrontendConfiguration) var configuration
 
         let accessTokenConfiguration = configuration.cookies.accessToken
         let refreshTokenConfiguration = configuration.cookies.refreshToken
