@@ -71,11 +71,10 @@ extension Identity.Authentication.ApiKey {
 
         private static func generateKey() -> String {
             @Dependency(\.uuid) var uuid
-            @Dependency(\.context) var context
 
             let prefix = "pk_"
             let env =
-                switch context {
+                switch __DependencyContext.mode {
                 case .live: "live"
                 case .test: "test"
                 case .preview: "preview"

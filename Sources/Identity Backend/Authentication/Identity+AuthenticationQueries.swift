@@ -161,7 +161,7 @@ extension Identity.Record {
                 try await Identity.Record
                     .where { $0.id.eq(identityId) }
                     .update { identity in
-                        identity.sessionVersion = identity.sessionVersion + 1
+                        identity.sessionVersion = SQLQueryExpression("\(identity.sessionVersion) + 1", as: Int.self)
                         identity.updatedAt = date()
                     }
                     .execute(db)
@@ -218,7 +218,7 @@ extension Identity.MFA.TOTP.Record {
                 .where { $0.id.eq(id) }
                 .update { totp in
                     totp.lastUsedAt = date()
-                    totp.usageCount = totp.usageCount + 1
+                    totp.usageCount = SQLQueryExpression("\(totp.usageCount) + 1", as: Int.self)
                 }
                 .execute(db)
         }

@@ -123,7 +123,7 @@ extension Identity.Authentication.Token.Client {
                     logger.trace(
                         "Refresh token verified",
                         metadata: [
-                            "identity_id": .string(identity.id.uuidString)
+                            "identity_id": .string(identity.id.underlying.uuidString)
                         ]
                     )
 
@@ -134,8 +134,8 @@ extension Identity.Authentication.Token.Client {
                     )
 
                     let response = Identity.Authentication.Response(
-                        accessToken: .init(accessToken),
-                        refreshToken: .init(refreshToken)
+                        accessToken: accessToken,
+                        refreshToken: refreshToken
                     )
 
                     request.auth.login(identity)

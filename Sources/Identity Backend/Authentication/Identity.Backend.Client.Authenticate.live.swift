@@ -90,8 +90,8 @@ extension Identity.Authentication.Client {
                     )
 
                     let response = Identity.Authentication.Response(
-                        accessToken: .init(accessToken),
-                        refreshToken: .init(refreshToken)
+                        accessToken: accessToken,
+                        refreshToken: refreshToken
                     )
 
                     request.auth.login(identity)
@@ -198,8 +198,8 @@ extension Identity.Authentication.Client {
                     )
 
                     let response = Identity.Authentication.Response(
-                        accessToken: .init(accessToken),
-                        refreshToken: .init(refreshToken)
+                        accessToken: accessToken,
+                        refreshToken: refreshToken
                     )
 
                     request.auth.login(identity)
