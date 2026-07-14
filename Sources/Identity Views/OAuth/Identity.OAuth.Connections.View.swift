@@ -7,13 +7,13 @@
 
 import Foundation
 import HTML
-import HTMLWebsite
 import IdentitiesTypes
 import Language
-import PointFreeHTMLTranslating
+import Translating
+import Webpage
 
 extension Identity.OAuth.Connections {
-    public struct View: HTML {
+    public struct View: HTML.View {
         let connections: [Identity.OAuth.Connection]
         let availableProviders: [Identity.OAuth.Provider]
         let connectAction: (String) -> URL
@@ -34,7 +34,7 @@ extension Identity.OAuth.Connections {
             self.dashboardHref = dashboardHref
         }
 
-        public var body: some HTML {
+        public var body: some HTML.View {
             PageModule(theme: .content) {
                 VStack(alignment: .stretch) {
                     // Title
@@ -44,6 +44,7 @@ extension Identity.OAuth.Connections {
                             english: "OAuth Connections"
                         )
                     }
+                    .css
                     .marginBottom(.large)
 
                     // Connected accounts section
@@ -55,16 +56,22 @@ extension Identity.OAuth.Connections {
                                     english: "Connected accounts"
                                 )
                             }
+                            .css
                             .fontWeight(.semiBold)
                             .marginBottom(.medium)
 
                             VStack(alignment: .stretch) {
-                                HTMLForEach(connections) { connection in
-                                    connectionCard(for: connection)
+                                for connection in connections {
+                                    ConnectionCard(
+                                        connection: connection,
+                                        disconnectHref: disconnectAction(connection.provider)
+                                    )
                                 }
                             }
-                            .gap(.length(.medium))
+                            .css
+                            .gap(.length(.rem(1.5)))
                         }
+                        .css
                         .marginBottom(.extraLarge)
                     }
 
@@ -77,15 +84,20 @@ extension Identity.OAuth.Connections {
                                     english: "Available providers"
                                 )
                             }
+                            .css
                             .fontWeight(.semiBold)
                             .marginBottom(.medium)
 
                             VStack(alignment: .stretch) {
-                                HTMLForEach(availableProviders) { provider in
-                                    availableProviderCard(for: provider)
+                                for provider in availableProviders {
+                                    AvailableProviderCard(
+                                        provider: provider,
+                                        connectHref: connectAction(provider.identifier)
+                                    )
                                 }
                             }
-                            .gap(.length(.medium))
+                            .css
+                            .gap(.length(.rem(1.5)))
                         }
                     }
 
@@ -98,6 +110,7 @@ extension Identity.OAuth.Connections {
                                     english: "No OAuth providers configured."
                                 )
                             }
+                            .css
                             .color(.gray600)
                             .textAlign(.center)
                             .padding(vertical: .extraLarge, horizontal: nil)
@@ -106,133 +119,181 @@ extension Identity.OAuth.Connections {
 
                     // Back to dashboard link
                     div {
-                        a(href: .url(dashboardHref)) {
+                        a(href: .init(dashboardHref.absoluteString)) {
                             TranslatedString(
                                 dutch: "← Terug naar dashboard",
                                 english: "← Back to dashboard"
                             )
                         }
+                        .css
                         .color(.gray600)
                         .textDecoration(TextDecoration.none)
-                        .textDecoration(.underline, pseudo: .hover)
+                        .hover { $0.textDecoration(.underline) }
                     }
+                    .css
                     .marginTop(.extraLarge)
                 }
+                .css
                 .width(.percent(100))
                 .maxWidth(.px(600))
                 .margin(.auto)
             }
+            .css
             .maxWidth(.px(800))
             .margin(.auto)
         }
 
-        @HTMLBuilder
-        private func connectionCard(for connection: Identity.OAuth.Connection) -> some HTML {
-            div {
-                HStack(alignment: .center) {
-                    // Provider info
-                    VStack(alignment: .leading) {
-                        div {
-                            strong { connection.provider }
-                                .fontSize(.rem(1.1))
-                        }
+    }
+}
 
-                        small {
-                            HTMLGroup {
-                                TranslatedString(
-                                    dutch: "Verbonden op: ",
-                                    english: "Connected: "
-                                )
-                            }
-                            span { formatDate(connection.connectedAt) }
-                        }
-                        .color(.gray600)
+// MARK: - Concrete list-item types
+//
+// `Render.Builder.buildArray(_:) -> [V]`
+// (swift-render-primitives/Sources/Render Primitive/Render.Builder.swift:43) must reify a
+// concrete element type `V`. These two were previously
+// `@HTML.Builder private func …(for:) -> some HTML.View` helpers: an OPAQUE element type,
+// which cannot be reified inside `buildArray` while the enclosing `body`'s own opaque type is
+// still under inference — the compiler reports "underlying type for opaque result type … could
+// not be inferred". `Render.Builder` vends no `buildExpression` and no `buildFinalResult`, so
+// there is no hook to normalize the element: the loop body's raw type flows straight into
+// `buildArray`.
+//
+// Naming them makes the element type concrete. This is exactly the shape of the module's
+// already-green `for` loop (`BackupCodesGrid` / `BackupCodeItem`,
+// Identity.View.MFA.BackupCodes.Display.swift:110-128). Opacity is fine as a `body` — these
+// structs' own bodies are still `some HTML.View` and still carry the full `.css` chains. It is
+// only fatal as a `buildArray` element type.
+//
+// The action closures are resolved to a `URL` at the call site, so these carry no dependency
+// back on the parent view.
+
+private struct ConnectionCard: HTML.View {
+    let connection: Identity.OAuth.Connection
+    let disconnectHref: URL
+
+    var body: some HTML.View {
+        div {
+            HStack(alignment: .middle) {
+                // Provider info
+                // `.leading` is not an AlignItems value on the institute surface; the CSS
+                // logical-start alignment it denoted is `.start`.
+                VStack(alignment: .start) {
+                    div {
+                        strong { connection.provider }
+                            .css
+                            .fontSize(.rem(1.1))
                     }
-                    .flex(.custom(grow: 1, shrink: 1, basis: .auto))
 
-                    // Disconnect button
-                    form(
-                        action: .init(disconnectAction(connection.provider).absoluteString),
-                        method: .post
-                    ) {
-                        button(type: .submit) {
+                    small {
+                        HTML.Group {
                             TranslatedString(
-                                dutch: "Verbinding verbreken",
-                                english: "Disconnect"
+                                dutch: "Verbonden op: ",
+                                english: "Connected: "
                             )
                         }
-                        .class("btn btn-danger btn-sm")
-                        .padding(vertical: .small, horizontal: .medium)
-                        .borderRadius(.small)
-                        .backgroundColor(.red500)
-                        .color(.white)
-                        .border(.none)
-                        .cursor(.pointer)
-                        .backgroundColor(.red600, pseudo: .hover)
+                        span { formatDate(connection.connectedAt) }
                     }
+                    .css
+                    .color(.gray600)
                 }
-                .gap(.length(.medium))
-            }
-            .padding(.medium)
+                .css
+                .flex(.custom(grow: 1, shrink: 1, basis: .auto))
 
-            //            .border(.width(.px(1)))
-            //            .border(.color(.gray300))
-            //            .border(.radius(.medium))
-            .background(.white)
-        }
-
-        @HTMLBuilder
-        private func availableProviderCard(for provider: Identity.OAuth.Provider) -> some HTML {
-            div {
-                HStack(alignment: .center) {
-                    // Provider info
-                    VStack(alignment: .leading) {
-                        div {
-                            strong { provider.displayName }
-                                .fontSize(.rem(1.1))
-                        }
-
-                        small {
-                            TranslatedString(
-                                dutch: "Niet verbonden",
-                                english: "Not connected"
-                            )
-                        }
-                        .color(.gray600)
-                    }
-                    .flex(.custom(grow: 1, shrink: 1, basis: .auto))
-
-                    // Connect button
-                    a(href: .url(connectAction(provider.identifier))) {
+                // Disconnect button
+                form(
+                    action: .init(disconnectHref.absoluteString),
+                    method: .post
+                ) {
+                    button(type: .submit) {
                         TranslatedString(
-                            dutch: "Verbinden",
-                            english: "Connect"
+                            dutch: "Verbinding verbreken",
+                            english: "Disconnect"
                         )
                     }
-                    .class("btn btn-primary btn-sm")
-                    .padding(vertical: .medium, horizontal: .small)
-                    .borderRadius(.small)
-                    .backgroundColor(.blue)
+                    .class("btn btn-danger btn-sm")
+                    .css
+                    .padding(vertical: .small, horizontal: .medium)
+                    .borderRadius(.rem(0.375))
+                    .backgroundColor(.red500)
                     .color(.white)
-                    .textDecoration(TextDecoration.none)
-                    .display(.inlineBlock)
-                    .opacity(0.9, pseudo: .hover)
+                    .border(.none)
+                    .cursor(.pointer)
+                    .hover { $0.backgroundColor(.red600) }
                 }
-                .gap(.length(.medium))
             }
-            .padding(.medium)
-            .borderWidth(.px(1))
-            .borderColor(.gray300)
-            .borderRadius(.medium)
-            .backgroundColor(.gray100)
+            .css
+            .gap(.length(.rem(1.5)))
         }
+        .css
+        .padding(.medium)
 
-        private func formatDate(_ date: Date) -> String {
-            let formatter = DateFormatter()
-            formatter.dateStyle = .medium
-            formatter.timeStyle = .none
-            return formatter.string(from: date)
+        //            .border(.width(.px(1)))
+        //            .border(.color(.gray300))
+        //            .border(.radius(.medium))
+        .backgroundColor(.white)
+    }
+
+    private func formatDate(_ date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.dateStyle = .medium
+        formatter.timeStyle = .none
+        return formatter.string(from: date)
+    }
+}
+
+private struct AvailableProviderCard: HTML.View {
+    let provider: Identity.OAuth.Provider
+    let connectHref: URL
+
+    var body: some HTML.View {
+        div {
+            HStack(alignment: .middle) {
+                // Provider info
+                VStack(alignment: .start) {
+                    div {
+                        strong { provider.displayName }
+                            .css
+                            .fontSize(.rem(1.1))
+                    }
+
+                    small {
+                        TranslatedString(
+                            dutch: "Niet verbonden",
+                            english: "Not connected"
+                        )
+                    }
+                    .css
+                    .color(.gray600)
+                }
+                .css
+                .flex(.custom(grow: 1, shrink: 1, basis: .auto))
+
+                // Connect button
+                a(href: .init(connectHref.absoluteString)) {
+                    TranslatedString(
+                        dutch: "Verbinden",
+                        english: "Connect"
+                    )
+                }
+                .class("btn btn-primary btn-sm")
+                .css
+                .padding(vertical: .medium, horizontal: .small)
+                .borderRadius(.rem(0.375))
+                .backgroundColor(.blue)
+                .color(.white)
+                .textDecoration(TextDecoration.none)
+                .display(.inlineBlock)
+                .hover { $0.opacity(0.9) }
+            }
+            .css
+            .gap(.length(.rem(1.5)))
         }
+        .css
+        .padding(.medium)
+        .borderWidth(.px(1))
+        .borderColor(.gray300)
+        .borderRadius(.rem(0.5))
+        .backgroundColor(.gray100)
     }
 }
 

@@ -7,13 +7,13 @@
 
 import Foundation
 import HTML
-import HTMLCSSPointFreeHTML
-import HTMLWebsite
 import IdentitiesTypes
 import Language
+import Translating
+import Webpage
 
 extension Identity.OAuth.Callback {
-    public struct View: HTML {
+    public struct View: HTML.View {
         let provider: String
         let redirectUrl: (Identity.ID) async throws -> URL
 
@@ -25,8 +25,8 @@ extension Identity.OAuth.Callback {
             self.redirectUrl = redirectUrl
         }
 
-        @HTMLBuilder
-        var hiddenInputs: some HTML {
+        @HTML.Builder
+        var hiddenInputs: some HTML.View {
             input.hidden(name: "code", value: "")
                 .id("fallback-code")
             input.hidden(name: "state", value: "")
@@ -35,7 +35,7 @@ extension Identity.OAuth.Callback {
             input.hidden(name: "provider", value: .init(provider))
         }
 
-        public var body: some HTML {
+        public var body: some HTML.View {
             PageModule(theme: .authenticationFlow) {
                 VStack(alignment: .center) {
                     // Loading spinner
@@ -43,6 +43,7 @@ extension Identity.OAuth.Callback {
                         div {
                             // CSS spinner
                             div {}
+                                .css
                                 .width(.px(50))
                                 .height(.px(50))
                                 .border(width: .px(5), style: .solid, color: .gray300)
@@ -50,6 +51,7 @@ extension Identity.OAuth.Callback {
                                 .borderRadius(.percent(50))
                                 .inlineStyle("animation", "spin 1s linear infinite")
                         }
+                        .css
                         .marginBottom(.large)
 
                         // Add keyframes for spinner animation
@@ -70,6 +72,7 @@ extension Identity.OAuth.Callback {
                             english: "Processing..."
                         )
                     }
+                    .css
                     .fontSize(.large)
                     .marginBottom(.medium)
 
@@ -80,6 +83,7 @@ extension Identity.OAuth.Callback {
                             english: "Processing your \(provider) authentication."
                         )
                     }
+                    .css
                     .color(.gray600)
                     .marginBottom(.small)
 
@@ -89,6 +93,7 @@ extension Identity.OAuth.Callback {
                             english: "You will be redirected automatically..."
                         )
                     }
+                    .css
                     .fontSize(.rem(0.9))
                     .color(.gray500)
 
@@ -102,7 +107,7 @@ extension Identity.OAuth.Callback {
                             const code = urlParams.get('code');
                             const state = urlParams.get('state');
                             const provider = urlParams.get('provider') || '\(provider)';
-                            
+
                             if (code && state) {
                                 // Make API call to process the OAuth callback
                                 fetch('/api/oauth/callback?' + urlParams.toString(), {
@@ -146,10 +151,11 @@ extension Identity.OAuth.Callback {
                                         "JavaScript is disabled. Please click the button below to continue."
                                 )
                             }
+                            .css
                             .color(.orange600)
                             .padding(.medium)
                             .backgroundColor(.orange100)
-                            .borderRadius(.medium)
+                            .borderRadius(.rem(0.5))
                             .marginTop(.large)
 
                             form(
@@ -166,14 +172,16 @@ extension Identity.OAuth.Callback {
                                     )
                                 }
                                 .class("btn btn-primary")
+                                .css
                                 .padding(vertical: .large, horizontal: .medium)
                                 .backgroundColor(.blue)
                                 .color(.white)
-                                .borderRadius(.medium)
+                                .borderRadius(.rem(0.5))
                                 .border(.none)
                                 .cursor(.pointer)
-                                .backgroundColor(.blue.opacity(0.9), pseudo: .hover)
+                                .hover { $0.backgroundColor(.blue.opacity(0.9)) }
                             }
+                            .css
                             .marginTop(.medium)
 
                             // Script to populate form values
@@ -187,6 +195,7 @@ extension Identity.OAuth.Callback {
                         }
                     }
                 }
+                .css
                 .width(.percent(100))
                 .maxWidth(.px(400))
                 .margin(.auto)

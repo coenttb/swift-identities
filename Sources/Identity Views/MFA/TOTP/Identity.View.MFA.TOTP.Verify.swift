@@ -7,16 +7,16 @@
 
 import Foundation
 import HTML
-import HTMLWebsite
 import IdentitiesTypes
 import ServerFoundationVapor
+import Webpage
 
 // MARK: - Helper Views
 
-private struct VerifyCodeInput: HTML {
+private struct VerifyCodeInput: HTML.View {
     let inputId: String
 
-    var body: some HTML {
+    var body: some HTML.View {
         VStack {
             input.text(
                 name: "code",
@@ -29,6 +29,7 @@ private struct VerifyCodeInput: HTML {
             .id(inputId)
             .autofocus(true)
             .autocorrect(.off)
+            .css
             .padding(.rem(1))
             .fontSize(.rem(2))
             .fontFamily(.monospace)
@@ -41,23 +42,28 @@ private struct VerifyCodeInput: HTML {
             .backgroundColor(.background.primary)
             .inlineStyle("letter-spacing", "0.75rem")
             .inlineStyle("text-indent", "0.75rem")
-            .transition("border-color 0.2s, box-shadow 0.2s")
+            .inlineStyle("transition", "border-color 0.2s, box-shadow 0.2s")
             .inlineStyle("outline", "none")
-            .borderColor(.branding.primary, pseudo: .focus)
-            .inlineStyle("box-shadow", "0 0 0 4px rgba(59, 130, 246, 0.15)", pseudo: .focus)
+            .focus {
+                $0
+                    .borderColor(.branding.primary)
+                    .inlineStyle("box-shadow", "0 0 0 4px rgba(59, 130, 246, 0.15)")
+            }
         }
+        .css
         .marginBottom(.rem(1.5))
     }
 }
 
-private struct AttemptsWarning: HTML {
+private struct AttemptsWarning: HTML.View {
     let attempts: Int
 
-    var body: some HTML {
+    var body: some HTML.View {
         div {
             span { "⚠️ " }
-            HTMLText("\(attempts) attempt\(attempts == 1 ? "" : "s") remaining")
+            HTML.Text("\(attempts) attempt\(attempts == 1 ? "" : "s") remaining")
         }
+        .css
         .padding(.rem(0.75))
         .backgroundColor(.background.warning.map { $0.opacity(0.1) })
         .borderRadius(.rem(0.5))
@@ -69,13 +75,14 @@ private struct AttemptsWarning: HTML {
     }
 }
 
-private struct VerifyButton: HTML {
-    var body: some HTML {
+private struct VerifyButton: HTML.View {
+    var body: some HTML.View {
         Button(
             button: .init(type: .submit)
         ) {
             "Verify"
         }
+        .css
         .color(.text.primary.reverse())
         .backgroundColor(.branding.primary)
         .padding(vertical: .rem(0.875), horizontal: .rem(3))
@@ -85,18 +92,22 @@ private struct VerifyButton: HTML {
         .width(.percent(100))
         .maxWidth(.rem(14))
         .margin(horizontal: .auto)
-        .transition("background-color 0.2s, transform 0.1s")
-        .backgroundColor(.branding.primary.map { $0.opacity(0.9) }, pseudo: .hover)
-        .inlineStyle("transform", "scale(0.98)", pseudo: .active)
+        .inlineStyle("transition", "background-color 0.2s, transform 0.1s")
+        .hover {
+            $0.backgroundColor(.branding.primary.map { $0.opacity(0.9) })
+        }
+        .active {
+            $0.inlineStyle("transform", "scale(0.98)")
+        }
         .marginBottom(.rem(2))
     }
 }
 
-private struct AlternativeOptions: HTML {
+private struct AlternativeOptions: HTML.View {
     let useBackupCodeHref: URL?
     let cancelHref: URL
 
-    var body: some HTML {
+    var body: some HTML.View {
         HStack {
             if let backupHref = useBackupCodeHref {
                 Link(href: .init(backupHref.relativePath)) {
@@ -107,6 +118,7 @@ private struct AlternativeOptions: HTML {
                 .textDecoration(.underline)
 
                 span { "•" }
+                    .css
                     .color(.text.tertiary)
                     .margin(horizontal: .rem(0.75))
             }
@@ -117,15 +129,16 @@ private struct AlternativeOptions: HTML {
             .linkColor(.text.secondary)
             .font(.body(.small))
             .textDecoration(.underline)
-            .color(.text.primary, pseudo: .hover)
+            .hover { $0.color(.text.primary) }
         }
+        .css
         .justifyContent(.center)
         .alignItems(.center)
     }
 }
 
 extension Identity.MFA.TOTP.Verify {
-    package struct View: HTML {
+    package struct View: HTML.View {
         let sessionToken: String
         let verifyAction: URL
         let useBackupCodeHref: URL?
@@ -149,7 +162,7 @@ extension Identity.MFA.TOTP.Verify {
         private static let form_id: String = "totp-verify-form"
         private static let code_input_id: String = "totp-verify-code"
 
-        package var body: some HTML {
+        package var body: some HTML.View {
             PageModule(theme: .authenticationFlow) {
                 form(
                     action: .init(verifyAction.relativePath),
@@ -157,7 +170,8 @@ extension Identity.MFA.TOTP.Verify {
                 ) {
                     VStack {
                         // Instructions
-                        HTMLText("Enter the 6-digit code from your authenticator app")
+                        HTML.Text("Enter the 6-digit code from your authenticator app")
+                            .css
                             .font(.body)
                             .color(.text.secondary)
                             .textAlign(.center)
@@ -186,9 +200,10 @@ extension Identity.MFA.TOTP.Verify {
                     }
                 }
                 .id(Self.form_id)
+                .css
                 .width(.percent(100))
                 .maxWidth(.identityComponentDesktop)
-                .maxWidth(.identityComponentMobile, media: .mobile)
+                .mobile { $0.maxWidth(.identityComponentMobile) }
                 .margin(horizontal: .auto)
 
                 // Enhanced JavaScript with better UX
@@ -198,26 +213,26 @@ extension Identity.MFA.TOTP.Verify {
                         const codeInput = document.getElementById('\(Self.code_input_id)');
                         const form = document.getElementById('\(Self.form_id)');
                         let isSubmitting = false;
-                        
+
                         if (codeInput && form) {
                             // Auto-submit when 6 digits entered
                             codeInput.addEventListener('input', function(e) {
                                 // Remove non-digits
                                 e.target.value = e.target.value.replace(/[^0-9]/g, '');
-                                
+
                                 if (e.target.value.length === 6 && !isSubmitting) {
                                     isSubmitting = true;
                                     // Visual feedback
                                     codeInput.style.borderColor = '#10b981';
                                     codeInput.style.backgroundColor = '#f0fdf4';
-                                    
+
                                     // Auto-submit after a brief delay
                                     setTimeout(() => {
                                         form.submit();
                                     }, 300);
                                 }
                             });
-                            
+
                             // Paste handling
                             codeInput.addEventListener('paste', function(e) {
                                 e.preventDefault();
@@ -226,7 +241,7 @@ extension Identity.MFA.TOTP.Verify {
                                 codeInput.value = digits;
                                 codeInput.dispatchEvent(new Event('input'));
                             });
-                            
+
                             // Focus on load
                             codeInput.focus();
                             codeInput.select();
@@ -238,6 +253,7 @@ extension Identity.MFA.TOTP.Verify {
                 Header(3) {
                     "Verify Your Identity"
                 }
+                .css
                 .color(.text.primary)
             }
         }

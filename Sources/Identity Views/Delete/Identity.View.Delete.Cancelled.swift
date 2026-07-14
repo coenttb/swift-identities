@@ -7,16 +7,17 @@
 
 import Foundation
 import HTML
-import HTMLWebsite
 import IdentitiesTypes
 import ServerFoundationVapor
+import Translating
+import Webpage
 
 extension Identity.Deletion {
     package enum Cancelled {}
 }
 
 extension Identity.Deletion.Cancelled {
-    package struct View: HTML {
+    package struct View: HTML.View {
         let homeHref: URL
 
         package init(
@@ -27,7 +28,7 @@ extension Identity.Deletion.Cancelled {
 
         private static var cancellationId: String { "delete-cancellation-id" }
 
-        package var body: some HTML {
+        package var body: some HTML.View {
             PageModule(theme: .authenticationFlow) {
                 VStack {
                     div {
@@ -36,12 +37,13 @@ extension Identity.Deletion.Cancelled {
                             english: "✓ Deletion cancelled"
                         )
                     }
+                    .css
                     .fontWeight(.bold)
                     .color(.text.success)
                     .textAlign(.center)
                     .margin(bottom: .rem(1))
 
-                    HTMLComponents.Paragraph {
+                    Paragraph {
                         TranslatedString(
                             dutch:
                                 "Uw verzoek om uw account te verwijderen is succesvol geannuleerd.",
@@ -49,18 +51,20 @@ extension Identity.Deletion.Cancelled {
                                 "Your request to delete your account has been successfully cancelled."
                         )
                     }
+                    .css
                     .font(.body)
                     .textAlign(.center)
                     .margin(bottom: .rem(1))
                     .color(.text.primary)
 
-                    HTMLComponents.Paragraph {
+                    Paragraph {
                         TranslatedString(
                             dutch: "Uw account blijft actief en al uw gegevens zijn behouden.",
                             english:
                                 "Your account remains active and all your data has been preserved."
                         )
                     }
+                    .css
                     .font(.body(.small))
                     .textAlign(.center)
                     .color(.text.secondary)
@@ -78,9 +82,10 @@ extension Identity.Deletion.Cancelled {
                     .font(.body(.small))
                     .textAlign(.center)
                 }
+                .css
                 .width(.percent(100))
                 .maxWidth(.identityComponentDesktop)
-                .maxWidth(.identityComponentMobile, media: .mobile)
+                .mobile { $0.maxWidth(.identityComponentMobile) }
                 .margin(horizontal: .auto)
                 .textAlign(.center)
             } title: {
@@ -90,11 +95,13 @@ extension Identity.Deletion.Cancelled {
                         english: "Deletion Cancelled"
                     )
                 }
+                .css
                 .color(.text.primary)
                 .display(.inlineBlock)
                 .textAlign(.center)
             }
             .id(Self.cancellationId)
+            .css
             .width(.percent(100))
 
             script {

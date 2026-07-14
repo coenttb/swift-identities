@@ -7,12 +7,13 @@
 
 import Foundation
 import HTML
-import HTMLWebsite
 import IdentitiesTypes
 import Language
+import Translating
+import Webpage
 
 extension Identity.OAuth.Error {
-    public struct View: HTML {
+    public struct View: HTML.View {
         let errorMessage: String
         let retryHref: URL
         let cancelHref: URL
@@ -27,15 +28,16 @@ extension Identity.OAuth.Error {
             self.cancelHref = cancelHref
         }
 
-        public var body: some HTML {
+        public var body: some HTML.View {
             PageModule(theme: .content) {
                 VStack(alignment: .center) {
                     // Error icon
                     div {
                         "⚠️"
                     }
+                    .css
                     .fontSize(.rem(3))
-                    .marginBottom(.length(.medium))
+                    .marginBottom(.medium)
 
                     // Title
                     h2 {
@@ -45,9 +47,10 @@ extension Identity.OAuth.Error {
                         )
                     }
                     //                    .font(.title(.regular))
+                    .css
                     .fontSize(.large)
                     .color(.red600)
-                    .marginBottom(.length(.medium))
+                    .marginBottom(.medium)
 
                     // Error message
                     div {
@@ -57,54 +60,60 @@ extension Identity.OAuth.Error {
                                 english: "An error occurred during authentication:"
                             )
                         }
-                        .marginBottom(.length(.small))
+                        .css
+                        .marginBottom(.small)
 
                         div {
                             code { errorMessage }
+                                .css
                                 .padding(.medium)
                                 .backgroundColor(.background.secondary)
-                                .borderRadius(.small)
+                                .borderRadius(.rem(0.375))
                                 .display(.block)
                                 .wordBreak(.breakAll)
                                 .fontFamily(.monospace)
                                 .fontSize(.rem(0.9))
                         }
                     }
-                    .marginBottom(.length(.large))
+                    .css
+                    .marginBottom(.large)
 
                     // Actions
-                    HStack(alignment: .center) {
-                        a(href: .url(retryHref)) {
+                    HStack(alignment: .middle) {
+                        a(href: .init(retryHref.absoluteString)) {
                             TranslatedString(
                                 dutch: "Opnieuw proberen",
                                 english: "Try Again"
                             )
                         }
                         .class("btn btn-primary")
+                        .css
                         .padding(vertical: .medium, horizontal: .large)
                         .backgroundColor(.blue500)
                         .color(.white)
-                        .borderRadius(.medium)
+                        .borderRadius(.rem(0.5))
                         .textDecoration(TextDecoration.none)
                         .display(.inlineBlock)
-                        .backgroundColor(.blue600, pseudo: .hover)
+                        .hover { $0.backgroundColor(.blue600) }
 
-                        a(href: .url(cancelHref)) {
+                        a(href: .init(cancelHref.absoluteString)) {
                             TranslatedString(
                                 dutch: "Annuleren",
                                 english: "Cancel"
                             )
                         }
                         .class("btn btn-secondary")
+                        .css
                         .padding(vertical: .medium, horizontal: .large)
                         .backgroundColor(.gray200)
                         .color(.gray700)
-                        .borderRadius(.medium)
+                        .borderRadius(.rem(0.5))
                         .textDecoration(TextDecoration.none)
                         .display(.inlineBlock)
-                        .backgroundColor(.gray300, pseudo: .hover)
+                        .hover { $0.backgroundColor(.gray300) }
                     }
-                    .gap(.length(.medium))
+                    .css
+                    .gap(.length(.rem(1.5)))
                     .justifyContent(.center)
 
                     // Help text
@@ -117,17 +126,21 @@ extension Identity.OAuth.Error {
                                     "If this problem persists, please contact the administrator."
                             )
                         }
+                        .css
                         .fontSize(.rem(0.9))
                         .color(.gray600)
                         .textAlign(.center)
                     }
+                    .css
                     .marginTop(.extraLarge)
                 }
+                .css
                 .width(.percent(100))
                 .maxWidth(.px(500))
                 .margin(.auto)
                 .padding(.extraLarge)
             }
+            .css
             .maxWidth(.px(800))
             .margin(.auto)
         }

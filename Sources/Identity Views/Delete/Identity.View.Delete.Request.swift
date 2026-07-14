@@ -7,12 +7,13 @@
 
 import Foundation
 import HTML
-import HTMLWebsite
 import IdentitiesTypes
 import ServerFoundationVapor
+import Translating
+import Webpage
 
 extension Identity.Deletion.Request {
-    package struct View: HTML {
+    package struct View: HTML.View {
         let deleteRequestAction: URL
         let cancelAction: URL
         let homeHref: URL
@@ -33,7 +34,7 @@ extension Identity.Deletion.Request {
         private static var pagemodule_delete_request_id: String { "pagemodule-delete-request" }
         private static var form_id: String { "form-delete-request" }
 
-        package var body: some HTML {
+        package var body: some HTML.View {
             PageModule(theme: .authenticationFlow) {
                 VStack {
                     div {
@@ -44,11 +45,12 @@ extension Identity.Deletion.Request {
                                     english: "⚠️ Warning"
                                 )
                             }
+                            .css
                             .fontWeight(.bold)
                             .color(.text.error)
                             .margin(bottom: .rem(0.5))
 
-                            HTMLComponents.Paragraph {
+                            Paragraph {
                                 TranslatedString(
                                     dutch:
                                         "Dit zal permanent uw account en alle bijbehorende gegevens verwijderen. Deze actie kan niet ongedaan worden gemaakt.",
@@ -56,15 +58,17 @@ extension Identity.Deletion.Request {
                                         "This will permanently delete your account and all associated data. This action cannot be undone."
                                 )
                             }
+                            .css
                             .font(.body(.small))
                             .color(.text.secondary)
                         }
+                        .css
                         .padding(.rem(1))
                         .backgroundColor(.background.error.map { $0.opacity(0.3) })
-                        .borderRadius(.medium)
+                        .borderRadius(.rem(0.5))
                         .margin(bottom: .rem(1.5))
 
-                        HTMLComponents.Paragraph {
+                        Paragraph {
                             TranslatedString(
                                 dutch:
                                     "Voer uw wachtwoord in om door te gaan met het verwijderen van uw account.",
@@ -72,6 +76,7 @@ extension Identity.Deletion.Request {
                                     "Enter your password to proceed with deleting your account."
                             )
                         }
+                        .css
                         .font(.body(.regular))
                         .textAlign(.center)
                         .color(.text.secondary)
@@ -105,6 +110,7 @@ extension Identity.Deletion.Request {
                                             english: "Delete Account"
                                         )
                                     }
+                                    .css
                                     .backgroundColor(.background.error)
                                     .color(.text.primary.reverse())
                                     .width(.percent(100))
@@ -120,19 +126,22 @@ extension Identity.Deletion.Request {
                                     .fontWeight(.medium)
                                     .font(.body(.small))
                                 }
-                                .flexContainer(
-                                    justification: .center,
-                                    itemAlignment: .center,
-                                    media: .desktop
-                                )
+                                .css
+                                .desktop {
+                                    $0.flexContainer(
+                                        justification: .center,
+                                        itemAlignment: .center
+                                    )
+                                }
                                 .width(.percent(100))
                             }
                         }
                         .id(Self.form_id)
                     }
+                    .css
                     .width(.percent(100))
                     .maxWidth(.identityComponentDesktop)
-                    .maxWidth(.identityComponentMobile, media: .mobile)
+                    .mobile { $0.maxWidth(.identityComponentMobile) }
                     .margin(horizontal: .auto)
                 }
             } title: {
@@ -142,11 +151,13 @@ extension Identity.Deletion.Request {
                         english: "Delete Account"
                     )
                 }
+                .css
                 .color(.text.primary)
                 .display(.inlineBlock)
                 .textAlign(.center)
             }
             .id(Self.pagemodule_delete_request_id)
+            .css
             .width(.percent(100))
 
             script {
@@ -160,15 +171,15 @@ extension Identity.Deletion.Request {
                     errorContainer.style.textAlign = 'center';
                     errorContainer.style.display = 'none';
                     form.appendChild(errorContainer);
-                    
+
                     form.addEventListener('submit', async function(event) {
                         event.preventDefault();
                         errorContainer.style.display = 'none';
                         errorContainer.textContent = '';
-                        
+
                         const formData = new FormData(form);
                         const password = formData.get('\#(Identity.Authentication.Credentials.CodingKeys.password.rawValue)');
-                        
+
                         try {
                             // First, get reauthorization token
                             const reauthResponse = await fetch('\#(reauthorizationURL.absoluteString)', {
@@ -182,7 +193,7 @@ extension Identity.Deletion.Request {
                                 }).toString(),
                                 credentials: 'same-origin'
                             });
-                            
+
                             if (!reauthResponse.ok) {
                                 const reauthData = await reauthResponse.json();
                                 throw new Error(reauthData.reason || '\#(TranslatedString(
@@ -190,19 +201,19 @@ extension Identity.Deletion.Request {
                                 english: "Invalid password"
                             ))');
                             }
-                            
+
                             const reauthData = await reauthResponse.json();
-                            
+
                             // Get the reauthorization token from the response
                             const reauthToken = reauthData.data?.token || '';
-                            
+
                             if (!reauthToken) {
                                 throw new Error('\#(TranslatedString(
                                 dutch: "Herautorisatie mislukt",
                                 english: "Reauthorization failed"
                             ))');
                             }
-                            
+
                             // Then submit deletion request with reauth token
                             const deleteResponse = await fetch(form.action, {
                                 method: form.method,
@@ -215,7 +226,7 @@ extension Identity.Deletion.Request {
                                 }).toString(),
                                 credentials: 'same-origin'
                             });
-                            
+
                             if (!deleteResponse.ok) {
                                 const deleteData = await deleteResponse.json();
                                 throw new Error(deleteData.reason || '\#(TranslatedString(
@@ -223,9 +234,9 @@ extension Identity.Deletion.Request {
                                 english: "Deletion request failed"
                             ))');
                             }
-                            
+
                             const deleteData = await deleteResponse.json();
-                            
+
                             if (deleteData.success) {
                                 // Replace view with pending status
                                 const pageModule = document.getElementById('\#(Self.pagemodule_delete_request_id)');
@@ -245,7 +256,7 @@ extension Identity.Deletion.Request {
                             displayError(error.message);
                         }
                     });
-                    
+
                     function displayError(message) {
                         errorContainer.textContent = message;
                         errorContainer.style.display = 'block';
@@ -258,7 +269,7 @@ extension Identity.Deletion.Request {
 }
 
 extension Identity.Deletion.Request.View {
-    package struct PendingReceipt: HTML {
+    package struct PendingReceipt: HTML.View {
         let daysRemaining: Int
         let cancelAction: URL
         let homeHref: URL
@@ -273,7 +284,7 @@ extension Identity.Deletion.Request.View {
             self.homeHref = homeHref
         }
 
-        package var body: some HTML {
+        package var body: some HTML.View {
             PageModule(theme: .authenticationFlow) {
                 VStack {
                     div {
@@ -282,12 +293,13 @@ extension Identity.Deletion.Request.View {
                             english: "✓ Deletion request received"
                         )
                     }
+                    .css
                     .fontWeight(.medium)
                     .color(.text.success)
                     .textAlign(.center)
                     .margin(bottom: .rem(1))
 
-                    HTMLComponents.Paragraph {
+                    Paragraph {
                         TranslatedString(
                             dutch:
                                 "Uw account is gepland voor verwijdering. U heeft een bedenktijd van \(daysRemaining) dagen.",
@@ -295,6 +307,7 @@ extension Identity.Deletion.Request.View {
                                 "Your account is scheduled for deletion. You have a grace period of \(daysRemaining) days."
                         )
                     }
+                    .css
                     .textAlign(.center)
                     .margin(bottom: .rem(1.5))
 
@@ -305,10 +318,11 @@ extension Identity.Deletion.Request.View {
                                 english: "\(daysRemaining) days remaining"
                             )
                         }
+                        .css
                         .margin(bottom: .rem(0.5))
                         .color(.text.primary)
 
-                        HTMLComponents.Paragraph {
+                        Paragraph {
                             TranslatedString(
                                 dutch:
                                     "U kunt de verwijdering op elk moment tijdens deze periode annuleren.",
@@ -316,12 +330,14 @@ extension Identity.Deletion.Request.View {
                                     "You can cancel the deletion at any time during this period."
                             )
                         }
+                        .css
                         .font(.body(.small))
                         .color(.text.primary)
                     }
+                    .css
                     .padding(.rem(1))
                     .backgroundColor(.background.warning /*.opacity(0.1)*/)
-                    .borderRadius(.medium)
+                    .borderRadius(.rem(0.5))
                     .textAlign(.center)
                     .margin(bottom: .rem(2))
 
@@ -338,6 +354,7 @@ extension Identity.Deletion.Request.View {
                                     english: "Cancel Deletion"
                                 )
                             }
+                            .css
                             .backgroundColor(.background.success)
                             .color(.text.primary.reverse())
                             .width(.percent(100))
@@ -354,14 +371,16 @@ extension Identity.Deletion.Request.View {
                         .fontWeight(.medium)
                         .font(.body(.small))
                     }
-                    .flexContainer(
-                        justification: .center,
-                        itemAlignment: .center,
-                        media: .desktop
-                    )
+                    .css
+                    .desktop {
+                        $0.flexContainer(
+                            justification: .center,
+                            itemAlignment: .center
+                        )
+                    }
                     .width(.percent(100))
                     .maxWidth(.identityComponentDesktop)
-                    .maxWidth(.identityComponentMobile, media: .mobile)
+                    .mobile { $0.maxWidth(.identityComponentMobile) }
                     .margin(horizontal: .auto)
                 }
             } title: {
@@ -371,10 +390,12 @@ extension Identity.Deletion.Request.View {
                         english: "Account Deletion Pending"
                     )
                 }
+                .css
                 .color(.text.primary)
                 .display(.inlineBlock)
                 .textAlign(.center)
             }
+            .css
             .width(.percent(100))
         }
     }

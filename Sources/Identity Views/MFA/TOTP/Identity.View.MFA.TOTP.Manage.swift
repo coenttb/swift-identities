@@ -7,22 +7,22 @@
 
 import Foundation
 import HTML
-import HTMLMarkdown
-import HTMLWebsite
 import IdentitiesTypes
 import ServerFoundationVapor
+import Webpage
 
 // MARK: - Helper Views
 
-private struct StatusIndicator: HTML {
+private struct StatusIndicator: HTML.View {
     let isEnabled: Bool
 
-    var body: some HTML {
+    var body: some HTML.View {
         div {
             if isEnabled {
                 //                span { "✅" }
                 //                    .fontSize(.rem(2))
                 span { "✓" }
+                    .css
                     .marginRight(.rem(0.75))
                     .fontSize(.rem(2))
                     .fontWeight(.bold)
@@ -36,52 +36,60 @@ private struct StatusIndicator: HTML {
                 //                    .marginBottom(.rem(1.5))
 
                 span { "Enabled" }
+                    .css
                     .color(.text.success)
                     .fontWeight(.bold)
                     .fontSize(.rem(1.25))
             } else {
                 span { "⚠️" }
+                    .css
                     .fontSize(.rem(2))
                     .marginRight(.rem(0.75))
 
                 span { "Disabled" }
+                    .css
                     .color(.text.warning)
                     .fontWeight(.bold)
                     .fontSize(.rem(1.25))
             }
         }
+        .css
         .display(.flex)
         .alignItems(.center)
         .marginBottom(.rem(0.75))
     }
 }
 
-private struct BackupCodesSection: HTML {
+private struct BackupCodesSection: HTML.View {
     let remaining: Int
     let regenerateAction: URL?
 
-    var body: some HTML {
+    var body: some HTML.View {
         div {
             VStack {
                 h3 { "Backup Codes" }
+                    .css
                     .fontWeight(.bold)
                     .marginBottom(.rem(0.5))
 
                 VStack {
                     p {
-                        HTMLText("\(remaining) backup code\(remaining == 1 ? "" : "s") remaining")
+                        HTML.Text("\(remaining) backup code\(remaining == 1 ? "" : "s") remaining")
                     }
+                    .css
                     .color(remaining <= 2 ? .text.warning : .text.secondary)
                     .fontWeight(remaining <= 2 ? .bold : .normal)
 
                     if remaining <= 2 {
                         p {
-                            HTMLText("Consider regenerating your backup codes soon.")
+                            HTML.Text("Consider regenerating your backup codes soon.")
                         }
+                        .css
                         .font(.body(.small))
                         .color(.text.warning)
                     }
                 }
+                .css
                 .gap(.rem(0.25))
                 .marginBottom(.rem(0.75))
 
@@ -95,6 +103,11 @@ private struct BackupCodesSection: HTML {
                         ) {
                             "Regenerate Backup Codes"
                         }
+                        .attribute(
+                            "onclick",
+                            "return confirm('This will invalidate your existing backup codes. Continue?')"
+                        )
+                        .css
                         .color(.text.secondary)
                         .backgroundColor(.background.secondary.map { $0.opacity(0.2) })
                         .padding(vertical: .rem(0.5), horizontal: .rem(1))
@@ -102,19 +115,15 @@ private struct BackupCodesSection: HTML {
                         .border(width: .px(1), style: .solid, color: .background.primary)
                         .fontWeight(.medium)
                         .font(.body(.small))
-                        .transition("background-color 0.2s")
-                        .backgroundColor(
-                            .background.secondary.map { $0.opacity(0.5) },
-                            pseudo: .hover
-                        )
-                        .attribute(
-                            "onclick",
-                            "return confirm('This will invalidate your existing backup codes. Continue?')"
-                        )
+                        .inlineStyle("transition", "background-color 0.2s")
+                        .hover {
+                            $0.backgroundColor(.background.secondary.map { $0.opacity(0.5) })
+                        }
                     }
                 }
             }
         }
+        .css
         .padding(.rem(1))
         .backgroundColor(.background.secondary.map { $0.opacity(0.1) })
         .borderRadius(.rem(0.5))
@@ -122,20 +131,22 @@ private struct BackupCodesSection: HTML {
     }
 }
 
-private struct DisableSection: HTML {
+private struct DisableSection: HTML.View {
     let disableAction: URL
 
-    var body: some HTML {
+    var body: some HTML.View {
         div {
             VStack {
                 h3 { "Disable Two-Factor Authentication" }
+                    .css
                     .fontWeight(.semiBold)
                     .color(.text.error)
                     .marginBottom(.rem(0.5))
 
                 p {
-                    HTMLText("Disabling 2FA will make your account less secure.")
+                    HTML.Text("Disabling 2FA will make your account less secure.")
                 }
+                .css
                 .color(.text.secondary)
                 .marginBottom(.rem(0.75))
 
@@ -148,31 +159,35 @@ private struct DisableSection: HTML {
                     ) {
                         "Disable 2FA"
                     }
+                    .attribute(
+                        "onclick",
+                        "return confirm('Are you sure you want to disable two-factor authentication?')"
+                    )
+                    .css
                     .color(.text.primary.reverse())
                     .backgroundColor(.background.error)
                     .padding(vertical: .rem(0.5), horizontal: .rem(1))
                     .borderRadius(.rem(0.375))
                     .fontWeight(.medium)
                     .font(.body(.small))
-                    .transition("background-color 0.2s")
-                    .backgroundColor(.background.error.map { $0.opacity(0.9) }, pseudo: .hover)
-                    .attribute(
-                        "onclick",
-                        "return confirm('Are you sure you want to disable two-factor authentication?')"
-                    )
+                    .inlineStyle("transition", "background-color 0.2s")
+                    .hover {
+                        $0.backgroundColor(.background.error.map { $0.opacity(0.9) })
+                    }
                 }
             }
         }
+        .css
         .border([.top], width: .px(1), style: .solid, color: .background.primary)
         .paddingTop(.rem(1.5))
     }
 }
 
-private struct EnableSection: HTML {
+private struct EnableSection: HTML.View {
     let enableAction: URL
 
-    var body: some HTML {
-        HTMLMarkdown {
+    var body: some HTML.View {
+        Markdown {
             """
             Protect your account by requiring a verification code in addition to your password when signing in.
 
@@ -181,16 +196,17 @@ private struct EnableSection: HTML {
             1. Install an authenticator app on your phone
             1. Scan a QR code to link your account
             1. Enter a 6-digit code when you sign in
-                
+
             """
         }
         VStack {
 
             p {
-                HTMLText(
+                HTML.Text(
                     "Recommended apps: Google Authenticator, Authy, 1Password, Microsoft Authenticator"
                 )
             }
+            .css
             .font(.body(.small))
             .color(.text.tertiary)
             .marginBottom(.rem(1.5))
@@ -198,6 +214,7 @@ private struct EnableSection: HTML {
             Link(href: .init(enableAction.relativePath)) {
                 "Set Up Two-Factor Authentication"
             }
+            .css
             .display(.inlineBlock)
             .color(.text.button)
             .backgroundColor(.background.button)
@@ -205,7 +222,7 @@ private struct EnableSection: HTML {
             .borderRadius(.rem(0.5))
             .fontWeight(.medium)
             .textDecoration(TextDecoration.none)
-            .transition("background-color 0.2s")
+            .inlineStyle("transition", "background-color 0.2s")
         }
     }
 }
@@ -216,7 +233,7 @@ extension Identity.MFA.TOTP {
 }
 
 extension Identity.MFA.TOTP.Manage {
-    package struct View: HTML {
+    package struct View: HTML.View {
         let isEnabled: Bool
         let backupCodesRemaining: Int?
         let enableAction: URL?
@@ -240,12 +257,13 @@ extension Identity.MFA.TOTP.Manage {
             self.dashboardHref = dashboardHref
         }
 
-        package var body: some HTML {
+        package var body: some HTML.View {
             PageModule(theme: .authenticationFlow) {
                 VStack {
                     // Status card
                     div {
                         Header(3) { "Two-Factor Authentication Settings" }
+                            .css
                             .color(.text.primary)
 
                         VStack(spacing: .rem(0.5)) {
@@ -253,15 +271,16 @@ extension Identity.MFA.TOTP.Manage {
 
                             p {
                                 if isEnabled {
-                                    HTMLText(
+                                    HTML.Text(
                                         "Your account is protected with two-factor authentication."
                                     )
                                 } else {
-                                    HTMLText(
+                                    HTML.Text(
                                         "Enable two-factor authentication for enhanced account security."
                                     )
                                 }
                             }
+                            .css
                             .color(.text.secondary)
                         }
 
@@ -286,6 +305,7 @@ extension Identity.MFA.TOTP.Manage {
                             }
                         }
                     }
+                    .css
                     .padding(.rem(1.5))
                     .backgroundColor(.background.primary)
                     .borderRadius(.rem(0.75))
@@ -299,14 +319,18 @@ extension Identity.MFA.TOTP.Manage {
                         }
                         .linkColor(.branding.primary)
                         .textDecoration(.underline)
-                        .transition("color 0.2s")
-                        .color(.branding.primary.map { $0.opacity(0.8) }, pseudo: .hover)
+                        .inlineStyle("transition", "color 0.2s")
+                        .hover {
+                            $0.color(.branding.primary.map { $0.opacity(0.8) })
+                        }
                     }
+                    .css
                     .textAlign(.center)
                 }
+                .css
                 .width(.percent(100))
                 .maxWidth(.identityComponentDesktop)
-                .maxWidth(.identityComponentMobile, media: .mobile)
+                .mobile { $0.maxWidth(.identityComponentMobile) }
                 .margin(horizontal: .auto)
             }
         }
@@ -317,7 +341,7 @@ extension Identity.MFA.TOTP.Manage {
     import SwiftUI
 
     #Preview {
-        HTMLDocument {
+        HTML.Document {
             Identity.MFA.TOTP.Manage.View(
                 isEnabled: false,
                 dashboardHref: URL(string: "/")!

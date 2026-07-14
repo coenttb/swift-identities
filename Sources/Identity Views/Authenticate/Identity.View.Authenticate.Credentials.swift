@@ -6,12 +6,13 @@
 //
 
 import Foundation
-import HTMLWebsite
+import HTML
 import IdentitiesTypes
 import ServerFoundationVapor
+import Webpage
 
 extension Identity.Authentication.Credentials {
-    package struct View: HTML {
+    package struct View: HTML.View {
         let passwordResetHref: URL
         let accountCreateHref: URL
         let loginFormAction: URL
@@ -40,7 +41,7 @@ extension Identity.Authentication.Credentials {
             """#
         }
 
-        package var body: some HTML {
+        package var body: some HTML.View {
 
             PageModule(theme: .authenticationFlow) {
                 form(
@@ -73,12 +74,13 @@ extension Identity.Authentication.Credentials {
                                 )
                             )
                             .id("password-input")
+                            .css
                             .inlineStyle("padding-right", "45px")
                             .width(.percent(100))
 
                             div {
                                 // Eye open icon (visible when password is hidden)
-                                HTMLRaw(
+                                HTML.Raw(
                                     #"""
                                     <svg id="eye-open" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                         <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
@@ -88,7 +90,7 @@ extension Identity.Authentication.Credentials {
                                 )
 
                                 // Eye closed icon (visible when password is shown)
-                                HTMLRaw(
+                                HTML.Raw(
                                     #"""
                                     <svg id="eye-closed" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: none;">
                                         <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
@@ -98,6 +100,10 @@ extension Identity.Authentication.Credentials {
                                 )
                             }
                             .id("password-toggle")
+                            .attribute("aria-label", "Toggle password visibility")
+                            .attribute("role", "button")
+                            .attribute("tabindex", "0")
+                            .css
                             .position(.absolute)
                             .right(.px(12))
                             .top(.percent(50))
@@ -105,10 +111,8 @@ extension Identity.Authentication.Credentials {
                             .cursor(.pointer)
                             .color(.gray)
                             .inlineStyle("transition", "color 0.2s")
-                            .attribute("aria-label", "Toggle password visibility")
-                            .attribute("role", "button")
-                            .attribute("tabindex", "0")
                         }
+                        .css
                         .position(.relative)
                         .width(.percent(100))
 
@@ -125,6 +129,7 @@ extension Identity.Authentication.Credentials {
                             ) {
                                 String.continue.capitalizingFirstLetter()
                             }
+                            .css
                             .color(.text.primary.reverse())
                             .width(.percent(100))
                             .justifyContent(.center)
@@ -133,6 +138,7 @@ extension Identity.Authentication.Credentials {
                                 span {
                                     "\(String.dont_have_an_account.capitalizingFirstLetter().questionmark) "
                                 }
+                                .css
                                 .color(.text.secondary)
 
                                 Link(href: .init(accountCreateHref.relativePath)) {
@@ -140,27 +146,33 @@ extension Identity.Authentication.Credentials {
                                 }
                                 .linkColor(.branding.primary)
                             }
+                            .css
                             .font(.body(.small))
                         }
-                        .flexContainer(
-                            justification: .center,
-                            itemAlignment: .center,
-                            media: .desktop
-                        )
+                        .css
+                        .desktop {
+                            $0.flexContainer(
+                                justification: .center,
+                                itemAlignment: .center
+                            )
+                        }
                         .width(.percent(100))
                     }
                 }
                 .id(Self.form_id)
+                .css
                 .width(.percent(100))
                 .maxWidth(.identityComponentDesktop)
-                .maxWidth(.identityComponentMobile, media: .mobile)
+                .mobile { $0.maxWidth(.identityComponentMobile) }
                 .margin(horizontal: .auto)
             } title: {
                 Header(3) {
                     String.welcome_back.capitalizingFirstLetter()
                 }
+                .css
                 .color(.text.primary)
             }
+            .css
             .width(.percent(100))
 
             script {
@@ -169,11 +181,11 @@ extension Identity.Authentication.Credentials {
                 const style = document.createElement('style');
                 style.textContent = `
                     @keyframes slideIn {
-                        0% { 
+                        0% {
                             opacity: 0;
                             transform: translateY(-10px);
                         }
-                        100% { 
+                        100% {
                             opacity: 1;
                             transform: translateY(0);
                         }
@@ -188,7 +200,7 @@ extension Identity.Authentication.Credentials {
                 document.addEventListener('DOMContentLoaded', function() {
                     const form = document.getElementById("\#(Self.form_id)");
                     let countdownInterval = null;
-                    
+
                     // Password visibility toggle - use name attribute selector as fallback
                     let passwordInput = document.querySelector('input[name="\#(Identity.Authentication.Credentials.CodingKeys.password.rawValue)"]');
                     if (!passwordInput) {
@@ -198,17 +210,17 @@ extension Identity.Authentication.Credentials {
                             passwordInput = wrapper.tagName === 'INPUT' ? wrapper : wrapper.querySelector('input');
                         }
                     }
-                    
+
                     const passwordToggle = document.getElementById('password-toggle');
                     const eyeOpen = document.getElementById('eye-open');
                     const eyeClosed = document.getElementById('eye-closed');
                     let isPasswordVisible = false;
-                    
+
                     if (passwordToggle && passwordInput && eyeOpen && eyeClosed) {
                         passwordToggle.addEventListener('click', function(e) {
                             e.preventDefault();
                             isPasswordVisible = !isPasswordVisible;
-                            
+
                             if (isPasswordVisible) {
                                 passwordInput.setAttribute('type', 'text');
                                 eyeOpen.style.display = 'none';
@@ -219,16 +231,16 @@ extension Identity.Authentication.Credentials {
                                 eyeClosed.style.display = 'none';
                             }
                         });
-                        
+
                         // Add hover effect
                         passwordToggle.addEventListener('mouseenter', function() {
                             passwordToggle.style.color = '#495057';
                         });
-                        
+
                         passwordToggle.addEventListener('mouseleave', function() {
                             passwordToggle.style.color = '#6c757d';
                         });
-                        
+
                         // Allow keyboard activation
                         passwordToggle.addEventListener('keydown', function(event) {
                             if (event.key === 'Enter' || event.key === ' ') {
@@ -249,10 +261,10 @@ extension Identity.Authentication.Credentials {
 
                     function displayMessage(message, type = 'error', attemptsRemaining = null, retryAfter = null) {
                         clearExistingMessages();
-                        
+
                         const messageDiv = document.createElement('div');
                         messageDiv.className = type + '-message';
-                        
+
                         // Style based on type and attempts remaining
                         messageDiv.style.textAlign = 'center';
                         messageDiv.style.marginTop = '1.5rem';
@@ -264,64 +276,64 @@ extension Identity.Authentication.Credentials {
                         messageDiv.style.transition = 'all 0.3s ease';
                         messageDiv.style.backdropFilter = 'blur(8px)';
                         messageDiv.style.animation = 'slideIn 0.4s ease-out';
-                        
+
                         // Build message content
                         let messageContent = message;
-                        
+
                         // Add attempts remaining if available
                         if (attemptsRemaining !== null && attemptsRemaining > 0) {
                             const attemptText = attemptsRemaining === 1 ? 'attempt' : 'attempts';
                             messageContent += ` (${attemptsRemaining} ${attemptText} remaining)`;
                         }
-                        
+
                         // Apply styling based on severity
                         if (attemptsRemaining !== null && attemptsRemaining > 0 && attemptsRemaining <= 2) {
                             // Warning style for low attempts
-                            messageDiv.style.color = '\#(Color.text.warning.dark)';
-                            messageDiv.style.backgroundColor = '\#(Color.background.error.light.opacity(0.3))';
-                            messageDiv.style.border = '1px solid \#(Color.background.error.dark.opacity(0.3))';
+                            messageDiv.style.color = '\#(DarkModeColor.text.warning.dark)';
+                            messageDiv.style.backgroundColor = '\#(DarkModeColor.background.error.light.opacity(0.3))';
+                            messageDiv.style.border = '1px solid \#(DarkModeColor.background.error.dark.opacity(0.3))';
                         } else if (type === 'warning') {
                             // Warning style
-                            messageDiv.style.color = '\#(Color.text.warning.dark)';
-                            messageDiv.style.backgroundColor = '\#(Color.background.warning.light.opacity(0.3))';
-                            messageDiv.style.border = '1px solid \#(Color.background.warning.dark.opacity(0.3))';
+                            messageDiv.style.color = '\#(DarkModeColor.text.warning.dark)';
+                            messageDiv.style.backgroundColor = '\#(DarkModeColor.background.warning.light.opacity(0.3))';
+                            messageDiv.style.border = '1px solid \#(DarkModeColor.background.warning.dark.opacity(0.3))';
                         } else {
                             // Error style (default)
-                            messageDiv.style.color = '\#(Color.text.error.dark)';
-                            messageDiv.style.backgroundColor = '\#(Color.background.highlighted.light.opacity(0.3))';
-                            messageDiv.style.border = '1px solid \#(Color.background.highlighted.dark.opacity(0.3))';
+                            messageDiv.style.color = '\#(DarkModeColor.text.error.dark)';
+                            messageDiv.style.backgroundColor = '\#(DarkModeColor.background.highlighted.light.opacity(0.3))';
+                            messageDiv.style.border = '1px solid \#(DarkModeColor.background.highlighted.dark.opacity(0.3))';
                         }
-                        
+
                         // Handle rate limit with countdown
                         if (retryAfter !== null && retryAfter > 0) {
                             let remainingSeconds = retryAfter;
-                            
+
                             function updateCountdown() {
                                 if (remainingSeconds > 0) {
                                     const minutes = Math.floor(remainingSeconds / 60);
                                     const seconds = remainingSeconds % 60;
-                                    const timeDisplay = minutes > 0 
-                                        ? `${minutes}:${seconds.toString().padStart(2, '0')}` 
+                                    const timeDisplay = minutes > 0
+                                        ? `${minutes}:${seconds.toString().padStart(2, '0')}`
                                         : `${remainingSeconds} second${remainingSeconds !== 1 ? 's' : ''}`;
                                     messageDiv.innerHTML = `Too many attempts. Please try again in <strong>${timeDisplay}</strong>`;
                                     remainingSeconds--;
                                 } else {
                                     clearInterval(countdownInterval);
                                     messageDiv.textContent = 'You can try again now';
-                                    messageDiv.style.color = '\#(Color.text.success.dark)';
-                                    messageDiv.style.backgroundColor = '\#(Color.background.success.light.opacity(0.3))';
-                                    messageDiv.style.border = '1px solid \#(Color.background.success.dark.opacity(0.3))';
+                                    messageDiv.style.color = '\#(DarkModeColor.text.success.dark)';
+                                    messageDiv.style.backgroundColor = '\#(DarkModeColor.background.success.light.opacity(0.3))';
+                                    messageDiv.style.border = '1px solid \#(DarkModeColor.background.success.dark.opacity(0.3))';
                                     // Re-apply fade animation for the status change
                                     messageDiv.style.animation = 'fadeIn 0.5s ease-out';
                                 }
                             }
-                            
+
                             updateCountdown();
                             countdownInterval = setInterval(updateCountdown, 1000);
                         } else {
                             messageDiv.textContent = messageContent;
                         }
-                        
+
                         form.appendChild(messageDiv);
                     }
 
@@ -361,7 +373,7 @@ extension Identity.Authentication.Credentials {
                                 const mfaData = data.data;
                                 const sessionToken = mfaData.sessionToken;
                                 const availableMethods = mfaData.availableMethods || ['totp'];
-                                
+
                                 // For now, we only support TOTP
                                 if (availableMethods.includes('totp')) {
                                     // Redirect to MFA verification page with session token as query parameter
@@ -383,7 +395,7 @@ extension Identity.Authentication.Credentials {
                                 const code = error.code || 'AUTH_ERROR';
                                 const attemptsRemaining = data.attemptsRemaining;
                                 const retryAfter = data.retryAfter;
-                                
+
                                 // Check response status for rate limiting
                                 if (response.status === 429 || code === 'RATE_LIMIT') {
                                     // For rate limit, parse Retry-After header if retryAfter not in body

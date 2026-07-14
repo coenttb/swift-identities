@@ -7,13 +7,13 @@
 
 import Foundation
 import HTML
-import HTMLWebsite
 import IdentitiesTypes
-import PointFreeHTMLTranslating
 import ServerFoundationVapor
+import Translating
+import Webpage
 
 extension Identity.Email.Change.Request {
-    package struct View: HTML {
+    package struct View: HTML.View {
         let formActionURL: URL
         let homeHref: URL
         let reauthorizationURL: URL
@@ -33,11 +33,11 @@ extension Identity.Email.Change.Request {
         }
         private static var form_id: String { "form-request-email-change" }
 
-        package var body: some HTML {
+        package var body: some HTML.View {
             PageModule(theme: .authenticationFlow) {
                 VStack {
                     div {
-                        HTMLComponents.Paragraph {
+                        Paragraph {
                             TranslatedString(
                                 dutch:
                                     "Voer uw nieuwe e-mailadres in. We sturen een email naar beide e-mailadressen.",
@@ -45,6 +45,7 @@ extension Identity.Email.Change.Request {
                                     "Enter your new email address. We'll send an email to both email addresses."
                             )
                         }
+                        .css
                         .font(.body(.small))
                         .textAlign(.center)
                         .color(.text.secondary)
@@ -73,6 +74,7 @@ extension Identity.Email.Change.Request {
                                             english: "Submit Request"
                                         )
                                     }
+                                    .css
                                     .color(.text.primary.reverse())
                                     .width(.percent(100))
                                     .justifyContent(.center)
@@ -88,19 +90,22 @@ extension Identity.Email.Change.Request {
                                     .fontWeight(.medium)
                                     .font(.body(.small))
                                 }
-                                .flexContainer(
-                                    justification: .center,
-                                    itemAlignment: .center,
-                                    media: .desktop
-                                )
+                                .css
+                                .desktop {
+                                    $0.flexContainer(
+                                        justification: .center,
+                                        itemAlignment: .center
+                                    )
+                                }
                                 .width(.percent(100))
                             }
                         }
                         .id(Self.form_id)
                     }
+                    .css
                     .width(.percent(100))
                     .maxWidth(.identityComponentDesktop)
-                    .maxWidth(.identityComponentMobile, media: .mobile)
+                    .mobile { $0.maxWidth(.identityComponentMobile) }
                     .margin(horizontal: .auto)
                 }
 
@@ -111,11 +116,13 @@ extension Identity.Email.Change.Request {
                         english: "Change Email Address"
                     )
                 }
+                .css
                 .color(.text.primary)
                 .display(.inlineBlock)
                 .textAlign(.center)
             }
             .id(Self.pagemodule_request_email_change_id)
+            .css
             .width(.percent(100))
 
             script {
@@ -203,7 +210,7 @@ extension Identity.Email.Change.Request {
 //                        }
 
 extension Identity.Email.Change.Request.View {
-    package struct ReceiptConfirmation: HTML {
+    package struct ReceiptConfirmation: HTML.View {
         let homeHref: URL
 
         package init(
@@ -212,26 +219,28 @@ extension Identity.Email.Change.Request.View {
             self.homeHref = homeHref
         }
 
-        package var body: some HTML {
+        package var body: some HTML.View {
             PageModule(theme: .authenticationFlow) {
                 VStack {
-                    HTMLComponents.Paragraph {
+                    Paragraph {
                         TranslatedString(
                             dutch:
                                 "We hebben een bevestigingsmail gestuurd naar beide e-mailadressen.",
                             english: "We've sent a confirmation email to both email addresses."
                         )
                     }
+                    .css
                     .textAlign(.center)
                     .margin(bottom: .rem(1))
 
-                    HTMLComponents.Paragraph {
+                    Paragraph {
                         TranslatedString(
                             dutch:
                                 "Volg de instructies in de e-mails om de wijziging te voltooien.",
                             english: "Follow the instructions in the emails to complete the change."
                         )
                     }
+                    .css
                     .textAlign(.center)
                     .margin(bottom: .rem(2))
 
@@ -244,11 +253,12 @@ extension Identity.Email.Change.Request.View {
                     )
                     .linkColor(.branding.primary)
                 }
+                .css
                 .textAlign(.center)
                 .alignItems(.center)
                 .width(.percent(100))
                 .maxWidth(.identityComponentDesktop)
-                .maxWidth(.identityComponentMobile, media: .mobile)
+                .mobile { $0.maxWidth(.identityComponentMobile) }
                 .margin(horizontal: .auto)
             } title: {
                 Header(3) {
@@ -257,10 +267,12 @@ extension Identity.Email.Change.Request.View {
                         english: "Request Received"
                     )
                 }
+                .css
                 .color(.text.primary)
                 .display(.inlineBlock)
                 .textAlign(.center)
             }
+            .css
             .width(.percent(100))
         }
     }

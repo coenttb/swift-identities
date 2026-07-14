@@ -7,22 +7,24 @@
 
 import Foundation
 import HTML
-import HTMLWebsite
 import IdentitiesTypes
 import ServerFoundationVapor
+import Webpage
 
 // MARK: - Helper Components
 
-private struct BackupCodesHeader: HTML {
+private struct BackupCodesHeader: HTML.View {
     let isRegeneration: Bool
 
-    var body: some HTML {
+    var body: some HTML.View {
         div {
             div {
                 span { "🔐" }
+                    .css
                     .fontSize(.rem(3))
                     .marginBottom(.rem(1))
             }
+            .css
             .textAlign(.center)
 
             Header(2) {
@@ -32,28 +34,30 @@ private struct BackupCodesHeader: HTML {
                     "Save Your Backup Codes"
                 }
             }
+            .css
             .textAlign(.center)
             .marginBottom(.rem(1))
         }
     }
 }
 
-private struct BackupCodesWarning: HTML {
+private struct BackupCodesWarning: HTML.View {
     let isRegeneration: Bool
 
-    var body: some HTML {
+    var body: some HTML.View {
         div {
             p {
                 if isRegeneration {
-                    HTMLText(
+                    HTML.Text(
                         "Your old backup codes have been invalidated. Save these new codes in a secure location."
                     )
                 } else {
-                    HTMLText(
+                    HTML.Text(
                         "Save these backup codes in a secure location. Each code can only be used once to access your account if you lose your authenticator app."
                     )
                 }
             }
+            .css
             .color(.text.warning)
             .backgroundColor(.background.warning.map { $0.opacity(0.1) })
             .padding(.rem(1))
@@ -64,23 +68,29 @@ private struct BackupCodesWarning: HTML {
     }
 }
 
-private struct BackupCodeItem: HTML {
+private struct BackupCodeItem: HTML.View {
     let index: Int
     let code: String
 
-    var body: some HTML {
+    var body: some HTML.View {
         div {
             span { "\(index + 1)." }
+                .css
                 .color(.text.tertiary)
                 .marginRight(.rem(0.5))
                 .fontWeight(.medium)
 
-            HTMLElementTypes.Code { formatCode(code) }
+            // Spelled out: the lowercase `code` element alias is shadowed by this type's
+            // `let code: String` property, so the bare `code { … }` would parse as a call on
+            // the String. (The pre-port source reached the element as `HTMLElementTypes.Code`.)
+            HTML_Standard.Code { formatCode(self.code) }
+                .css
                 .fontFamily(.monospace)
                 .fontSize(.rem(1.125))
                 .letterSpacing(.rem(0.05))
                 .fontWeight(.medium)
         }
+        .css
         .padding(.rem(0.75))
         .backgroundColor(.background.secondary.map { $0.opacity(0.1) })
         .borderRadius(.rem(0.375))
@@ -97,16 +107,17 @@ private struct BackupCodeItem: HTML {
     }
 }
 
-private struct BackupCodesGrid: HTML {
+private struct BackupCodesGrid: HTML.View {
     let codes: [String]
 
-    var body: some HTML {
+    var body: some HTML.View {
         div {
             div {
                 for (index, code) in codes.enumerated() {
                     BackupCodeItem(index: index, code: code)
                 }
             }
+            .css
             .display(.grid)
             .inlineStyle("grid-template-columns", "1fr 1fr")
             .gap(.rem(0.75))
@@ -116,8 +127,8 @@ private struct BackupCodesGrid: HTML {
     }
 }
 
-private struct BackupCodesActions: HTML {
-    var body: some HTML {
+private struct BackupCodesActions: HTML.View {
+    var body: some HTML.View {
         VStack {
             // Download button
             Button(
@@ -128,6 +139,7 @@ private struct BackupCodesActions: HTML {
                 "Download Codes"
             }
             .attribute("onclick", "downloadBackupCodes()")
+            .css
             .display(.block)
             .width(.percent(100))
             .color(.text.button)
@@ -137,7 +149,7 @@ private struct BackupCodesActions: HTML {
             .fontWeight(.medium)
             .textAlign(.center)
             .cursor(.pointer)
-            .transition("background-color 0.2s")
+            .inlineStyle("transition", "background-color 0.2s")
             .marginBottom(.rem(1))
 
             // Print button
@@ -149,6 +161,7 @@ private struct BackupCodesActions: HTML {
                 "Print Codes"
             }
             .attribute("onclick", "window.print()")
+            .css
             .display(.block)
             .width(.percent(100))
             .color(.text.secondary)
@@ -159,31 +172,36 @@ private struct BackupCodesActions: HTML {
             .textAlign(.center)
             .cursor(.pointer)
             .border(width: .px(1), style: .solid, color: .background.primary)
-            .transition("background-color 0.2s")
-            .backgroundColor(.background.secondary.map { $0.opacity(0.4) }, pseudo: .hover)
+            .inlineStyle("transition", "background-color 0.2s")
+            .hover {
+                $0.backgroundColor(.background.secondary.map { $0.opacity(0.4) })
+            }
             .marginBottom(.rem(1.5))
         }
     }
 }
 
-private struct BackupCodesConfirmation: HTML {
+private struct BackupCodesConfirmation: HTML.View {
     let dashboardHref: URL
 
-    var body: some HTML {
+    var body: some HTML.View {
         VStack {
             // Confirmation checkbox
             div {
                 label {
                     input(
-                        type: .checkbox
+                        type: .checkbox(.init())
                     )
                     .id("codes-saved-checkbox")
                     .attribute("onchange", "toggleContinueButton()")
+                    .css
                     .marginRight(.rem(0.5))
 
                     span { "I have saved my backup codes in a secure location" }
+                        .css
                         .color(.text.primary)
                 }
+                .css
                 .display(.flex)
                 .alignItems(.center)
                 .marginBottom(.rem(1.5))
@@ -197,6 +215,7 @@ private struct BackupCodesConfirmation: HTML {
             }
             .id("continue-button")
             .class("disabled-link")
+            .css
             .display(.block)
             .color(.text.tertiary)
             .backgroundColor(.background.secondary.map { $0.opacity(0.1) })
@@ -207,15 +226,15 @@ private struct BackupCodesConfirmation: HTML {
             .textDecoration(TextDecoration.none)
             .pointerEvents(PointerEvents.none)
             .opacity(0.5)
-            .transition("all 0.2s")
+            .inlineStyle("transition", "all 0.2s")
         }
     }
 }
 
-private struct BackupCodesScript: HTML {
+private struct BackupCodesScript: HTML.View {
     let codes: [String]
 
-    var body: some HTML {
+    var body: some HTML.View {
         script {
             """
             function formatCodeForDownload(code) {
@@ -231,13 +250,13 @@ private struct BackupCodesScript: HTML {
                 // Use window.backupCodesData if available (set by AJAX), otherwise use static codes
                 const codes = window.backupCodesData || \(codesAsJSON());
                 console.log('Codes to download:', codes);
-                const formattedCodes = codes.map((code, index) => 
+                const formattedCodes = codes.map((code, index) =>
                     `${index + 1}. ${formatCodeForDownload(code)}`
                 ).join('\\n');
                 console.log('Formatted codes:', formattedCodes);
-                
+
                 const content = `Two-Factor Authentication Backup Codes\nGenerated: ${new Date().toLocaleDateString()}\n\nIMPORTANT: Keep these codes in a secure location.\nEach code can only be used once.\n\n${formattedCodes}\n\nIf you lose access to your authenticator app, you can use\none of these codes to sign in to your account.`;
-                
+
                 const blob = new Blob([content], { type: 'text/plain' });
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
@@ -252,7 +271,7 @@ private struct BackupCodesScript: HTML {
             function toggleContinueButton() {
                 const checkbox = document.getElementById('codes-saved-checkbox');
                 const button = document.getElementById('continue-button');
-                
+
                 if (checkbox.checked) {
                     button.classList.remove('disabled-link');
                     button.style.pointerEvents = 'auto';
@@ -279,12 +298,12 @@ private struct BackupCodesScript: HTML {
 
 // MARK: - Main Content Container
 
-private struct MainContent: HTML {
+private struct MainContent: HTML.View {
     let codes: [String]
     let isRegeneration: Bool
     let dashboardHref: URL
 
-    var body: some HTML {
+    var body: some HTML.View {
         VStack {
             BackupCodesHeader(isRegeneration: isRegeneration)
             BackupCodesWarning(isRegeneration: isRegeneration)
@@ -292,9 +311,10 @@ private struct MainContent: HTML {
             BackupCodesActions()
             BackupCodesConfirmation(dashboardHref: dashboardHref)
         }
+        .css
         .width(.percent(100))
         .maxWidth(.identityComponentDesktop)
-        .maxWidth(.identityComponentMobile, media: .mobile)
+        .mobile { $0.maxWidth(.identityComponentMobile) }
         .margin(horizontal: .auto)
         .padding(.rem(1.5))
         .backgroundColor(.background.primary)
@@ -311,7 +331,7 @@ extension Identity.MFA.BackupCodes {
 }
 
 extension Identity.MFA.BackupCodes.Display {
-    public struct View: HTML {
+    public struct View: HTML.View {
         let codes: [String]
         let isRegeneration: Bool
         let dashboardHref: URL
@@ -326,7 +346,7 @@ extension Identity.MFA.BackupCodes.Display {
             self.dashboardHref = dashboardHref
         }
 
-        public var body: some HTML {
+        public var body: some HTML.View {
             PageModule(theme: .authenticationFlow) {
                 MainContent(
                     codes: codes,

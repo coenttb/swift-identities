@@ -7,16 +7,17 @@
 
 import Foundation
 import HTML
-import HTMLWebsite
 import IdentitiesTypes
 import ServerFoundationVapor
+import Translating
+import Webpage
 
 extension Identity.Deletion {
     package enum Confirm {}
 }
 
 extension Identity.Deletion.Confirm {
-    package struct View: HTML {
+    package struct View: HTML.View {
         let redirectURL: URL
 
         package init(
@@ -27,7 +28,7 @@ extension Identity.Deletion.Confirm {
 
         private static var confirmationId: String { "delete-confirmation-id" }
 
-        package var body: some HTML {
+        package var body: some HTML.View {
             PageModule(theme: .authenticationFlow) {
                 VStack {
                     div {
@@ -36,12 +37,13 @@ extension Identity.Deletion.Confirm {
                             english: "✓ Account deleted"
                         )
                     }
+                    .css
                     .fontWeight(.bold)
                     .color(.text.success)
                     .textAlign(.center)
                     .margin(bottom: .rem(1))
 
-                    HTMLComponents.Paragraph {
+                    Paragraph {
                         TranslatedString(
                             dutch:
                                 "Uw account en alle bijbehorende gegevens zijn permanent verwijderd.",
@@ -49,28 +51,31 @@ extension Identity.Deletion.Confirm {
                                 "Your account and all associated data have been permanently deleted."
                         )
                     }
+                    .css
                     .font(.body)
                     .textAlign(.center)
                     .margin(bottom: .rem(1))
                     .color(.text.primary)
 
-                    HTMLComponents.Paragraph {
+                    Paragraph {
                         TranslatedString(
                             dutch: "Bedankt voor het gebruik van onze diensten.",
                             english: "Thank you for using our services."
                         )
                     }
+                    .css
                     .font(.body(.small))
                     .textAlign(.center)
                     .color(.text.secondary)
                     .margin(bottom: .rem(2))
 
-                    HTMLComponents.Paragraph {
+                    Paragraph {
                         TranslatedString(
                             dutch: "U wordt over 5 seconden doorgestuurd naar de hoofdpagina.",
                             english: "You will be redirected to the main page in 5 seconds."
                         )
                     }
+                    .css
                     .font(.body(.small))
                     .textAlign(.center)
                     .color(.text.secondary)
@@ -88,9 +93,10 @@ extension Identity.Deletion.Confirm {
                     .font(.body(.small))
                     .textAlign(.center)
                 }
+                .css
                 .width(.percent(100))
                 .maxWidth(.identityComponentDesktop)
-                .maxWidth(.identityComponentMobile, media: .mobile)
+                .mobile { $0.maxWidth(.identityComponentMobile) }
                 .margin(horizontal: .auto)
                 .textAlign(.center)
             } title: {
@@ -100,11 +106,13 @@ extension Identity.Deletion.Confirm {
                         english: "Account Deleted"
                     )
                 }
+                .css
                 .color(.text.primary)
                 .display(.inlineBlock)
                 .textAlign(.center)
             }
             .id(Self.confirmationId)
+            .css
             .width(.percent(100))
 
             script {
@@ -117,7 +125,7 @@ extension Identity.Deletion.Confirm {
                         if (typeof sessionStorage !== 'undefined') {
                             sessionStorage.clear();
                         }
-                        
+
                         // Redirect after 5 seconds
                         setTimeout(function() {
                             window.location.href = '\#(redirectURL.absoluteString)';

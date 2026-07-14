@@ -7,7 +7,7 @@
 
 import Foundation
 import HTML
-import HTMLWebsite
+import Webpage
 
 extension PageModule.Theme {
     public static var authenticationFlow: Self {

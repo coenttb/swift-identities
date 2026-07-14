@@ -6,17 +6,17 @@
 //
 
 import HTML
-import HTMLTheme
-import HTMLWebsite
 import IdentitiesTypes
 import Identity_Shared
 import Language
 import ServerFoundation
+import Translating
+import Webpage
 
 extension Identity.View {
     public struct HTMLDocument<
-        Body: HTML
-    >: HTMLDocumentProtocol {
+        Body: HTML.View
+    >: HTML.Document.`Protocol` {
         let view: Identity.View
         let title: (Identity.View) -> String
         let description: (Identity.View) -> String
@@ -28,7 +28,12 @@ extension Identity.View {
 
         @Dependency(\.language) var language
         @Dependency(\.languages) var languages
-        @Dependency(\.theme.branding.primary) var themeColor
+
+        // The retired HTMLTheme `\.theme` DependencyValues key is gone. On the institute surface the
+        // theme is a TaskLocal-backed static rather than a dependency — `DarkModeColor.theme` reads
+        // `DarkModeColor.Theme.current` (swift-css/Sources/CSS Theming/Color.Theme.swift:247-251).
+        // Scope a non-default theme with `DarkModeColor.Theme.withValue(_:operation:)` (ibid. :312+).
+        var themeColor: DarkModeColor { DarkModeColor.theme.branding.primary }
 
         package init(
             view: Identity.View,
@@ -38,7 +43,7 @@ extension Identity.View {
             canonicalHref: @escaping (Identity.View) -> URL?,
             hreflang: @escaping (Identity.View, Language) -> URL,
             footer_links: [(TranslatedString, URL)],
-            @HTMLBuilder body: () async throws -> Body
+            @HTML.Builder body: () async throws -> Body
         ) async throws {
             self.view = view
             self.title = title
@@ -50,8 +55,8 @@ extension Identity.View {
             self.footer_links = footer_links
         }
 
-        public var head: some HTML {
-            meta(charset: .utf8)()
+        public var head: some HTML.View {
+            meta(charset: .utf8)
 
             BaseStyles()
 
@@ -59,44 +64,44 @@ extension Identity.View {
                 link(
                     href: .init(canonicalHref.absoluteString),
                     rel: .canonical
-                )()
+                )
             }
 
-            HTMLForEach(self.languages.filter { $0 != language }) { lx in
+            for lx in self.languages.filter({ $0 != language }) {
                 link(
                     href: .init(hreflang(view, lx).absoluteString),
-                    hreflang: .init(value: lx.rawValue),
+                    hreflang: .init(value: lx.value),
                     rel: .alternate,
-                )()
+                )
             }
 
             meta(
                 name: .themeColor,
                 content: .init(themeColor.light.description),
                 media: "(prefers-color-scheme: light)"
-            )()
+            )
 
             meta(
                 name: .themeColor,
                 content: .init(themeColor.dark.description),
                 media: "(prefers-color-scheme: dark)"
-            )()
+            )
 
             meta(
                 name: .viewport,
                 content: "width=device-width, initial-scale=1.0, viewport-fit=cover"
-            )()
+            )
 
             Style {
                 """
 
                 body, html {
-                    background: \(HTMLColor.theme.background.primary.light.description);
+                    background: \(DarkModeColor.theme.background.primary.light.description);
                 }
 
                 @media (prefers-color-scheme: dark) {
                     body, html {
-                        background: \(HTMLColor.theme.background.primary.dark.description);
+                        background: \(DarkModeColor.theme.background.primary.dark.description);
                     }
                 }
 
@@ -104,13 +109,18 @@ extension Identity.View {
             }
         }
 
-        public var body: some HTML {
-            HTMLGroup {
+        public var body: some HTML.View {
+            // The `.dependency(\.language, language)` view modifier is retired: it has no institute
+            // counterpart (swift-webpage/Sources/Webpage/Link.swift:11-14 records the drop). It
+            // re-injected the value read from `@Dependency(\.language)` above — i.e. from the very
+            // same ambient scope the subtree renders in — so dropping it is behaviour-preserving for
+            // in-request rendering. To render under a DIFFERENT language, wrap the render call in
+            // `withDependencies { $0.language = … }`.
+            HTML.Group {
                 _body
 
                 Identity.View.Footer(links: footer_links)
             }
-            .dependency(\.language, language)
             .linkColor(.branding.primary)
         }
     }

@@ -7,13 +7,13 @@
 
 import Foundation
 import HTML
-import HTMLMarkdown
-import HTMLWebsite
 import IdentitiesTypes
 import ServerFoundationVapor
+import Translating
+import Webpage
 
 extension Identity.Reauthorization {
-    package struct View<CodingKey: RawRepresentable>: HTML where CodingKey.RawValue == String {
+    package struct View<CodingKey: RawRepresentable>: HTML.View where CodingKey.RawValue == String {
         let codingKey: CodingKey
         let currentUserName: String
         let passwordResetHref: URL
@@ -34,12 +34,12 @@ extension Identity.Reauthorization {
             self.redirectOnSuccess = redirectOnSuccess
         }
 
-        package var body: some HTML {
+        package var body: some HTML.View {
 
             PageModule(theme: .confirmAccess) {
                 VStack {
-                    HTMLGroup {
-                        HTMLMarkdown {
+                    HTML.Group {
+                        Markdown {
                             """
                               \(
                                   TranslatedString(
@@ -50,6 +50,7 @@ extension Identity.Reauthorization {
                             **\(currentUserName)**.
                             """
                         }
+                        .css
                         .textAlign(.center)
 
                         form(
@@ -83,7 +84,15 @@ extension Identity.Reauthorization {
                                     ) {
                                         String.continue.capitalizingFirstLetter()
                                     }
-                                    .dependency(\.theme.text.primary, .text.primary.reverse())
+                                    // Was `.dependency(\.theme.text.primary, .text.primary.reverse())`
+                                    // — a retired view modifier that scoped a DependencyValues
+                                    // override over the subtree purely to recolour this button's
+                                    // label. There is no institute counterpart (swift-webpage/
+                                    // Sources/Webpage/Link.swift:11-14). Every sibling submit button
+                                    // in this target already expresses the same intent directly as
+                                    // `.css.color(.text.primary.reverse())`; this now matches them.
+                                    .css
+                                    .color(.text.primary.reverse())
                                     .width(.percent(100))
                                     .justifyContent(.center)
 
@@ -96,31 +105,37 @@ extension Identity.Reauthorization {
                                     //                                    .fontSize(.secondary)
                                     //                                    .textAlign(.center)
                                 }
-                                .flexContainer(
-                                    justification: .center,
-                                    itemAlignment: .center,
-                                    media: .desktop
-                                )
+                                .css
+                                .desktop {
+                                    $0.flexContainer(
+                                        justification: .center,
+                                        itemAlignment: .center
+                                    )
+                                }
                             }
                         }
                         .id("form-confirm-access")
+                        .css
                         .width(.percent(100))
                         .maxWidth(.identityComponentDesktop)
-                        .maxWidth(.identityComponentMobile, media: .mobile)
+                        .mobile { $0.maxWidth(.identityComponentMobile) }
                         .margin(horizontal: .auto)
                     }
+                    .css
                     .width(.percent(100))
                     .maxWidth(.identityComponentDesktop)
-                    .maxWidth(.identityComponentMobile, media: .mobile)
+                    .mobile { $0.maxWidth(.identityComponentMobile) }
                     .margin(vertical: nil, horizontal: .auto)
 
                 }
+                .css
                 .width(.percent(100))
 
             } title: {
                 Header(3) {
                     String.confirm_access.capitalizingFirstLetter()
                 }
+                .css
                 .color(.text.primary)
             }
 
@@ -188,7 +203,7 @@ extension PageModule.Theme {
 #if canImport(SwiftUI)
     import SwiftUI
 
-    @MainActor let confirmAccess: some HTML = Identity.Reauthorization.View(
+    @MainActor let confirmAccess: some HTML.View = Identity.Reauthorization.View(
         codingKey: Identity.Creation.Request.CodingKeys.password,
         currentUserName: "Coen ten Thije Boonkkamp",
         passwordResetHref: .desktopDirectory,
@@ -197,7 +212,7 @@ extension PageModule.Theme {
     )
 
     #Preview {
-        HTMLDocument.modern {
+        HTML.Document.modern {
             confirmAccess
         }
     }

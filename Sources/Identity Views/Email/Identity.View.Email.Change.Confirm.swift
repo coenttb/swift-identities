@@ -7,12 +7,13 @@
 
 import Foundation
 import HTML
-import HTMLWebsite
 import IdentitiesTypes
 import ServerFoundationVapor
+import Translating
+import Webpage
 
 extension Identity.Email.Change.Confirmation {
-    package struct View: HTML {
+    package struct View: HTML.View {
         let redirect: URL
 
         package init(
@@ -23,26 +24,28 @@ extension Identity.Email.Change.Confirmation {
 
         private static var confirmationId: String { "email-change-confirmation-id" }
 
-        package var body: some HTML {
+        package var body: some HTML.View {
             PageModule(theme: .authenticationFlow) {
                 VStack {
-                    HTMLComponents.Paragraph {
+                    Paragraph {
                         TranslatedString(
                             dutch: "Je e-mailadres is succesvol gewijzigd.",
                             english: "Your email address has been successfully changed."
                         )
                     }
+                    .css
                     .font(.body)
                     .textAlign(.center)
                     .color(.text.primary.reverse())
                     .margin(bottom: .medium)
 
-                    HTMLComponents.Paragraph {
+                    Paragraph {
                         TranslatedString(
                             dutch: "Je wordt nu doorgestuurd naar je account pagina.",
                             english: "You will now be redirected to your account page."
                         )
                     }
+                    .css
                     .font(.body(.small))
                     .textAlign(.center)
                     .color(.text.secondary)
@@ -59,9 +62,10 @@ extension Identity.Email.Change.Confirmation {
                     .font(.body(.small))
                     .textAlign(.center)
                 }
+                .css
                 .width(.percent(100))
                 .maxWidth(.identityComponentDesktop)
-                .maxWidth(.identityComponentMobile, media: .mobile)
+                .mobile { $0.maxWidth(.identityComponentMobile) }
                 .margin(horizontal: .auto)
             } title: {
                 Header(3) {
@@ -70,11 +74,13 @@ extension Identity.Email.Change.Confirmation {
                         english: "Email Change Complete"
                     )
                 }
+                .css
                 .color(.text.primary)
                 .display(.inlineBlock)
                 .textAlign(.center)
             }
             .id(Self.confirmationId)
+            .css
             .width(.percent(100))
 
             script {

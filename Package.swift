@@ -44,10 +44,14 @@ extension Target.Dependency {
     // Language EXISTS: swift-translating/Package.swift:45):
     static var language: Self { .product(name: "Language", package: "swift-translating") }
 
-    // Still-red presentation deps (HTML-tower arc re-enables; institute swift-html vends the
-    // consolidated `HTML` umbrella — the heritage HTMLEmail/HTMLWebsite/HTMLMarkdown/HTMLTheme/
-    // HTMLCSSPointFreeHTML submodules do not exist as institute products):
-    // static var html: Self { .product(name: "HTML", package: "swift-html") }
+    // Presentation deps (HTML-tower arc, W-V wave 2026-07-14). The institute swift-html vends the
+    // consolidated `HTML` umbrella; the heritage HTMLEmail/HTMLWebsite/HTMLMarkdown/HTMLTheme/
+    // HTMLCSSPointFreeHTML submodules do not exist as institute products — the component layer
+    // (PageModule/Link/Input/Button/Header/Paragraph) now lives in swift-webpage, and the retired
+    // translations-era `String.xxx` constants live in swift-webpage behind `#if TRANSLATING`.
+    static var html: Self { .product(name: "HTML", package: "swift-html") }
+    static var webpage: Self { .product(name: "Webpage", package: "swift-webpage") }
+    static var translating: Self { .product(name: "Translating", package: "swift-translating") }
     // static var recordsTestSupport: Self { .product(name: "RecordsTestSupport", package: "swift-records") }
 }
 
@@ -65,11 +69,15 @@ let package = Package(
         .library(name: .identityBackend, targets: [.identityBackend]),
         .library(name: .identityProvider, targets: [.identityProvider]),
 
-        // DELIBERATELY still red — presentation stack, owned by the HTML-tower arc (sequenced
-        // after identity-reuse; see Workspace/handoffs/DECISIONS-pass2/identity-html.md §5-W5):
+        // Re-enabled by the HTML-tower arc, W-V wave (2026-07-14): the view layer, ported onto
+        // the institute HTML doctrine (HTML.View / HTML.Document.Protocol + swift-webpage +
+        // the swift-html `Translating` trait).
+        .library(name: .identityViews, targets: [.identityViews]),
+
+        // DELIBERATELY still red — later HTML-tower waves (see
+        // Workspace/handoffs/DECISIONS-pass2/identity-html.md §5-W5):
         // .library(name: .identityConsumer, targets: [.identityConsumer]),
         // .library(name: .identityStandalone, targets: [.identityStandalone]),
-        // .library(name: .identityViews, targets: [.identityViews]),
         // .library(name: .identityFrontend, targets: [.identityFrontend])
     ],
     traits: [
@@ -94,9 +102,17 @@ let package = Package(
         .package(url: "https://github.com/swift-primitives/swift-tagged-primitives.git", branch: "main"),
         .package(url: "https://github.com/swift-foundations/swift-translating.git", branch: "main"),
 
-        // Still-red targets' deps (HTML-tower arc re-enables):
+        // Presentation stack (HTML-tower arc, W-V wave). The `Translating` trait must be requested
+        // on BOTH deps: swift-webpage passes NO traits to its own swift-html dependency, so the
+        // ROOT package is what unifies the trait across the graph. With it ON, swift-webpage's
+        // `TranslatedString.swift` (`#if TRANSLATING`) vends the ~115 `String.xxx` translation
+        // constants these views read, and swift-html's `TranslatedString+HTML.swift` supplies the
+        // `Translated<String>: HTML.View` conformance that lets them appear in builder blocks.
+        .package(url: "https://github.com/swift-foundations/swift-html.git", branch: "main", traits: ["Translating"]),
+        .package(url: "https://github.com/swift-foundations/swift-webpage.git", branch: "main", traits: ["Translating"]),
+
+        // Still-red targets' deps (later HTML-tower waves re-enable):
         // .package(url: "https://github.com/swift-foundations/swift-structured-queries-postgres.git", branch: "main"),
-        // .package(url: "https://github.com/swift-foundations/swift-html.git", branch: "main"),
     ],
     targets: [
         // ================= ACTIVE =================
@@ -140,22 +156,25 @@ let package = Package(
             ]
         ),
 
-        // ================= DELIBERATELY RED (HTML-tower arc) =================
-        // The presentation stack is written against the retired protocol-era HTML surface
-        // (heritage submodules HTMLWebsite/HTMLMarkdown/HTMLTheme/HTMLCSSPointFreeHTML/
-        // PointFreeHTMLTranslating). The HTML-tower arc ports it onto the institute doctrine
-        // (`HTML.View`/`HTML.Document` + swift-webpage + the swift-html `Translating` trait);
-        // see Workspace/handoffs/DECISIONS-pass2/identity-html.md §1/§5-W5.
-        //
-        // .target(
-        //     name: .identityViews,
-        //     dependencies: [
-        //         .identityShared,
-        //         .html,
-        //         .serverFoundation,
-        //         .serverFoundationVapor
-        //     ]
-        // ),
+        // ================= ACTIVE (HTML-tower arc, W-V wave 2026-07-14) =================
+        // Ported off the retired protocol-era HTML surface (heritage submodules HTMLWebsite/
+        // HTMLMarkdown/HTMLTheme/HTMLCSSPointFreeHTML/PointFreeHTMLTranslating) onto the institute
+        // doctrine (`HTML.View` / `HTML.Document.Protocol` + swift-webpage + the `Translating`
+        // trait); see Workspace/handoffs/DECISIONS-pass2/identity-html.md §1/§5-W5.
+        .target(
+            name: .identityViews,
+            dependencies: [
+                .identityShared,
+                .html,
+                .webpage,
+                .translating,
+                .language,
+                .serverFoundation,
+                .serverFoundationVapor
+            ]
+        ),
+
+        // ================= DELIBERATELY RED (later HTML-tower waves) =================
         // .target(
         //     name: .identityFrontend,
         //     dependencies: [

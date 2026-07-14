@@ -7,26 +7,28 @@
 
 import Foundation
 import HTML
-import HTMLWebsite
 import IdentitiesTypes
 import ServerFoundationVapor
+import Webpage
 
 // MARK: - Helper Views
 
-private struct QRCodeSection: HTML {
+private struct QRCodeSection: HTML.View {
     let qrCodeURL: URL
 
-    var body: some HTML {
+    var body: some HTML.View {
         div {
             img(
                 src:
                     "https://api.qrserver.com/v1/create-qr-code/?size=256x256&data=\(qrCodeURL.absoluteString.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? "")",
                 alt: "TOTP QR Code"
             )
+            .css
             .display(.block)
             .margin(horizontal: .auto)
             .borderRadius(.rem(0.5))
         }
+        .css
         .padding(.rem(2))
         .backgroundColor(.background.primary)
         .borderRadius(.rem(1))
@@ -35,21 +37,23 @@ private struct QRCodeSection: HTML {
     }
 }
 
-private struct ManualEntrySection: HTML {
+private struct ManualEntrySection: HTML.View {
     let manualEntryKey: String
     let secret: String
 
-    var body: some HTML {
+    var body: some HTML.View {
         details {
             summary {
                 "▸ Can't scan? Enter manually"
             }
+            .css
             .font(.body(.small))
             .color(.branding.primary)
             .cursor(.pointer)
 
             div {
                 p { "Enter this key in your authenticator app:" }
+                    .css
                     .font(.body(.small))
                     .color(.text.secondary)
                     .marginTop(.rem(1))
@@ -57,6 +61,7 @@ private struct ManualEntrySection: HTML {
                 div {
                     code { manualEntryKey }
                 }
+                .css
                 .padding(.rem(1))
                 .backgroundColor(.background.secondary.map { $0.opacity(0.5) })
                 .borderRadius(.rem(0.5))
@@ -71,18 +76,20 @@ private struct ManualEntrySection: HTML {
                 input.hidden(name: "secret", value: .init(secret))
             }
         }
+        .css
         .marginBottom(.rem(2.5))
     }
 }
 
-private struct CodeInputSection: HTML {
+private struct CodeInputSection: HTML.View {
     let inputId: String
 
-    var body: some HTML {
+    var body: some HTML.View {
         div {
             label(for: .init(inputId)) {
                 "Enter the 6-digit code from your app"
             }
+            .css
             .display(.block)
             .font(.body(.small))
             .fontWeight(.medium)
@@ -100,6 +107,7 @@ private struct CodeInputSection: HTML {
             .id(inputId)
             .autofocus(true)
             .autocorrect(.off)
+            .css
             .padding(.rem(0.75))
             .fontSize(.rem(1.5))
             .fontFamily(.monospace)
@@ -115,18 +123,20 @@ private struct CodeInputSection: HTML {
             .inlineStyle("text-indent", "0.5rem")
             .inlineStyle("outline", "none")
         }
+        .css
         .marginBottom(.rem(2.5))
     }
 }
 
-private struct ActionButtons: HTML {
+private struct ActionButtons: HTML.View {
     let cancelHref: URL
 
-    var body: some HTML {
+    var body: some HTML.View {
         div {
             button(type: .submit) {
                 "Verify and Enable"
             }
+            .css
             .color(.text.primary.reverse())
             .backgroundColor(.branding.primary)
             .padding(vertical: .rem(0.75), horizontal: .rem(2))
@@ -135,9 +145,10 @@ private struct ActionButtons: HTML {
             .marginRight(.rem(1))
             .display(.inlineBlock)
 
-            a(href: .url(cancelHref)) {
+            a(href: .init(cancelHref.absoluteString)) {
                 "Cancel"
             }
+            .css
             .color(.text.secondary)
             .padding(vertical: .rem(0.75), horizontal: .rem(2))
             .borderRadius(.rem(0.5))
@@ -146,6 +157,7 @@ private struct ActionButtons: HTML {
             .textDecoration(TextDecoration.none)
             .display(.inlineBlock)
         }
+        .css
         .textAlign(.center)
     }
 }
@@ -156,7 +168,7 @@ extension Identity.MFA.TOTP {
 }
 
 extension Identity.MFA.TOTP.Setup {
-    package struct View: HTML {
+    package struct View: HTML.View {
         let qrCodeURL: URL
         let secret: String
         let manualEntryKey: String
@@ -181,7 +193,7 @@ extension Identity.MFA.TOTP.Setup {
         private static let code_input_id: String = "totp-code-input"
         private static let pagemodule_id: String = "totp-setup-pagemodule"
 
-        package var body: some HTML {
+        package var body: some HTML.View {
             PageModule(theme: .mfaSetup) {
                 form(
                     action: .init(confirmAction.relativePath),
@@ -190,11 +202,13 @@ extension Identity.MFA.TOTP.Setup {
                     VStack {
                         // Instructions
                         VStack {
-                            HTMLText("Scan this QR code with your authenticator app")
-                            HTMLText("(Google Authenticator, Authy, 1Password, etc.)")
+                            HTML.Text("Scan this QR code with your authenticator app")
+                            HTML.Text("(Google Authenticator, Authy, 1Password, etc.)")
+                                .css
                                 .font(.body(.small))
                                 .color(.text.secondary)
                         }
+                        .css
                         .gap(.rem(0.5))
                         .textAlign(.center)
                         .marginBottom(.rem(2))
@@ -213,9 +227,10 @@ extension Identity.MFA.TOTP.Setup {
                     }
                 }
                 .id(Self.form_id)
+                .css
                 .width(.percent(100))
                 .maxWidth(.identityComponentDesktop)
-                .maxWidth(.identityComponentMobile, media: .mobile)
+                .mobile { $0.maxWidth(.identityComponentMobile) }
                 .margin(horizontal: .auto)
 
                 // Enhanced JavaScript with AJAX submission
@@ -225,17 +240,17 @@ extension Identity.MFA.TOTP.Setup {
                         const codeInput = document.getElementById('\(Self.code_input_id)');
                         const form = document.getElementById('\(Self.form_id)');
                         let isSubmitting = false;
-                        
+
                         // AJAX form submission
                         form.addEventListener('submit', async function(event) {
                             event.preventDefault();
-                            
+
                             if (isSubmitting) return;
                             isSubmitting = true;
-                            
+
                             const formData = new FormData(form);
                             const code = formData.get('code');
-                            
+
                             try {
                                 const response = await fetch(form.action, {
                                     method: 'POST',
@@ -247,26 +262,26 @@ extension Identity.MFA.TOTP.Setup {
                                         code: code
                                     }).toString()
                                 });
-                                
+
                                 const data = await response.json();
-                                
+
                                 if (data.success && data.data && data.data.backupCodes) {
                                     // Replace the entire page module with backup codes display
                                     const pageModule = document.getElementById('\(Self.pagemodule_id)');
                                     pageModule.outerHTML = \(html: Identity.MFA.BackupCodes.Display.View(
-                                        codes: ["PLACEHOLDER1", "PLACEHOLDER2", "PLACEHOLDER3", "PLACEHOLDER4", 
+                                        codes: ["PLACEHOLDER1", "PLACEHOLDER2", "PLACEHOLDER3", "PLACEHOLDER4",
                                                "PLACEHOLDER5", "PLACEHOLDER6", "PLACEHOLDER7", "PLACEHOLDER8"],
                                         isRegeneration: false,
                                         dashboardHref: cancelHref
                                     ));
-                                    
+
                                     // Replace placeholder codes with actual codes
                                     const actualCodes = data.data.backupCodes;
                                     // Update the codes in the display
                                     const codeElements = document.querySelectorAll('#backup-codes-list code');
                                     actualCodes.forEach((code, index) => {
                                         if (codeElements[index]) {
-                                            const formatted = code.length === 8 ? 
+                                            const formatted = code.length === 8 ?
                                                 code.slice(0, 4) + '-' + code.slice(4) : code;
                                             codeElements[index].textContent = formatted;
                                         }
@@ -285,7 +300,7 @@ extension Identity.MFA.TOTP.Setup {
                                 errorDiv.style.textAlign = 'center';
                                 errorDiv.style.marginTop = '10px';
                                 form.appendChild(errorDiv);
-                                
+
                                 // Reset form state
                                 isSubmitting = false;
                                 codeInput.value = '';
@@ -293,25 +308,25 @@ extension Identity.MFA.TOTP.Setup {
                                 codeInput.style.backgroundColor = '';
                             }
                         });
-                        
+
                         // Format input as user types
                         codeInput.addEventListener('input', function(e) {
                             // Remove non-digits
                             e.target.value = e.target.value.replace(/[^0-9]/g, '');
-                            
+
                             // Auto-submit when 6 digits are entered
                             if (e.target.value.length === 6 && !isSubmitting) {
                                 // Visual feedback
                                 codeInput.style.borderColor = '#10b981';
                                 codeInput.style.backgroundColor = '#f0fdf4';
-                                
+
                                 // Small delay for user to see the complete code
                                 setTimeout(() => {
                                     form.dispatchEvent(new Event('submit'));
                                 }, 300);
                             }
                         });
-                        
+
                         // Paste handling
                         codeInput.addEventListener('paste', function(e) {
                             e.preventDefault();
@@ -327,6 +342,7 @@ extension Identity.MFA.TOTP.Setup {
                 Header(3) {
                     "Two-Factor Authentication Setup"
                 }
+                .css
                 .color(.text.primary)
             }
             .id(Self.pagemodule_id)

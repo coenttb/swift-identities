@@ -7,16 +7,17 @@
 
 import Foundation
 import HTML
-import HTMLWebsite
 import IdentitiesTypes
 import ServerFoundationVapor
+import Translating
+import Webpage
 
 extension Identity.Deletion {
     package enum Pending {}
 }
 
 extension Identity.Deletion.Pending {
-    package struct View: HTML {
+    package struct View: HTML.View {
         let daysRemaining: Int
         let cancelAction: URL
         let confirmAction: URL
@@ -38,7 +39,7 @@ extension Identity.Deletion.Pending {
         private static var cancel_form_id: String { "form-cancel-deletion" }
         private static var confirm_form_id: String { "form-confirm-deletion" }
 
-        package var body: some HTML {
+        package var body: some HTML.View {
             PageModule(theme: .authenticationFlow) {
                 VStack {
                     // Status indicator
@@ -55,12 +56,13 @@ extension Identity.Deletion.Pending {
                             )
                         }
                     }
+                    .css
                     .fontWeight(.medium)
                     .color(daysRemaining > 0 ? .text.warning : .text.error)
                     .textAlign(.center)
                     .margin(bottom: .rem(1))
 
-                    HTMLComponents.Paragraph {
+                    Paragraph {
                         if daysRemaining > 0 {
                             TranslatedString(
                                 dutch: "Uw account wordt over \(daysRemaining) dagen verwijderd.",
@@ -75,6 +77,7 @@ extension Identity.Deletion.Pending {
                             )
                         }
                     }
+                    .css
                     .textAlign(.center)
                     .margin(bottom: .rem(1.5))
 
@@ -93,10 +96,11 @@ extension Identity.Deletion.Pending {
                                 )
                             }
                         }
+                        .css
                         .margin(bottom: .rem(0.5))
                         .color(.text.primary)
 
-                        HTMLComponents.Paragraph {
+                        Paragraph {
                             if daysRemaining > 0 {
                                 TranslatedString(
                                     dutch: "U kunt de verwijdering nog annuleren.",
@@ -109,15 +113,17 @@ extension Identity.Deletion.Pending {
                                 )
                             }
                         }
+                        .css
                         .font(.body(.small))
                     }
+                    .css
                     .padding(.rem(1))
                     .backgroundColor(
                         daysRemaining > 0
                             ? .background.warning.map { $0.opacity(0.3) }
                             : .background.error.map { $0.opacity(0.3) }
                     )
-                    .borderRadius(.medium)
+                    .borderRadius(.rem(0.5))
                     .textAlign(.center)
                     .margin(bottom: .rem(2))
 
@@ -136,6 +142,7 @@ extension Identity.Deletion.Pending {
                                     english: "Cancel Deletion"
                                 )
                             }
+                            .css
                             .backgroundColor(.background.success)
                             .color(.text.primary.reverse())
                             .width(.percent(100))
@@ -157,6 +164,7 @@ extension Identity.Deletion.Pending {
                                         english: "Permanently Delete"
                                     )
                                 }
+                                .css
                                 .backgroundColor(.background.error)
                                 .color(.text.primary.reverse())
                                 .width(.percent(100))
@@ -175,16 +183,19 @@ extension Identity.Deletion.Pending {
                         .fontWeight(.medium)
                         .font(.body(.small))
                     }
-                    .flexContainer(
-                        justification: .center,
-                        itemAlignment: .center,
-                        media: .desktop
-                    )
+                    .css
+                    .desktop {
+                        $0.flexContainer(
+                            justification: .center,
+                            itemAlignment: .center
+                        )
+                    }
                     .width(.percent(100))
                 }
+                .css
                 .width(.percent(100))
                 .maxWidth(.identityComponentDesktop)
-                .maxWidth(.identityComponentMobile, media: .mobile)
+                .mobile { $0.maxWidth(.identityComponentMobile) }
                 .margin(horizontal: .auto)
             } title: {
                 Header(3) {
@@ -193,11 +204,13 @@ extension Identity.Deletion.Pending {
                         english: "Account Deletion"
                     )
                 }
+                .css
                 .display(.inlineBlock)
                 .textAlign(.center)
                 .color(.text.primary)
             }
             .id(Self.pagemodule_delete_pending_id)
+            .css
             .width(.percent(100))
 
             // Only add confirmation dialog for the confirm form
@@ -205,7 +218,7 @@ extension Identity.Deletion.Pending {
                 #"""
                 document.addEventListener('DOMContentLoaded', function() {
                     const confirmForm = document.getElementById('\#(Self.confirm_form_id)');
-                    
+
                     if (confirmForm) {
                         confirmForm.addEventListener('submit', function(event) {
                             // Double confirmation for permanent deletion
@@ -213,7 +226,7 @@ extension Identity.Deletion.Pending {
                             dutch: "Weet u zeker dat u uw account permanent wilt verwijderen? Dit kan niet ongedaan worden gemaakt.",
                             english: "Are you sure you want to permanently delete your account? This cannot be undone."
                         ))');
-                            
+
                             if (!confirmed) {
                                 event.preventDefault();
                             }

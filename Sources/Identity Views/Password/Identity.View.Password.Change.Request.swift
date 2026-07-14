@@ -7,13 +7,13 @@
 
 import Foundation
 import HTML
-import HTMLMarkdown
-import HTMLWebsite
 import IdentitiesTypes
 import ServerFoundationVapor
+import Translating
+import Webpage
 
 extension Identity.Password.Change.Request {
-    package struct View: HTML {
+    package struct View: HTML.View {
         let currentUserName: String
         let formActionURL: URL
         let redirectOnSuccess: URL
@@ -30,29 +30,36 @@ extension Identity.Password.Change.Request {
 
         private static var pagemodule_change_password_id: String { "pagemodule_change_password_id" }
 
-        package var body: some HTML {
+        package var body: some HTML.View {
             PageModule(theme: .authenticationFlow) {
                 div {
                     VStack {
-                        HTMLMarkdown {
+                        // Syntax rot repaired: the interpolation's continuation lines were indented
+                        // LESS than the literal's closing delimiter, which is a parse error on any
+                        // toolchain ("insufficient indentation of line in multi-line string
+                        // literal"). Re-indented to match the identical, well-formed construct in
+                        // the sibling Identity.View.Reauthorize.swift. Content is unchanged.
+                        Markdown {
                             """
                               \(
-                          TranslatedString(
-                              dutch: "Ingelogd als",
-                              english: "Signed in as"
-                          )
-                      )
+                                  TranslatedString(
+                                      dutch: "Ingelogd als",
+                                      english: "Signed in as"
+                                  )
+                              )
                             **\(currentUserName)**.
                             """
                         }
+                        .css
                         .textAlign(.center)
 
-                        HTMLComponents.Paragraph {
+                        Paragraph {
                             TranslatedString(
                                 dutch: "Voer uw huidige wachtwoord en uw nieuwe wachtwoord in.",
                                 english: "Enter your current password and your new password."
                             )
                         }
+                        .css
                         .font(.body(.small))
                         .textAlign(.center)
                         .color(.text.secondary)
@@ -103,6 +110,7 @@ extension Identity.Password.Change.Request {
                                             english: "Change Password"
                                         )
                                     }
+                                    .css
                                     .color(.text.primary.reverse())
                                     .width(.percent(100))
                                     .justifyContent(.center)
@@ -117,11 +125,13 @@ extension Identity.Password.Change.Request {
                                     .fontWeight(.medium)
                                     .font(.body(.small))
                                 }
-                                .flexContainer(
-                                    justification: .center,
-                                    itemAlignment: .center,
-                                    media: .desktop
-                                )
+                                .css
+                                .desktop {
+                                    $0.flexContainer(
+                                        justification: .center,
+                                        itemAlignment: .center
+                                    )
+                                }
                                 .width(.percent(100))
                             }
                         }
@@ -135,14 +145,16 @@ extension Identity.Password.Change.Request {
                         english: "Change Password"
                     )
                 }
+                .css
                 .color(.text.primary)
                 .display(.inlineBlock)
                 .textAlign(.center)
             }
             .id(Self.pagemodule_change_password_id)
+            .css
             .width(.percent(100))
             .maxWidth(.identityComponentDesktop)
-            .maxWidth(.identityComponentMobile, media: .mobile)
+            .mobile { $0.maxWidth(.identityComponentMobile) }
             .margin(horizontal: .auto)
 
             script {
@@ -187,7 +199,7 @@ extension Identity.Password.Change.Request {
 }
 
 extension Identity.Password.Change.Request.View {
-    package struct Confirmation: HTML {
+    package struct Confirmation: HTML.View {
         package let redirectOnSuccess: URL
 
         package init(
@@ -196,24 +208,26 @@ extension Identity.Password.Change.Request.View {
             self.redirectOnSuccess = redirectOnSuccess
         }
 
-        package var body: some HTML {
+        package var body: some HTML.View {
             PageModule(theme: .authenticationFlow) {
                 VStack {
-                    HTMLComponents.Paragraph {
+                    Paragraph {
                         TranslatedString(
                             dutch: "Uw wachtwoord is succesvol gewijzigd.",
                             english: "Your password has been successfully changed."
                         )
                     }
+                    .css
                     .textAlign(.center)
                     .margin(bottom: .rem(1))
 
-                    HTMLComponents.Paragraph {
+                    Paragraph {
                         TranslatedString(
                             dutch: "U kunt nu inloggen met uw nieuwe wachtwoord.",
                             english: "You can now log in with your new password."
                         )
                     }
+                    .css
                     .textAlign(.center)
                     .margin(bottom: .rem(2))
 
@@ -225,11 +239,12 @@ extension Identity.Password.Change.Request.View {
                     }
                     .linkColor(.branding.primary)
                 }
+                .css
                 .textAlign(.center)
                 .alignItems(.center)
                 .width(.percent(100))
                 .maxWidth(.identityComponentDesktop)
-                .maxWidth(.identityComponentMobile, media: .mobile)
+                .mobile { $0.maxWidth(.identityComponentMobile) }
                 .margin(horizontal: .auto)
             } title: {
                 Header(3) {
@@ -238,10 +253,12 @@ extension Identity.Password.Change.Request.View {
                         english: "Password Changed"
                     )
                 }
+                .css
                 .color(.text.primary)
                 .display(.inlineBlock)
                 .textAlign(.center)
             }
+            .css
             .width(.percent(100))
         }
     }

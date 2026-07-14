@@ -7,16 +7,16 @@
 
 import Foundation
 import HTML
-import HTMLWebsite
 import IdentitiesTypes
 import ServerFoundationVapor
+import Webpage
 
 // MARK: - Helper Views
 
-private struct BackupCodeInput: HTML {
+private struct BackupCodeInput: HTML.View {
     let inputId: String
 
-    var body: some HTML {
+    var body: some HTML.View {
         VStack {
             input.text(
                 name: "code",
@@ -30,6 +30,7 @@ private struct BackupCodeInput: HTML {
             .autofocus(true)
             .autocorrect(.off)
             .autocapitalize(.characters)
+            .css
             .padding(.rem(1))
             .fontSize(.rem(1.75))
             .fontFamily(.monospace)
@@ -43,40 +44,48 @@ private struct BackupCodeInput: HTML {
             .inlineStyle("letter-spacing", "0.25rem")
             .inlineStyle("text-indent", "0.25rem")
             .textTransform(.uppercase)
-            .transition("border-color 0.2s, box-shadow 0.2s")
+            .inlineStyle("transition", "border-color 0.2s, box-shadow 0.2s")
             .inlineStyle("outline", "none")
-            .borderColor(.branding.primary, pseudo: .focus)
-            .inlineStyle("box-shadow", "0 0 0 4px rgba(59, 130, 246, 0.15)", pseudo: .focus)
+            .focus {
+                $0
+                    .borderColor(.branding.primary)
+                    .inlineStyle("box-shadow", "0 0 0 4px rgba(59, 130, 246, 0.15)")
+            }
         }
+        .css
         .marginBottom(.rem(1.5))
     }
 }
 
-private struct BackupCodeInstructions: HTML {
-    var body: some HTML {
+private struct BackupCodeInstructions: HTML.View {
+    var body: some HTML.View {
         VStack {
-            HTMLText("Enter one of your backup codes")
+            HTML.Text("Enter one of your backup codes")
+                .css
                 .font(.body)
                 .color(.text.primary)
                 .textAlign(.center)
                 .marginBottom(.rem(0.5))
 
-            HTMLText("Each backup code can only be used once")
+            HTML.Text("Each backup code can only be used once")
+                .css
                 .font(.body(.small))
                 .color(.text.secondary)
                 .textAlign(.center)
         }
+        .css
         .marginBottom(.rem(2))
     }
 }
 
-private struct VerifyBackupCodeButton: HTML {
-    var body: some HTML {
+private struct VerifyBackupCodeButton: HTML.View {
+    var body: some HTML.View {
         Button(
             button: .init(type: .submit)
         ) {
             "Verify Backup Code"
         }
+        .css
         .color(.text.primary.reverse())
         .backgroundColor(.branding.primary)
         .padding(vertical: .rem(0.875), horizontal: .rem(2))
@@ -86,18 +95,22 @@ private struct VerifyBackupCodeButton: HTML {
         .width(.percent(100))
         .maxWidth(.rem(16))
         .margin(horizontal: .auto)
-        .transition("background-color 0.2s, transform 0.1s")
-        .backgroundColor(.branding.primary.map { $0.opacity(0.9) }, pseudo: .hover)
-        .inlineStyle("transform", "scale(0.98)", pseudo: .active)
+        .inlineStyle("transition", "background-color 0.2s, transform 0.1s")
+        .hover {
+            $0.backgroundColor(.branding.primary.map { $0.opacity(0.9) })
+        }
+        .active {
+            $0.inlineStyle("transform", "scale(0.98)")
+        }
         .marginBottom(.rem(2))
     }
 }
 
-private struct AlternativeBackupOptions: HTML {
+private struct AlternativeBackupOptions: HTML.View {
     let useTotpHref: URL?
     let cancelHref: URL
 
-    var body: some HTML {
+    var body: some HTML.View {
         HStack {
             if let totpHref = useTotpHref {
                 Link(href: .init(totpHref.relativePath)) {
@@ -108,6 +121,7 @@ private struct AlternativeBackupOptions: HTML {
                 .textDecoration(.underline)
 
                 span { "•" }
+                    .css
                     .color(.text.tertiary)
                     .margin(horizontal: .rem(0.75))
             }
@@ -118,15 +132,16 @@ private struct AlternativeBackupOptions: HTML {
             .linkColor(.text.secondary)
             .font(.body(.small))
             .textDecoration(.underline)
-            .color(.text.primary, pseudo: .hover)
+            .hover { $0.color(.text.primary) }
         }
+        .css
         .justifyContent(.center)
         .alignItems(.center)
     }
 }
 
 extension Identity.MFA.BackupCodes.Verify {
-    public struct View: HTML {
+    public struct View: HTML.View {
         let sessionToken: String
         let verifyAction: URL
         let useTotpHref: URL?
@@ -150,7 +165,7 @@ extension Identity.MFA.BackupCodes.Verify {
         private static let form_id: String = "backup-code-verify-form"
         private static let code_input_id: String = "backup-code-input"
 
-        public var body: some HTML {
+        public var body: some HTML.View {
             PageModule(theme: .authenticationFlow) {
                 form(
                     action: .init(verifyAction.relativePath),
@@ -170,10 +185,11 @@ extension Identity.MFA.BackupCodes.Verify {
                         // Remaining codes notice
                         if let remaining = remainingCodes, remaining > 0 {
                             div {
-                                HTMLText(
+                                HTML.Text(
                                     "\(remaining) backup code\(remaining == 1 ? "" : "s") remaining"
                                 )
                             }
+                            .css
                             .font(.body(.small))
                             .color(.text.secondary)
                             .textAlign(.center)
@@ -191,9 +207,10 @@ extension Identity.MFA.BackupCodes.Verify {
                     }
                 }
                 .id(Self.form_id)
+                .css
                 .width(.percent(100))
                 .maxWidth(.identityComponentDesktop)
-                .maxWidth(.identityComponentMobile, media: .mobile)
+                .mobile { $0.maxWidth(.identityComponentMobile) }
                 .margin(horizontal: .auto)
 
                 // JavaScript for formatting and auto-submit
@@ -203,49 +220,49 @@ extension Identity.MFA.BackupCodes.Verify {
                         const codeInput = document.getElementById('\(Self.code_input_id)');
                         const form = document.getElementById('\(Self.form_id)');
                         let isSubmitting = false;
-                        
+
                         if (codeInput && form) {
                             // Format input as user types
                             codeInput.addEventListener('input', function(e) {
                                 let value = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
-                                
+
                                 // Add hyphen after 4 characters
                                 if (value.length > 4) {
                                     value = value.slice(0, 4) + '-' + value.slice(4, 8);
                                 }
-                                
+
                                 e.target.value = value;
-                                
+
                                 // Auto-submit when 8 characters (plus hyphen) are entered
                                 if (value.replace('-', '').length === 8 && !isSubmitting) {
                                     isSubmitting = true;
                                     // Visual feedback
                                     codeInput.style.borderColor = '#10b981';
                                     codeInput.style.backgroundColor = '#f0fdf4';
-                                    
+
                                     // Auto-submit after a brief delay
                                     setTimeout(() => {
                                         form.submit();
                                     }, 300);
                                 }
                             });
-                            
+
                             // Paste handling
                             codeInput.addEventListener('paste', function(e) {
                                 e.preventDefault();
                                 const pastedData = (e.clipboardData || window.clipboardData).getData('text');
                                 const cleaned = pastedData.toUpperCase().replace(/[^A-Z0-9]/g, '').substring(0, 8);
-                                
+
                                 // Format with hyphen
                                 let formatted = cleaned;
                                 if (cleaned.length > 4) {
                                     formatted = cleaned.slice(0, 4) + '-' + cleaned.slice(4);
                                 }
-                                
+
                                 codeInput.value = formatted;
                                 codeInput.dispatchEvent(new Event('input'));
                             });
-                            
+
                             // Focus on load
                             codeInput.focus();
                             codeInput.select();
@@ -257,6 +274,7 @@ extension Identity.MFA.BackupCodes.Verify {
                 Header(3) {
                     "Use Backup Code"
                 }
+                .css
                 .color(.text.primary)
             }
         }
