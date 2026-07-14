@@ -17,7 +17,7 @@ extension Identity.Provider {
             for request: Request
         ) async throws {
             await withDependencies {
-                $0.request = request
+                $0.vapor.request = request
             } operation: {
                 @Dependency(\.identity) var identity
                 do {

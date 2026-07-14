@@ -32,7 +32,7 @@ extension Identity.Email.Change.Client {
                 @Dependency(\.logger) var logger
                 @Dependency(\.tokenClient) var tokenClient
                 do {
-                    @Dependency(\.request) var request
+                    @Dependency(\.vapor.request) var request
                     guard let request else { throw Identity.Backend.Error.requestUnavailable }
 
                     // Check for reauthorization token in headers or cookies

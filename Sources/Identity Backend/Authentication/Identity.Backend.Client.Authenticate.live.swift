@@ -28,7 +28,7 @@ extension Identity.Authentication.Client {
             credentials: { username, password in
                 let email: EmailAddress = try .init(username)
 
-                @Dependency(\.request) var request
+                @Dependency(\.vapor.request) var request
                 guard let request else { throw Identity.Backend.Error.requestUnavailable }
                 @Dependency(\.date) var date
 
@@ -112,7 +112,7 @@ extension Identity.Authentication.Client {
                 }
             },
             apiKey: { apiKeyString in
-                @Dependency(\.request) var request
+                @Dependency(\.vapor.request) var request
                 @Dependency(\.logger) var logger
                 @Dependency(\.date) var date
                 @Dependency(\.tokenClient) var tokenClient

@@ -22,7 +22,7 @@ extension Identity.Provider {
         ) async throws {
             do {
                 try await withDependencies {
-                    $0.request = request
+                    $0.vapor.request = request
                 } operation: {
                     @Dependency(\.identity) var identity
                     _ = try await identity.authenticate.client.credentials(

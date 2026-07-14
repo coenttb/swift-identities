@@ -16,7 +16,7 @@ extension Identity.MFA.BackupCodes.Client {
         @Dependency(\.logger) var logger
         @Dependency(\.tokenClient) var tokenClient
         @Dependency(\.defaultDatabase) var database
-        @Dependency(\.request) var request
+        @Dependency(\.vapor.request) var request
 
         return Identity.MFA.BackupCodes.Client(
             regenerate: {

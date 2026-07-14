@@ -52,7 +52,7 @@ extension Identity.Record {
             return identity
 
         case .auth:
-            @Dependency(\.request) var request
+            @Dependency(\.vapor.request) var request
             @Dependency(\.logger) var logger
             guard let request else {
                 logger.error(

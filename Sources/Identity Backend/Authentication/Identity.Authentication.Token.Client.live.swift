@@ -19,7 +19,7 @@ extension Identity.Authentication.Token.Client {
         return .init(
             access: { token in
                 @Dependency(\.logger) var logger
-                @Dependency(\.request) var request
+                @Dependency(\.vapor.request) var request
                 guard let request else { throw Identity.Backend.Error.requestUnavailable }
                 @Dependency(\.tokenClient) var tokenClient
                 @Dependency(\.date) var date
@@ -93,7 +93,7 @@ extension Identity.Authentication.Token.Client {
             },
             refresh: { token in
                 @Dependency(\.logger) var logger
-                @Dependency(\.request) var request
+                @Dependency(\.vapor.request) var request
                 guard let request else { throw Identity.Backend.Error.requestUnavailable }
                 @Dependency(\.tokenClient) var tokenClient
                 @Dependency(\.defaultDatabase) var db

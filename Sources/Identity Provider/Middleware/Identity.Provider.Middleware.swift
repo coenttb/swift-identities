@@ -32,7 +32,7 @@ extension Identity.Provider {
             chainingTo next: AsyncResponder
         ) async throws -> Response {
             return try await withDependencies {
-                $0.request = request
+                $0.vapor.request = request
             } operation: {
                 do {
                     let tokenResponse = try await tokenAuthenticator.respond(

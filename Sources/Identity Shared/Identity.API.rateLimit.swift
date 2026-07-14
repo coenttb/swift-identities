@@ -32,7 +32,7 @@ extension Identity.API {
                 }
 
                 // Also check rate limit by IP address if available
-                @Dependency(\.request?.realIP) var realIP
+                @Dependency(\.vapor.request?.realIP) var realIP
 
                 if let clientIP = realIP {
                     let ipRateLimit = await rateLimiter.credentials.checkLimit("ip:\(clientIP)")
@@ -125,7 +125,7 @@ extension Identity.API {
                 }
 
                 // Get IP address for rate limiting if available
-                @Dependency(\.request?.realIP) var realIP
+                @Dependency(\.vapor.request?.realIP) var realIP
 
                 // For tests where realIP might not be available
                 if let clientIP = realIP {
@@ -163,7 +163,7 @@ extension Identity.API {
             }
 
         case .delete(let delete):
-            @Dependency(\.request) var request
+            @Dependency(\.vapor.request) var request
             guard let request else { throw Abort.requestUnavailable }
 
             let key = request.realIP
@@ -215,7 +215,7 @@ extension Identity.API {
                     }
 
                     // Also check rate limit by IP address if available
-                    @Dependency(\.request?.realIP) var realIP
+                    @Dependency(\.vapor.request?.realIP) var realIP
 
                     if let clientIP = realIP {
                         let ipRateLimit = await rateLimiter.emailChangeRequest.checkLimit(
@@ -256,7 +256,7 @@ extension Identity.API {
                     }
 
                     // Also check rate limit by IP address if available
-                    @Dependency(\.request?.realIP) var realIP
+                    @Dependency(\.vapor.request?.realIP) var realIP
 
                     if let clientIP = realIP {
                         let ipRateLimit = await rateLimiter.emailChangeConfirm.checkLimit(
@@ -288,7 +288,7 @@ extension Identity.API {
             }
 
         case .logout(.current):
-            @Dependency(\.request) var request
+            @Dependency(\.vapor.request) var request
             guard let request else { throw Abort.requestUnavailable }
             let key = request.realIP
             let rateLimit = await rateLimiter.logout.checkLimit(key)
@@ -300,7 +300,7 @@ extension Identity.API {
             return .init(limiter: rateLimiter.logout, key: key)
 
         case .logout(.all):
-            @Dependency(\.request) var request
+            @Dependency(\.vapor.request) var request
             guard let request else { throw Abort.requestUnavailable }
             let key = request.realIP
             let rateLimit = await rateLimiter.logout.checkLimit(key)
@@ -327,7 +327,7 @@ extension Identity.API {
                     }
 
                     // Also check rate limit by IP address if available
-                    @Dependency(\.request?.realIP) var realIP
+                    @Dependency(\.vapor.request?.realIP) var realIP
 
                     if let clientIP = realIP {
                         let ipRateLimit = await rateLimiter.passwordResetRequest.checkLimit(
@@ -368,7 +368,7 @@ extension Identity.API {
                     }
 
                     // Also check rate limit by IP address if available
-                    @Dependency(\.request?.realIP) var realIP
+                    @Dependency(\.vapor.request?.realIP) var realIP
 
                     if let clientIP = realIP {
                         let ipRateLimit = await rateLimiter.passwordResetConfirm.checkLimit(
@@ -400,7 +400,7 @@ extension Identity.API {
                 }
 
             case .change:
-                @Dependency(\.request) var request
+                @Dependency(\.vapor.request) var request
                 guard let request else { throw Abort.requestUnavailable }
                 let key = request.realIP
                 let rateLimit = await rateLimiter.passwordChangeRequest.checkLimit(key)
@@ -414,7 +414,7 @@ extension Identity.API {
             }
 
         case .reauthorize:
-            @Dependency(\.request) var request
+            @Dependency(\.vapor.request) var request
             guard let request else { throw Abort.requestUnavailable }
             let key = request.realIP
             let rateLimit = await rateLimiter.reauthorize.checkLimit(key)
@@ -438,7 +438,7 @@ extension Identity.API {
 
             default:
                 // Protected MFA operations use authenticated user's IP for rate limiting
-                @Dependency(\.request) var request
+                @Dependency(\.vapor.request) var request
                 guard let request else { throw Abort.requestUnavailable }
                 let key = request.realIP
 
@@ -481,7 +481,7 @@ extension Identity.API {
 
             case .connections, .disconnect:
                 // Protected endpoints - require request for per-user rate limiting
-                @Dependency(\.request) var request
+                @Dependency(\.vapor.request) var request
                 guard let request else { throw Abort.requestUnavailable }
                 let key = request.realIP
                 let rateLimit = await rateLimiter.reauthorize.checkLimit(key)
