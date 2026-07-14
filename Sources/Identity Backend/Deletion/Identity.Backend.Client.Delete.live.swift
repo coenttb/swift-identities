@@ -104,8 +104,7 @@ extension Identity.Deletion.Client {
                     ]
                 )
 
-                @Dependency(\.fireAndForget) var fireAndForget
-                await fireAndForget {
+                Task { @Sendable in
                     try await sendDeletionRequestNotification(identity.email)
                 }
             },
@@ -196,8 +195,7 @@ extension Identity.Deletion.Client {
                     ]
                 )
 
-                @Dependency(\.fireAndForget) var fireAndForget
-                await fireAndForget {
+                Task { @Sendable in
                     try await sendDeletionConfirmationNotification(identity.email)
                 }
             }

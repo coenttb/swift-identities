@@ -121,9 +121,7 @@ extension Identity.Email.Change.Client {
                         return token.value
                     }
 
-                    @Dependency(\.fireAndForget) var fireAndForget
-
-                    await fireAndForget {
+                    Task { @Sendable in
                         try await sendEmailChangeConfirmation(
                             identity.email,
                             newEmailAddress,
@@ -140,7 +138,7 @@ extension Identity.Email.Change.Client {
                         )
                     }
 
-                    await fireAndForget {
+                    Task { @Sendable in
                         try await sendEmailChangeRequestNotification(
                             identity.email,
                             newEmailAddress
@@ -199,8 +197,7 @@ extension Identity.Email.Change.Client {
                         ]
                     )
 
-                    @Dependency(\.fireAndForget) var fireAndForget
-                    await fireAndForget {
+                    Task { @Sendable in
                         do {
                             try await onEmailChangeSuccess(result.oldEmail, result.newEmail)
                         } catch {
@@ -259,7 +256,6 @@ private func performEmailChangeConfirmation(
     newSessionVersion: Int
 ) {
     @Dependency(\.logger) var logger
-    @Dependency(\.fireAndForget) var fireAndForget
 
     // Execute transaction to get result - key optimization: fireAndForget moved outside
     let result = try await db.write { db in
@@ -326,7 +322,7 @@ private func performEmailChangeConfirmation(
             .where { $0.id.eq(data.identity.id) }
             .update { record in
                 record.email = newEmailAddress
-                record.sessionVersion = record.sessionVersion + 1
+                record.sessionVersion = SQLQueryExpression("\(record.sessionVersion) + 1", as: Int.self)
                 record.updatedAt = date
             }
             .execute(db)
@@ -353,7 +349,7 @@ private func performEmailChangeConfirmation(
     }
 
     // Fire and forget callback OUTSIDE transaction - doesn't need to be atomic
-    await fireAndForget {
+    Task { @Sendable in
         do {
             try await onEmailChangeSuccess(result.oldEmail, result.newEmail)
         } catch {

@@ -43,7 +43,7 @@ extension Identity.Password.Change.Client {
                         .where { $0.id.eq(identity.id) }
                         .update { record in
                             record.passwordHash = passwordHash
-                            record.sessionVersion = record.sessionVersion + 1
+                            record.sessionVersion = SQLQueryExpression("\(record.sessionVersion) + 1", as: Int.self)
                             record.updatedAt = date()
                         }
                         .execute(db)
@@ -51,8 +51,7 @@ extension Identity.Password.Change.Client {
 
                 let emailAddress = identity.email
 
-                @Dependency(\.fireAndForget) var fireAndForget
-                await fireAndForget {
+                Task { @Sendable in
                     try await sendPasswordChangeNotification(emailAddress)
                 }
 

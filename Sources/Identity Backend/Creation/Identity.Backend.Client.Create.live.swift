@@ -96,8 +96,7 @@ extension Identity.Creation.Client {
                         return (identity, tokenValue)
                     }
 
-                    @Dependency(\.fireAndForget) var fireAndForget
-                    await fireAndForget {
+                    Task { @Sendable in
                         try await sendVerificationEmail(emailAddress, tokenValue)
                     }
 
@@ -172,10 +171,9 @@ extension Identity.Creation.Client {
                         return data.identity
                     }
 
-                    @Dependency(\.fireAndForget) var fireAndForget
                     let identityId = identity.id
                     let identityEmail = identity.email
-                    await fireAndForget {
+                    Task { @Sendable in
                         try await onIdentityCreationSuccess((identityId, identityEmail))
                     }
                 } catch let error as Identity.Backend.Error {

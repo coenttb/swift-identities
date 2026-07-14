@@ -87,8 +87,7 @@ extension Identity.Password.Reset.Client {
                     return value
                 }
 
-                @Dependency(\.fireAndForget) var fireAndForget
-                await fireAndForget {
+                Task { @Sendable in
                     try await sendPasswordResetEmail(emailAddress, tokenValue)
                 }
 
@@ -101,7 +100,7 @@ extension Identity.Password.Reset.Client {
                     ]
                 )
             },
-            confirm: { token, newPassword in
+            confirm: { newPassword, token in
                 do {
                     let _ = try validatePassword(newPassword)
 
@@ -144,7 +143,7 @@ extension Identity.Password.Reset.Client {
                             .where { $0.id.eq(data.identity.id) }
                             .update { identity in
                                 identity.passwordHash = passwordHash
-                                identity.sessionVersion = identity.sessionVersion + 1
+                                identity.sessionVersion = SQLQueryExpression("\(identity.sessionVersion) + 1", as: Int.self)
                                 identity.updatedAt = date()
                             }
                             .execute(db)
@@ -159,8 +158,7 @@ extension Identity.Password.Reset.Client {
                         return (data.identity.email, data.identity.id)
                     }
 
-                    @Dependency(\.fireAndForget) var fireAndForget
-                    await fireAndForget {
+                    Task { @Sendable in
                         try await sendPasswordChangeNotification(emailAddress)
                     }
 
