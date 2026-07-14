@@ -488,7 +488,7 @@ private func verifyTOTPCode(
                 .where { $0.id.eq(totpData.id) }
                 .update { totp in
                     totp.lastUsedAt = date()
-                    totp.usageCount = totp.usageCount + 1
+                    totp.usageCount = SQLQueryExpression("\(totp.usageCount) + 1", as: Int.self)
                 }
                 .execute(db)
 
@@ -513,7 +513,7 @@ private func verifyTOTPCode(
                 .where { $0.id.eq(totpData.id) }
                 .update { totp in
                     totp.lastUsedAt = date()
-                    totp.usageCount = totp.usageCount + 1
+                    totp.usageCount = SQLQueryExpression("\(totp.usageCount) + 1", as: Int.self)
                 }
                 .execute(db)
         }

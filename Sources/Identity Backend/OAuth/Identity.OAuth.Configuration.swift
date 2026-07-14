@@ -194,7 +194,7 @@ extension Identity.OAuth {
     package init(from config: Identity.OAuth.Configuration) {
         self.init(
             client: .live(configuration: config),
-            router: Identity.OAuth.Route.Router()
+            router: Identity.OAuth.Route.Router().eraseToAnyParserPrinter()
         )
     }
 }

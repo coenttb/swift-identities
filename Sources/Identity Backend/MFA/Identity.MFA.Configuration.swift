@@ -152,58 +152,58 @@ extension Identity.MFA {
             totp: config.totp.map { totpConfig in
                 Identity.MFA.TOTP(
                     client: .live(configuration: totpConfig),
-                    router: Identity.MFA.TOTP.API.Router()
+                    router: Identity.MFA.TOTP.API.Router().eraseToAnyParserPrinter()
                 )
             }
                 ?? Identity.MFA.TOTP(
-                    client: Identity.MFA.TOTP.Client(),  // Default/empty initializer
-                    router: Identity.MFA.TOTP.API.Router()
+                    client: Identity.MFA.TOTP.Client.unimplemented(),  // Default/empty client
+                    router: Identity.MFA.TOTP.API.Router().eraseToAnyParserPrinter()
                 ),
             sms: config.sms.map { smsConfig in
                 Identity.MFA.SMS(
-                    client: Identity.MFA.SMS.Client(),  // TODO: Add .live(configuration:) when implemented
-                    router: Identity.MFA.SMS.API.Router()
+                    client: Identity.MFA.SMS.Client.unimplemented(),  // TODO: Add .live(configuration:) when implemented
+                    router: Identity.MFA.SMS.API.Router().eraseToAnyParserPrinter()
                 )
             }
                 ?? Identity.MFA.SMS(
-                    client: Identity.MFA.SMS.Client(),  // Default/empty initializer
-                    router: Identity.MFA.SMS.API.Router()
+                    client: Identity.MFA.SMS.Client.unimplemented(),  // Default/empty client
+                    router: Identity.MFA.SMS.API.Router().eraseToAnyParserPrinter()
                 ),
             email: config.email.map { emailConfig in
                 Identity.MFA.Email(
-                    client: Identity.MFA.Email.Client(),  // TODO: Add .live(configuration:) when implemented
-                    router: Identity.MFA.Email.API.Router()
+                    client: Identity.MFA.Email.Client.unimplemented(),  // TODO: Add .live(configuration:) when implemented
+                    router: Identity.MFA.Email.API.Router().eraseToAnyParserPrinter()
                 )
             }
                 ?? Identity.MFA.Email(
-                    client: Identity.MFA.Email.Client(),  // Default/empty initializer
-                    router: Identity.MFA.Email.API.Router()
+                    client: Identity.MFA.Email.Client.unimplemented(),  // Default/empty client
+                    router: Identity.MFA.Email.API.Router().eraseToAnyParserPrinter()
                 ),
             webauthn: config.webauthn.map { webauthnConfig in
                 Identity.MFA.WebAuthn(
-                    client: Identity.MFA.WebAuthn.Client(),  // TODO: Add .live(configuration:) when implemented
-                    router: Identity.MFA.WebAuthn.API.Router()
+                    client: Identity.MFA.WebAuthn.Client.unimplemented(),  // TODO: Add .live(configuration:) when implemented
+                    router: Identity.MFA.WebAuthn.API.Router().eraseToAnyParserPrinter()
                 )
             }
                 ?? Identity.MFA.WebAuthn(
-                    client: Identity.MFA.WebAuthn.Client(),  // Default/empty initializer
-                    router: Identity.MFA.WebAuthn.API.Router()
+                    client: Identity.MFA.WebAuthn.Client.unimplemented(),  // Default/empty client
+                    router: Identity.MFA.WebAuthn.API.Router().eraseToAnyParserPrinter()
                 ),
             backupCodes: config.backupCodes.map { backupConfig in
                 Identity.MFA.BackupCodes(
-                    client: Identity.MFA.BackupCodes.Client(),  // TODO: Add .live(configuration:) when implemented
-                    router: Identity.MFA.BackupCodes.API.Router()
+                    client: Identity.MFA.BackupCodes.Client.unimplemented(),  // TODO: Add .live(configuration:) when implemented
+                    router: Identity.MFA.BackupCodes.API.Router().eraseToAnyParserPrinter()
                 )
             }
                 ?? Identity.MFA.BackupCodes(
-                    client: Identity.MFA.BackupCodes.Client(),  // Default/empty initializer
-                    router: Identity.MFA.BackupCodes.API.Router()
+                    client: Identity.MFA.BackupCodes.Client.unimplemented(),  // Default/empty client
+                    router: Identity.MFA.BackupCodes.API.Router().eraseToAnyParserPrinter()
                 ),
             status: Identity.MFA.Status(
                 client: .live(),
-                router: Identity.MFA.Status.API.Router()
+                router: Identity.MFA.Status.API.Router().eraseToAnyParserPrinter()
             ),
-            router: Identity.MFA.Route.Router()
+            router: Identity.MFA.Route.Router().eraseToAnyParserPrinter()
         )
     }
 }

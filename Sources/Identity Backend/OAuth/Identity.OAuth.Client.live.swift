@@ -85,7 +85,7 @@ private func callbackImplementation(
         @Dependency(\.defaultDatabase) var database
         @Dependency(\.logger) var logger
         @Dependency(\.date) var date
-        @Dependency(Identity.Token.Client.self) var tokenClient
+        @Dependency(\.tokenClient) var tokenClient
 
         // 1. Validate state and get provider
         let stateData = try await stateManager.validateState(callbackRequest.state)
