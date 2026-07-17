@@ -14,11 +14,11 @@ import Identity_Shared
 import Testing
 import URLRouting
 
-@Suite("Consumer API Router Configuration Tests")
-struct ConsumerAPIRouterTests {
+@Suite
+struct Test {
 
-    @Test("Router configuration exists for credentials authentication")
-    func testConfigureAuthenticationForCredentials() async throws {
+    @Test
+    func `Router configuration exists for credentials authentication`() async throws {
         // Test that credentials routes can be constructed
         let route: Identity.API = .authenticate(
             .credentials(
@@ -32,8 +32,8 @@ struct ConsumerAPIRouterTests {
         // Route can be constructed and typed correctly
     }
 
-    @Test("Router configuration exists for token routes")
-    func testConfigureAuthenticationForToken() async throws {
+    @Test
+    func `Router configuration exists for token routes`() async throws {
         let dummyToken = JWT(
             header: .init(alg: "HS256"),
             payload: .init(),
@@ -44,8 +44,8 @@ struct ConsumerAPIRouterTests {
         // Route can be constructed
     }
 
-    @Test("Router configuration exists for email routes")
-    func testConfigureAuthenticationForEmail() async throws {
+    @Test
+    func `Router configuration exists for email routes`() async throws {
         let route: Identity.API = .email(
             .change(
                 .request(
@@ -59,8 +59,8 @@ struct ConsumerAPIRouterTests {
         // Route can be constructed
     }
 
-    @Test("Router configuration exists for password reset")
-    func testConfigureAuthenticationForPasswordReset() async throws {
+    @Test
+    func `Router configuration exists for password reset`() async throws {
         let route: Identity.API = .password(
             .reset(
                 .request(
@@ -74,8 +74,8 @@ struct ConsumerAPIRouterTests {
         // Route can be constructed
     }
 
-    @Test("Router configuration exists for password change")
-    func testConfigureAuthenticationForPasswordChange() async throws {
+    @Test
+    func `Router configuration exists for password change`() async throws {
         let route: Identity.API = .password(
             .change(
                 .request(
@@ -90,8 +90,8 @@ struct ConsumerAPIRouterTests {
         // Route can be constructed
     }
 
-    @Test("Router configuration exists for create route")
-    func testConfigureAuthenticationForCreate() async throws {
+    @Test
+    func `Router configuration exists for create route`() async throws {
         let route: Identity.API = .create(
             .request(
                 .init(
@@ -104,8 +104,8 @@ struct ConsumerAPIRouterTests {
         // Route can be constructed
     }
 
-    @Test("Router configuration exists for delete route")
-    func testConfigureAuthenticationForDelete() async throws {
+    @Test
+    func `Router configuration exists for delete route`() async throws {
         let route: Identity.API = .delete(
             .request(
                 .init(
@@ -117,15 +117,15 @@ struct ConsumerAPIRouterTests {
         // Route can be constructed
     }
 
-    @Test("Router configuration exists for logout route")
-    func testConfigureAuthenticationForLogout() async throws {
+    @Test
+    func `Router configuration exists for logout route`() async throws {
         let route: Identity.API = .logout(.current)
 
         // Route can be constructed
     }
 
-    @Test("Router configuration handles bearer auth correctly")
-    func testBearerAuthConfiguration() async throws {
+    @Test
+    func `Router configuration handles bearer auth correctly`() async throws {
         // Test that router can set bearer auth
         let router = Identity.API.Router()
         let withAuth = router.setBearerAuth("test-token")
@@ -133,8 +133,8 @@ struct ConsumerAPIRouterTests {
         // Router with auth configured
     }
 
-    @Test("Router configuration handles reauthorization tokens")
-    func testReauthorizationTokenConfiguration() async throws {
+    @Test
+    func `Router configuration handles reauthorization tokens`() async throws {
         // Test that router can set reauthorization tokens
         let router = Identity.API.Router()
         let withReauth = router.setReauthorizationToken("reauth-token")
@@ -142,8 +142,8 @@ struct ConsumerAPIRouterTests {
         // Router with reauth token configured
     }
 
-    @Test("Provider configuration uses correct base URL")
-    func testProviderConfiguration() async throws {
+    @Test
+    func `Provider configuration uses correct base URL`() async throws {
         let config = Identity.Consumer.Configuration.Provider(
             baseURL: URL(string: "https://provider.example.com")!,
             domain: "example.com",

@@ -9,19 +9,19 @@ import RecordsTestSupport
 import Testing
 
 @Suite(
-    "TOTP Setup Tests",
+
     .dependencies {
         $0.envVars = .development
         $0.defaultDatabase = Database.TestDatabase.withIdentitySchema()
         $0.date = .constant(Date())
     }
 )
-struct TOTPSetupTests {
+struct Test {
     @Dependency(\.defaultDatabase) var database
     @Dependency(\.date) var date
 
-    @Test("TOTP generateSecret creates valid secret and QR code URL")
-    func testGenerateSecret() async throws {
+    @Test
+    func `TOTP generate Secret creates valid secret and QR code URL`() async throws {
         let config = Identity.MFA.TOTP.Configuration.test
         let totpClient = Identity.MFA.TOTP.Client.backend(configuration: config)
 
@@ -46,8 +46,8 @@ struct TOTPSetupTests {
         #expect(!setupData.manualEntryKey.isEmpty)
     }
 
-    @Test("TOTP setup creates unconfirmed TOTP record in database")
-    func testSetupCreatesRecord() async throws {
+    @Test
+    func `TOTP setup creates unconfirmed TOTP record in database`() async throws {
         let identity = try await database.write { db in
             try await TestFixtures.createUniqueTestIdentity(
                 emailPrefix: "totp-setup",
@@ -99,8 +99,8 @@ struct TOTPSetupTests {
         #expect(totpRecord.lastUsedAt == nil)
     }
 
-    @Test("TOTP confirmSetup with valid code marks record as confirmed")
-    func testConfirmSetupWithValidCode() async throws {
+    @Test
+    func `TOTP confirm Setup with valid code marks record as confirmed`() async throws {
         let identity = try await database.write { db in
             try await TestFixtures.createUniqueTestIdentity(
                 emailPrefix: "totp-confirm",
@@ -158,8 +158,8 @@ struct TOTPSetupTests {
         #expect(age < 3600)  // Within last hour (accounts for timezone differences)
     }
 
-    @Test("TOTP confirmSetup with invalid code throws error")
-    func testConfirmSetupWithInvalidCode() async throws {
+    @Test
+    func `TOTP confirm Setup with invalid code throws error`() async throws {
         let identity = try await database.write { db in
             try await TestFixtures.createUniqueTestIdentity(
                 emailPrefix: "totp-invalid",
@@ -212,8 +212,8 @@ struct TOTPSetupTests {
         #expect(stillUnconfirmed.confirmedAt == nil)
     }
 
-    @Test("TOTP isEnabled returns true after confirmation")
-    func testIsEnabledAfterConfirmation() async throws {
+    @Test
+    func `TOTP is Enabled returns true after confirmation`() async throws {
         let identity = try await database.write { db in
             try await TestFixtures.createUniqueTestIdentity(
                 emailPrefix: "totp-enabled",
@@ -257,8 +257,8 @@ struct TOTPSetupTests {
         #expect(afterConfirmation == true)
     }
 
-    @Test("TOTP isEnabled returns false before confirmation")
-    func testIsEnabledBeforeConfirmation() async throws {
+    @Test
+    func `TOTP is Enabled returns false before confirmation`() async throws {
         let identity = try await database.write { db in
             try await TestFixtures.createUniqueTestIdentity(
                 emailPrefix: "totp-notconfirmed",

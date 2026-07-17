@@ -13,24 +13,24 @@ import Identity_Consumer
 import Identity_Shared
 import Testing
 
-@Suite("Consumer Cookie Reader Tests")
-struct ConsumerCookieReaderTests {
+@Suite
+struct Test {
 
-    @Test("Cookie reader initializes correctly")
-    func testInitialization() async throws {
+    @Test
+    func `Cookie reader initializes correctly`() async throws {
         let reader = Identity.Consumer.CookieReader()
         // Reader created successfully
     }
 
-    @Test("Cookie reader provides debug description without exposing tokens")
-    func testDebugDescriptionSafety() async throws {
+    @Test
+    func `Cookie reader provides debug description without exposing tokens`() async throws {
         // Test that debug description format is safe
         let reader = Identity.Consumer.CookieReader()
         // The reader should never expose actual token values in debug output
     }
 
-    @Test("Cookie error descriptions are informative")
-    func testCookieErrorDescriptions() async throws {
+    @Test
+    func `Cookie error descriptions are informative`() async throws {
         let accessError = Identity.Consumer.CookieError.missingAccessToken
         #expect(accessError.description.contains("Access token"))
 
@@ -41,8 +41,8 @@ struct ConsumerCookieReaderTests {
         #expect(reauthError.description.contains("Reauthorization token"))
     }
 
-    @Test("Cookie reader can forward cookies to URL requests")
-    func testForwardCookiesStructure() async throws {
+    @Test
+    func `Cookie reader can forward cookies to URL requests`() async throws {
         let reader = Identity.Consumer.CookieReader()
         var urlRequest = URLRequest(url: URL(string: "https://example.com")!)
 
@@ -50,8 +50,8 @@ struct ConsumerCookieReaderTests {
         // Actual cookie forwarding is tested via integration tests
     }
 
-    @Test("Cookie reader validates cookie presence correctly")
-    func testValidationErrors() async throws {
+    @Test
+    func `Cookie reader validates cookie presence correctly`() async throws {
         // Test that appropriate errors are thrown for missing cookies
         let accessError = Identity.Consumer.CookieError.missingAccessToken
         let refreshError = Identity.Consumer.CookieError.missingRefreshToken

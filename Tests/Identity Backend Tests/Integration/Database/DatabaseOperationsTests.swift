@@ -10,19 +10,19 @@ import Testing
 import Vapor
 
 @Suite(
-    "Database Operations Tests",
+
     .dependencies {
         $0.envVars = .development
         $0.defaultDatabase = Database.TestDatabase.withIdentitySchema()
     }
 )
-struct DatabaseOperationsTests {
+struct Test {
     @Dependency(\.defaultDatabase) var database
 
     // MARK: - UPDATE Operations
 
-    @Test("UPDATE email changes identity email")
-    func testUpdateEmail() async throws {
+    @Test
+    func `UPDATE email changes identity email`() async throws {
         let oldEmail = TestFixtures.uniqueEmail(prefix: "old")
         let newEmail = TestFixtures.uniqueEmail(prefix: "new")
 
@@ -54,8 +54,8 @@ struct DatabaseOperationsTests {
         #expect(fetched.email == newEmail)
     }
 
-    @Test("UPDATE password_hash changes hashed password")
-    func testUpdatePasswordHash() async throws {
+    @Test
+    func `UPDATE password hash changes hashed password`() async throws {
         let identity = try await database.write { db in
             try await TestFixtures.createUniqueTestIdentity(
                 emailPrefix: "password-update",
@@ -88,8 +88,8 @@ struct DatabaseOperationsTests {
         #expect(try Bcrypt.verify(newPassword, created: fetched.passwordHash))
     }
 
-    @Test("UPDATE emailVerificationStatus changes verification status")
-    func testUpdateEmailVerificationStatus() async throws {
+    @Test
+    func `UPDATE email Verification Status changes verification status`() async throws {
         let identity = try await database.write { db in
             try await TestFixtures.createTestIdentity(
                 email: TestFixtures.uniqueEmail(prefix: "verify"),
@@ -121,8 +121,8 @@ struct DatabaseOperationsTests {
         #expect(fetched.emailVerificationStatus == Identity.Record.EmailVerificationStatus.verified)
     }
 
-    @Test("UPDATE multiple fields in single operation")
-    func testUpdateMultipleFields() async throws {
+    @Test
+    func `UPDATE multiple fields in single operation`() async throws {
         let identity = try await database.write { db in
             try await TestFixtures.createUniqueTestIdentity(
                 emailPrefix: "multi-update",
@@ -159,8 +159,8 @@ struct DatabaseOperationsTests {
         #expect(fetched.sessionVersion == identity.sessionVersion + 1)
     }
 
-    @Test("UPDATE non-existent identity affects zero rows")
-    func testUpdateNonExistentIdentity() async throws {
+    @Test
+    func `UPDATE non-existent identity affects zero rows`() async throws {
         let nonExistentId = Identity.ID(UUID())
 
         // Should not throw, but affects 0 rows
@@ -183,8 +183,8 @@ struct DatabaseOperationsTests {
 
     // MARK: - DELETE Operations
 
-    @Test("DELETE single identity removes from database")
-    func testDeleteSingleIdentity() async throws {
+    @Test
+    func `DELETE single identity removes from database`() async throws {
         let identity = try await database.write { db in
             try await TestFixtures.createUniqueTestIdentity(
                 emailPrefix: "delete",
@@ -210,8 +210,8 @@ struct DatabaseOperationsTests {
         #expect(fetched == nil)
     }
 
-    @Test("DELETE multiple identities by IDs")
-    func testDeleteMultipleIdentities() async throws {
+    @Test
+    func `DELETE multiple identities by IDs`() async throws {
         // Create 3 identities
         var ids: [Identity.ID] = []
         for i in 0..<3 {
@@ -245,8 +245,8 @@ struct DatabaseOperationsTests {
         #expect(count == 0)
     }
 
-    @Test("DELETE with WHERE clause")
-    func testDeleteWithWhereClause() async throws {
+    @Test
+    func `DELETE with WHERE clause`() async throws {
         let targetEmail = TestFixtures.uniqueEmail(prefix: "target")
 
         // Create target identity
@@ -300,8 +300,8 @@ struct DatabaseOperationsTests {
 
     // MARK: - SELECT Operations
 
-    @Test("SELECT with WHERE filters correctly")
-    func testSelectWithWhere() async throws {
+    @Test
+    func `SELECT with WHERE filters correctly`() async throws {
         let targetEmail = TestFixtures.uniqueEmail(prefix: "select-where")
 
         // Create identities
@@ -339,8 +339,8 @@ struct DatabaseOperationsTests {
         )
     }
 
-    @Test("SELECT fetchAll returns all records")
-    func testFetchAll() async throws {
+    @Test
+    func `SELECT fetch All returns all records`() async throws {
         let countBefore = try await database.read { db in
             try await Identity.Record.fetchAll(db).count
         }
@@ -363,8 +363,8 @@ struct DatabaseOperationsTests {
         #expect(countAfter == countBefore + 3)
     }
 
-    @Test("SELECT fetchCount returns correct count")
-    func testFetchCount() async throws {
+    @Test
+    func `SELECT fetch Count returns correct count`() async throws {
         let countBefore = try await database.read { db in
             try await Identity.Record.fetchCount(db)
         }
@@ -384,8 +384,8 @@ struct DatabaseOperationsTests {
         #expect(countAfter == countBefore + 1)
     }
 
-    @Test("SELECT with complex WHERE conditions")
-    func testComplexWhereConditions() async throws {
+    @Test
+    func `SELECT with complex WHERE conditions`() async throws {
         let email1 = TestFixtures.uniqueEmail(prefix: "complex1")
         let email2 = TestFixtures.uniqueEmail(prefix: "complex2")
 
@@ -426,8 +426,8 @@ struct DatabaseOperationsTests {
 
     // MARK: - Batch Operations
 
-    @Test("Batch INSERT multiple identities")
-    func testBatchInsert() async throws {
+    @Test
+    func `Batch INSERT multiple identities`() async throws {
         var emails: [EmailAddress] = []
         for i in 0..<5 {
             emails.append(try EmailAddress("batch\(i)@example.com"))
@@ -456,8 +456,8 @@ struct DatabaseOperationsTests {
         #expect(count == 5)
     }
 
-    @Test("Batch UPDATE multiple identities")
-    func testBatchUpdate() async throws {
+    @Test
+    func `Batch UPDATE multiple identities`() async throws {
         // Create identities
         var ids: [Identity.ID] = []
         for i in 0..<3 {

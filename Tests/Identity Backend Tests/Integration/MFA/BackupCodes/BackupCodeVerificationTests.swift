@@ -9,19 +9,19 @@ import RecordsTestSupport
 import Testing
 
 @Suite(
-    "Backup Code Verification Tests",
+
     .dependencies {
         $0.envVars = .development
         $0.defaultDatabase = Database.TestDatabase.withIdentitySchema()
         $0.date = .constant(Date())
     }
 )
-struct BackupCodeVerificationTests {
+struct Test {
     @Dependency(\.defaultDatabase) var database
     @Dependency(\.date) var date
 
-    @Test("Valid backup code verification succeeds and marks as used")
-    func testValidBackupCodeVerification() async throws {
+    @Test
+    func `Valid backup code verification succeeds and marks as used`() async throws {
         let identity = try await database.write { db in
             try await TestFixtures.createUniqueTestIdentity(
                 emailPrefix: "backup-verify-valid",
@@ -86,8 +86,8 @@ struct BackupCodeVerificationTests {
         #expect(remaining == 4)
     }
 
-    @Test("Invalid backup code verification fails")
-    func testInvalidBackupCodeVerification() async throws {
+    @Test
+    func `Invalid backup code verification fails`() async throws {
         let identity = try await database.write { db in
             try await TestFixtures.createUniqueTestIdentity(
                 emailPrefix: "backup-verify-invalid",
@@ -134,8 +134,8 @@ struct BackupCodeVerificationTests {
         #expect(unusedCount == 5)
     }
 
-    @Test("Used backup code cannot be reused")
-    func testUsedBackupCodeCannotBeReused() async throws {
+    @Test
+    func `Used backup code cannot be reused`() async throws {
         let identity = try await database.write { db in
             try await TestFixtures.createUniqueTestIdentity(
                 emailPrefix: "backup-verify-reuse",
@@ -190,8 +190,8 @@ struct BackupCodeVerificationTests {
         #expect(afterSecond == 4)
     }
 
-    @Test("Multiple backup codes can be used sequentially")
-    func testMultipleBackupCodeUsage() async throws {
+    @Test
+    func `Multiple backup codes can be used sequentially`() async throws {
         let identity = try await database.write { db in
             try await TestFixtures.createUniqueTestIdentity(
                 emailPrefix: "backup-verify-multiple",

@@ -9,19 +9,19 @@ import RecordsTestSupport
 import Testing
 
 @Suite(
-    "Backup Code Generation Tests",
+
     .dependencies {
         $0.envVars = .development
         $0.defaultDatabase = Database.TestDatabase.withIdentitySchema()
         $0.date = .constant(Date())
     }
 )
-struct BackupCodeGenerationTests {
+struct Test {
     @Dependency(\.defaultDatabase) var database
     @Dependency(\.date) var date
 
-    @Test("Generate backup codes creates correct number of codes")
-    func testGenerateBackupCodes() async throws {
+    @Test
+    func `Generate backup codes creates correct number of codes`() async throws {
         // Create identity with confirmed TOTP
         let identity = try await database.write { db in
             try await TestFixtures.createUniqueTestIdentity(
@@ -83,8 +83,8 @@ struct BackupCodeGenerationTests {
         #expect(dbCount == codeCount)
     }
 
-    @Test("Regenerate backup codes invalidates old codes")
-    func testRegenerateBackupCodes() async throws {
+    @Test
+    func `Regenerate backup codes invalidates old codes`() async throws {
         let identity = try await database.write { db in
             try await TestFixtures.createUniqueTestIdentity(
                 emailPrefix: "backup-regen",
@@ -141,8 +141,8 @@ struct BackupCodeGenerationTests {
         #expect(intersection.isEmpty)
     }
 
-    @Test("Backup codes are properly encrypted")
-    func testBackupCodesEncrypted() async throws {
+    @Test
+    func `Backup codes are properly encrypted`() async throws {
         let identity = try await database.write { db in
             try await TestFixtures.createUniqueTestIdentity(
                 emailPrefix: "backup-encrypt",
@@ -200,8 +200,8 @@ struct BackupCodeGenerationTests {
         }
     }
 
-    @Test("Backup code format validation")
-    func testBackupCodeFormat() async throws {
+    @Test
+    func `Backup code format validation`() async throws {
         let identity = try await database.write { db in
             try await TestFixtures.createUniqueTestIdentity(
                 emailPrefix: "backup-format",

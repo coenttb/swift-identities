@@ -71,11 +71,11 @@ enum TestFixtures {
 
 // MARK: - Configuration Tests
 
-@Suite("Standalone Configuration Tests")
-struct StandaloneConfigurationTests {
+@Suite
+struct Test {
 
-    @Test("Standalone configuration initializes with required fields")
-    func testConfigurationInitialization() throws {
+    @Test
+    func `Standalone configuration initializes with required fields`() throws {
         let baseURL = try #require(URL(string: "https://example.com"))
         let router = Identity.Route.Router().baseURL(baseURL.absoluteString)
         let jwt = Identity.Token.Client.test
@@ -91,8 +91,8 @@ struct StandaloneConfigurationTests {
         _ = config.email.sendVerificationEmail
     }
 
-    @Test("Standalone configuration uses default cookies when not provided")
-    func testConfigurationDefaultCookies() throws {
+    @Test
+    func `Standalone configuration uses default cookies when not provided`() throws {
         let baseURL = try #require(URL(string: "https://example.com"))
         let router = Identity.Route.Router().baseURL(baseURL.absoluteString)
         let jwt = Identity.Token.Client.test
@@ -108,8 +108,8 @@ struct StandaloneConfigurationTests {
         #expect(config.cookies.refreshToken.isHTTPOnly == true)
     }
 
-    @Test("Standalone configuration includes rate limiters by default")
-    func testConfigurationDefaultRateLimiters() throws {
+    @Test
+    func `Standalone configuration includes rate limiters by default`() throws {
         let baseURL = try #require(URL(string: "https://example.com"))
         let router = Identity.Route.Router().baseURL(baseURL.absoluteString)
         let jwt = Identity.Token.Client.test
@@ -124,8 +124,8 @@ struct StandaloneConfigurationTests {
         #expect(config.rateLimiters?.credentials != nil)
     }
 
-    @Test("Standalone configuration accepts MFA configuration")
-    func testConfigurationWithMFA() throws {
+    @Test
+    func `Standalone configuration accepts MFA configuration`() throws {
         let baseURL = try #require(URL(string: "https://example.com"))
         let router = Identity.Route.Router().baseURL(baseURL.absoluteString)
         let jwt = Identity.Token.Client.test
@@ -159,11 +159,11 @@ struct StandaloneConfigurationTests {
 
 // MARK: - Cookie Configuration Tests
 
-@Suite("Cookie Configuration Tests")
-struct CookieConfigurationTests {
+@Suite
+struct Test {
 
-    @Test("Production cookies require HTTPS")
-    func testProductionCookiesSecure() throws {
+    @Test
+    func `Production cookies require HTTPS`() throws {
         let baseURL = try #require(URL(string: "https://example.com"))
         let router = Identity.Route.Router().baseURL(baseURL.absoluteString)
 
@@ -177,8 +177,8 @@ struct CookieConfigurationTests {
         #expect(cookies.reauthorizationToken.isSecure == true)
     }
 
-    @Test("Production cookies use strict same-site policy")
-    func testProductionCookiesSameSite() throws {
+    @Test
+    func `Production cookies use strict same-site policy`() throws {
         let baseURL = try #require(URL(string: "https://example.com"))
         let router = Identity.Route.Router().baseURL(baseURL.absoluteString)
 
@@ -191,24 +191,24 @@ struct CookieConfigurationTests {
         #expect(cookies.refreshToken.sameSitePolicy == .strict)
     }
 
-    @Test("Development cookies allow HTTP")
-    func testDevelopmentCookiesInsecure() throws {
+    @Test
+    func `Development cookies allow HTTP`() throws {
         let cookies = Identity.Frontend.Configuration.Cookies.development()
 
         #expect(cookies.accessToken.isSecure == false)
         #expect(cookies.refreshToken.isSecure == false)
     }
 
-    @Test("Development cookies use lax same-site policy")
-    func testDevelopmentCookiesSameSite() throws {
+    @Test
+    func `Development cookies use lax same-site policy`() throws {
         let cookies = Identity.Frontend.Configuration.Cookies.development()
 
         #expect(cookies.accessToken.sameSitePolicy == .lax)
         #expect(cookies.refreshToken.sameSitePolicy == .lax)
     }
 
-    @Test("Refresh token has restricted path in production")
-    func testRefreshTokenPath() throws {
+    @Test
+    func `Refresh token has restricted path in production`() throws {
         let baseURL = try #require(URL(string: "https://example.com"))
         let router = Identity.Route.Router().baseURL(baseURL.absoluteString)
 
@@ -225,15 +225,15 @@ struct CookieConfigurationTests {
 // MARK: - Token Client Tests
 
 @Suite(
-    "Token Client Tests",
+
     .dependencies {
         $0.uuid = .incrementing
     }
 )
-struct TokenClientTests {
+struct Test {
 
-    @Test("Token client generates valid access token")
-    func testGenerateAccessToken() async throws {
+    @Test
+    func `Token client generates valid access token`() async throws {
         let identityId = Identity.ID(UUID())
         let email = TestFixtures.testEmail
         let sessionVersion = 1
@@ -254,8 +254,8 @@ struct TokenClientTests {
         #expect(verifiedToken.email == email)
     }
 
-    @Test("Token client generates valid refresh token")
-    func testGenerateRefreshToken() async throws {
+    @Test
+    func `Token client generates valid refresh token`() async throws {
         let identityId = Identity.ID(UUID())
         let sessionVersion = 1
 
@@ -273,8 +273,8 @@ struct TokenClientTests {
         #expect(verifiedToken.identityId == identityId)
     }
 
-    @Test("Token client generates token pair")
-    func testGenerateTokenPair() async throws {
+    @Test
+    func `Token client generates token pair`() async throws {
         let identityId = Identity.ID(UUID())
         let email = TestFixtures.testEmail
         let sessionVersion = 1
@@ -298,8 +298,8 @@ struct TokenClientTests {
         #expect(verifiedRefresh.identityId == identityId)
     }
 
-    @Test("Token client refreshes access token")
-    func testRefreshAccessToken() async throws {
+    @Test
+    func `Token client refreshes access token`() async throws {
         let identityId = Identity.ID(UUID())
         let email = TestFixtures.testEmail
         let sessionVersion = 1
@@ -325,8 +325,8 @@ struct TokenClientTests {
         #expect(verifiedToken.identityId == identityId)
     }
 
-    @Test("Token client identifies token types correctly")
-    func testIdentifyTokenType() async throws {
+    @Test
+    func `Token client identifies token types correctly`() async throws {
         let identityId = Identity.ID(UUID())
         let email = TestFixtures.testEmail
         let sessionVersion = 1
@@ -351,8 +351,8 @@ struct TokenClientTests {
         #expect(refreshType == .refresh)
     }
 
-    @Test("Token client detects non-expired tokens")
-    func testTokenNotExpired() async throws {
+    @Test
+    func `Token client detects non-expired tokens`() async throws {
         let tokenClient = Identity.Token.Client.test
         let identityId = Identity.ID(UUID())
         let email = TestFixtures.testEmail
@@ -373,11 +373,11 @@ struct TokenClientTests {
 
 // MARK: - Authenticator Middleware Tests
 
-@Suite("Authenticator Middleware Tests")
-struct AuthenticatorMiddlewareTests {
+@Suite
+struct Test {
 
-    @Test("Unified authenticator initializes")
-    func testAuthenticatorInitialization() throws {
+    @Test
+    func `Unified authenticator initializes`() throws {
         // This test verifies the authenticator structure exists and can be initialized
         let authenticator = Identity.Standalone.Authenticator()
 
@@ -385,46 +385,46 @@ struct AuthenticatorMiddlewareTests {
         #expect(String(describing: authenticator).contains("Authenticator"))
     }
 
-    @Test("Unified authenticator has default configuration")
-    func testAuthenticatorDefaultConfiguration() throws {
+    @Test
+    func `Unified authenticator has default configuration`() throws {
         let config = Identity.Standalone.Authenticator.Configuration.default
 
         #expect(config.enableCookies == true)
         #expect(config.enableBearerTokens == true)
     }
 
-    @Test("Unified authenticator has API-only configuration")
-    func testAuthenticatorAPIOnlyConfiguration() throws {
+    @Test
+    func `Unified authenticator has API-only configuration`() throws {
         let config = Identity.Standalone.Authenticator.Configuration.apiOnly
 
         #expect(config.enableCookies == false)
         #expect(config.enableBearerTokens == true)
     }
 
-    @Test("Unified authenticator has web-only configuration")
-    func testAuthenticatorWebOnlyConfiguration() throws {
+    @Test
+    func `Unified authenticator has web-only configuration`() throws {
         let config = Identity.Standalone.Authenticator.Configuration.webOnly
 
         #expect(config.enableCookies == true)
         #expect(config.enableBearerTokens == false)
     }
 
-    @Test("Token authenticator initializes")
-    func testTokenAuthenticatorInitialization() throws {
+    @Test
+    func `Token authenticator initializes`() throws {
         let authenticator = Identity.Standalone.TokenAuthenticator()
 
         #expect(String(describing: authenticator).contains("TokenAuthenticator"))
     }
 
-    @Test("Cookie authenticator initializes")
-    func testCookieAuthenticatorInitialization() throws {
+    @Test
+    func `Cookie authenticator initializes`() throws {
         let authenticator = Identity.Standalone.CookieAuthenticator()
 
         #expect(String(describing: authenticator).contains("CookieAuthenticator"))
     }
 
-    @Test("Credentials authenticator initializes")
-    func testCredentialsAuthenticatorInitialization() throws {
+    @Test
+    func `Credentials authenticator initializes`() throws {
         let authenticator = Identity.Standalone.CredentialsAuthenticator()
 
         #expect(String(describing: authenticator).contains("CredentialsAuthenticator"))
@@ -433,19 +433,19 @@ struct AuthenticatorMiddlewareTests {
 
 // MARK: - Rate Limiter Tests
 
-@Suite("Rate Limiter Tests")
-struct RateLimiterTests {
+@Suite
+struct Test {
 
-    @Test("Default rate limiters include credentials limiter")
-    func testDefaultRateLimiters() throws {
+    @Test
+    func `Default rate limiters include credentials limiter`() throws {
         let limiters = RateLimiters.default
 
         // Verify credentials limiter exists (it's not optional)
         _ = limiters.credentials
     }
 
-    @Test("Standalone has all rate limiters configured")
-    func testStandaloneRateLimiters() throws {
+    @Test
+    func `Standalone has all rate limiters configured`() throws {
         let limiters = RateLimiters.default
 
         // Standalone has all limiters (they're not optional)
@@ -458,15 +458,15 @@ struct RateLimiterTests {
 // MARK: - Integration Tests
 
 @Suite(
-    "Standalone Integration Tests",
+
     .dependencies {
         $0.uuid = .incrementing
     }
 )
-struct StandaloneIntegrationTests {
+struct Test {
 
-    @Test("Token generation and verification flow")
-    func testTokenGenerationFlow() async throws {
+    @Test
+    func `Token generation and verification flow`() async throws {
         let identityId = Identity.ID(UUID())
         let testEmail = TestFixtures.testEmail
         let sessionVersion = 1
@@ -487,8 +487,8 @@ struct StandaloneIntegrationTests {
         #expect(verifiedRefresh.identityId == identityId)
     }
 
-    @Test("Token refresh with mismatched session version fails")
-    func testSessionVersionMismatch() async throws {
+    @Test
+    func `Token refresh with mismatched session version fails`() async throws {
         let identityId = Identity.ID(UUID())
         let testEmail = TestFixtures.testEmail
         let oldSessionVersion = 1
@@ -513,8 +513,8 @@ struct StandaloneIntegrationTests {
         }
     }
 
-    @Test("Configuration provides all required components")
-    func testConfigurationCompleteness() throws {
+    @Test
+    func `Configuration provides all required components`() throws {
         let baseURL = try #require(URL(string: "https://example.com"))
         let router = Identity.Route.Router().baseURL(baseURL.absoluteString)
         let jwt = Identity.Token.Client.test
@@ -532,8 +532,8 @@ struct StandaloneIntegrationTests {
         #expect(standaloneConfig.rateLimiters != nil)
     }
 
-    @Test("Standalone API router initializes")
-    func testStandaloneAPIRouter() throws {
+    @Test
+    func `Standalone API router initializes`() throws {
         let router = Identity.Standalone.API.Router()
 
         // Verify router exists and can be created

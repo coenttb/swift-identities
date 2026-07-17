@@ -10,17 +10,17 @@ import Testing
 import Vapor
 
 @Suite(
-    "Authentication Tests",
+
     .dependencies {
         $0.envVars = .development
         $0.defaultDatabase = Database.TestDatabase.withIdentitySchema()
     }
 )
-struct AuthenticationTests {
+struct Test {
     @Dependency(\.defaultDatabase) var database
 
-    @Test("INSERT identity with password returns complete record")
-    func testCreateIdentityWithPassword() async throws {
+    @Test
+    func `INSERT identity with password returns complete record`() async throws {
         // Arrange & Act: Create test user
         let identity = try await database.write { db in
             try await TestFixtures.createTestIdentity(
@@ -37,8 +37,8 @@ struct AuthenticationTests {
         #expect(!identity.passwordHash.isEmpty)
     }
 
-    @Test("Bcrypt.verify succeeds with correct password")
-    func testPasswordVerification() async throws {
+    @Test
+    func `Bcrypt.verify succeeds with correct password`() async throws {
         // Arrange: Create test user
         let identity = try await database.write { db in
             try await TestFixtures.createTestIdentity(
@@ -56,8 +56,8 @@ struct AuthenticationTests {
         #expect(isValid == true)
     }
 
-    @Test("Bcrypt.verify fails with incorrect password")
-    func testInvalidPasswordRejection() async throws {
+    @Test
+    func `Bcrypt.verify fails with incorrect password`() async throws {
         // Arrange: Create test user
         let identity = try await database.write { db in
             try await TestFixtures.createTestIdentity(
@@ -75,8 +75,8 @@ struct AuthenticationTests {
         #expect(isValid == false)
     }
 
-    @Test("SELECT identity by email returns matching record")
-    func testFindIdentityByEmail() async throws {
+    @Test
+    func `SELECT identity by email returns matching record`() async throws {
         // Arrange: Create test user
         _ = try await database.write { db in
             try await TestFixtures.createTestIdentity(
@@ -98,8 +98,8 @@ struct AuthenticationTests {
         #expect(identity.email == TestFixtures.testEmail)
     }
 
-    @Test("UPDATE lastLoginAt timestamp persists to database")
-    func testLastLoginTimestampUpdate() async throws {
+    @Test
+    func `UPDATE last Login At timestamp persists to database`() async throws {
         // Arrange: Create test user
         let createdIdentity = try await database.write { db in
             try await TestFixtures.createTestIdentity(
@@ -139,8 +139,8 @@ struct AuthenticationTests {
         }
     }
 
-    @Test("UPDATE sessionVersion increments correctly")
-    func testSessionVersionPersistence() async throws {
+    @Test
+    func `UPDATE session Version increments correctly`() async throws {
         // Arrange: Create test user
         let initialIdentity = try await database.write { db in
             try await TestFixtures.createTestIdentity(

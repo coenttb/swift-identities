@@ -2,12 +2,12 @@ import Testing
 
 @testable import Identity_Backend
 
-@Suite("README Verification")
-struct ReadmeVerificationTests {
+@Suite
+struct Test {
 
     // README mentions swift-identities as main package
-    @Test("Example from README: Identity module exists")
-    func exampleIdentityModuleExists() {
+    @Test
+    func `Example from README: Identity module exists`() {
         // Verify the Identity namespace compiles and is accessible
         let identityType = Identity.self
 
@@ -15,8 +15,8 @@ struct ReadmeVerificationTests {
     }
 
     // README shows installation with .product(name: "Identities", package: "swift-identities")
-    @Test("Example from README: Package structure")
-    func examplePackageStructure() {
+    @Test
+    func `Example from README: Package structure`() {
         // Verify module can be imported and basic types exist
         // This test passes if it compiles, confirming README installation instructions work
         #expect(Bool(true))

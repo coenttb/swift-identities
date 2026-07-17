@@ -18,14 +18,14 @@ enum TestFixtures {
 
 // MARK: - MFA and OAuth Not Implemented Tests
 
-@Suite("MFA and OAuth Not Implemented Tests")
-struct MFAOAuthAPITests {
+@Suite
+struct Test {
 
     // Note: MFA endpoints require authentication except for .verify
     // .verify uses session tokens and is tested elsewhere in MFA-specific tests
 
-    @Test("OAuth endpoints return not implemented")
-    func testOAuthNotImplemented() async throws {
+    @Test
+    func `OAuth endpoints return not implemented`() async throws {
         try await withDependencies {
             $0[Identity.Provider.Configuration.self] = .testValue
             $0.date = .constant(Date())  // Rate limiter needs date dependency
@@ -46,15 +46,15 @@ struct MFAOAuthAPITests {
 
 // MARK: - Rate Limiting Tests
 
-@Suite("Rate Limiting Behavior Tests")
-struct RateLimitingTests {
+@Suite
+struct Test {
 
     // MARK: - Temporarily disabled due to Swift type inference issue with withDependencies
     // See: https://github.com/pointfreeco/swift-dependencies/issues/XXX
 
     /*
-      @Test("Rate limit exceeded throws too many requests for credentials")
-      func testCredentialsRateLimitExceeded() async throws {
+      @Test
+      func `Rate limit exceeded throws too many requests for credentials`() async throws {
           try await withDependencies {
               // Create a rate limiter that immediately fails
               let restrictiveRateLimiter = RateLimiter<String>(
@@ -62,7 +62,7 @@ struct RateLimitingTests {
                       .minutes(1, maxAttempts: 0) // No attempts allowed
                   ]
               )
-    
+
               var config = Identity.Provider.Configuration.testValue
               config.provider.rateLimiters = RateLimiters(
                   credentials: restrictiveRateLimiter
@@ -74,7 +74,7 @@ struct RateLimitingTests {
                   password: TestFixtures.testPassword
               )
               let api = Identity.Provider.API.authenticate(.credentials(credentials))
-    
+
               do {
                   _ = try await Identity.Provider.API.response(api: api)
                   Issue.record("Expected rate limit to be exceeded")
@@ -83,16 +83,16 @@ struct RateLimitingTests {
               }
           }
       }
-    
-      @Test("Rate limit exceeded throws too many requests for creation")
-      func testCreationRateLimitExceeded() async throws {
+
+      @Test
+      func `Rate limit exceeded throws too many requests for creation`() async throws {
           try await withDependencies {
               let restrictiveRateLimiter = RateLimiter<String>(
                   windows: [
                       .minutes(1, maxAttempts: 0)
                   ]
               )
-    
+
               var config = Identity.Provider.Configuration.testValue
               config.provider.rateLimiters = RateLimiters(
                   credentials: restrictiveRateLimiter
@@ -104,7 +104,7 @@ struct RateLimitingTests {
                   password: TestFixtures.testPassword
               )
               let api = Identity.Provider.API.create(.request(request))
-    
+
               do {
                   _ = try await Identity.Provider.API.response(api: api)
                   Issue.record("Expected rate limit to be exceeded")
@@ -113,9 +113,9 @@ struct RateLimitingTests {
               }
           }
       }
-    
-      @Test("Rate limit allows request within limits")
-      func testRateLimitAllowsWithinLimits() async throws {
+
+      @Test
+      func `Rate limit allows request within limits`() async throws {
           try await withDependencies {
               // Use generous rate limiter
               let generousRateLimiter = RateLimiter<String>(
@@ -123,7 +123,7 @@ struct RateLimitingTests {
                       .minutes(1, maxAttempts: 100)
                   ]
               )
-    
+
               var config = Identity.Provider.Configuration.testValue
               config.provider.rateLimiters = RateLimiters(
                   credentials: generousRateLimiter
@@ -135,7 +135,7 @@ struct RateLimitingTests {
                   password: TestFixtures.testPassword
               )
               let api = Identity.Provider.API.authenticate(.credentials(credentials))
-    
+
               // Should not throw rate limit error
               // Will fail with other error (no mocked backend) but that's expected
               do {
@@ -151,21 +151,21 @@ struct RateLimitingTests {
 
 // MARK: - Protection/Authentication Tests
 
-@Suite("API Protection Tests")
-struct ProtectionTests {
+@Suite
+struct Test {
 
     // MARK: - Temporarily disabled due to Swift type inference issue with withDependencies
 
     /*
-    
-      @Test("Delete request with empty token throws unauthorized")
-      func testDeleteEmptyTokenUnauthorized() async throws {
+
+      @Test
+      func `Delete request with empty token throws unauthorized`() async throws {
           try await withDependencies {
               $0[Identity.Provider.Configuration.self] = .testValue
           } operation: {
               let request = Identity.Deletion.API.Request(reauthToken: "")
               let api = Identity.Provider.API.delete(.request(request))
-    
+
               do {
                   _ = try await Identity.Provider.API.response(api: api)
                   Issue.record("Expected deletion to fail with empty token")
@@ -175,9 +175,9 @@ struct ProtectionTests {
               }
           }
       }
-    
-      @Test("Delete endpoints check protection before rate limiting")
-      func testDeleteProtectionBeforeRateLimit() async throws {
+
+      @Test
+      func `Delete endpoints check protection before rate limiting`() async throws {
           try await withDependencies {
               // Even with generous rate limits, protection should be checked first
               let generousRateLimiter = RateLimiter<String>(
@@ -185,7 +185,7 @@ struct ProtectionTests {
                       .minutes(1, maxAttempts: 100)
                   ]
               )
-    
+
               var config = Identity.Provider.Configuration.testValue
               config.provider.rateLimiters = RateLimiters(
                   tokenAccess: generousRateLimiter
@@ -194,7 +194,7 @@ struct ProtectionTests {
           } operation: {
               let request = Identity.Deletion.API.Request(reauthToken: "")
               let api = Identity.Provider.API.delete(.request(request))
-    
+
               do {
                   _ = try await Identity.Provider.API.response(api: api)
                   Issue.record("Expected protection check to fail")
@@ -204,9 +204,9 @@ struct ProtectionTests {
               }
           }
       }
-    
-      @Test("Public endpoints don't require request context for protection")
-      func testPublicEndpointsNoRequestRequired() async throws {
+
+      @Test
+      func `Public endpoints don't require request context for protection`() async throws {
           try await withDependencies {
               $0[Identity.Provider.Configuration.self] = .testValue
               // Don't set request - public endpoints shouldn't need it for protection
@@ -216,7 +216,7 @@ struct ProtectionTests {
                   password: TestFixtures.testPassword
               )
               let api = Identity.Provider.API.authenticate(.credentials(credentials))
-    
+
               // Protection check should pass, will fail in backend call
               do {
                   _ = try await Identity.Provider.API.response(api: api)
@@ -233,15 +233,15 @@ struct ProtectionTests {
 
 // MARK: - Response Handler Tests
 
-@Suite("Response Handler Flow Tests")
-struct ResponseHandlerTests {
+@Suite
+struct Test {
 
     // MARK: - Temporarily disabled due to Swift type inference issue with withDependencies
 
     /*
-    
-      @Test("Response handler calls rate limiter before protection")
-      func testRateLimiterBeforeProtection() async throws {
+
+      @Test
+      func `Response handler calls rate limiter before protection`() async throws {
           try await withDependencies {
               // Restrictive rate limiter should fail before protection check
               let restrictiveRateLimiter = RateLimiter<String>(
@@ -249,7 +249,7 @@ struct ResponseHandlerTests {
                       .minutes(1, maxAttempts: 0)
                   ]
               )
-    
+
               var config = Identity.Provider.Configuration.testValue
               config.provider.rateLimiters = RateLimiters(
                   credentials: restrictiveRateLimiter
@@ -261,7 +261,7 @@ struct ResponseHandlerTests {
                   password: TestFixtures.testPassword
               )
               let api = Identity.Provider.API.authenticate(.credentials(credentials))
-    
+
               do {
                   _ = try await Identity.Provider.API.response(api: api)
                   Issue.record("Expected rate limit to fail")
@@ -277,15 +277,15 @@ struct ResponseHandlerTests {
 // MARK: - Configuration Tests
 
 @Suite(
-    "Provider Configuration Tests",
+
     .dependencies {
         $0.date = .constant(Date())
     }
 )
-struct ConfigurationTests {
+struct Test {
 
-    @Test("Test configuration has valid default values")
-    func testConfigurationDefaults() throws {
+    @Test
+    func `Test configuration has valid default values`() throws {
         let config = Identity.Provider.Configuration.testValue
 
         #expect(config.provider.baseURL.absoluteString == "/")
@@ -296,8 +296,8 @@ struct ConfigurationTests {
         #expect(config.provider.tokens.reauthorizationToken.expires == 300)  // 5 minutes
     }
 
-    @Test("Test configuration has working rate limiters")
-    func testConfigurationRateLimiters() async throws {
+    @Test
+    func `Test configuration has working rate limiters`() async throws {
         let config = Identity.Provider.Configuration.testValue
 
         // Rate limiters should be initialized and usable
@@ -308,8 +308,8 @@ struct ConfigurationTests {
         #expect(tokenLimit.isAllowed == true)
     }
 
-    @Test("Custom rate limiters can be configured")
-    func testCustomRateLimiters() async throws {
+    @Test
+    func `Custom rate limiters can be configured`() async throws {
         let customLimiter = RateLimiter<String>(
             windows: [
                 .minutes(1, maxAttempts: 5)
@@ -335,11 +335,11 @@ struct ConfigurationTests {
 
 // MARK: - API Type Tests
 
-@Suite("API Type Structure Tests")
-struct APITypeTests {
+@Suite
+struct Test {
 
-    @Test("Authentication credentials can be created")
-    func testAuthenticationCredentials() {
+    @Test
+    func `Authentication credentials can be created`() {
         let credentials: Identity.Authentication.Credentials = .init(
             username: TestFixtures.testEmail,
             password: TestFixtures.testPassword
@@ -349,8 +349,8 @@ struct APITypeTests {
         #expect(credentials.password == TestFixtures.testPassword)
     }
 
-    @Test("Creation request can be created")
-    func testCreationRequest() {
+    @Test
+    func `Creation request can be created`() {
         let request: Identity.Creation.Request = .init(
             email: TestFixtures.testEmail,
             password: TestFixtures.testPassword
@@ -360,20 +360,20 @@ struct APITypeTests {
         #expect(request.password == TestFixtures.testPassword)
     }
 
-    @Test("Deletion request can be created")
-    func testDeletionRequest() {
+    @Test
+    func `Deletion request can be created`() {
         let request: Identity.Deletion.Request = .init(reauthToken: TestFixtures.testToken)
         #expect(request.reauthToken == TestFixtures.testToken)
     }
 
-    @Test("Password reset request can be created")
-    func testPasswordResetRequest() {
+    @Test
+    func `Password reset request can be created`() {
         let request: Identity.Password.Reset.Request = .init(email: TestFixtures.testEmail)
         #expect(request.email == TestFixtures.testEmail)
     }
 
-    @Test("Email change request can be created")
-    func testEmailChangeRequest() {
+    @Test
+    func `Email change request can be created`() {
         let request: Identity.Email.Change.Request = .init(newEmail: "new@example.com")
         #expect(request.newEmail == "new@example.com")
     }

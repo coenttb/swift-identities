@@ -15,29 +15,29 @@ import JWT
 import Testing
 @preconcurrency import Vapor
 
-@Suite("Consumer Middleware Tests")
-struct ConsumerMiddlewareTests {
+@Suite
+struct Test {
 
-    @Test("Middleware initializes with default authenticators")
-    func testMiddlewareInitialization() async throws {
+    @Test
+    func `Middleware initializes with default authenticators`() async throws {
         let middleware = Identity.Consumer.Middleware()
         // Middleware created successfully
     }
 
-    @Test("Token authenticator initializes correctly")
-    func testTokenAuthenticatorInitialization() async throws {
+    @Test
+    func `Token authenticator initializes correctly`() async throws {
         let authenticator = Identity.Consumer.TokenAuthenticator()
         // Authenticator created successfully
     }
 
-    @Test("Credentials authenticator initializes correctly")
-    func testCredentialsAuthenticatorInitialization() async throws {
+    @Test
+    func `Credentials authenticator initializes correctly`() async throws {
         let authenticator = Identity.Consumer.CredentialsAuthenticator()
         // Authenticator created successfully
     }
 
-    @Test("Middleware configuration is valid")
-    func testMiddlewareConfiguration() async throws {
+    @Test
+    func `Middleware configuration is valid`() async throws {
         // Test that middleware can be created with custom authenticators
         let tokenAuth = Identity.Consumer.TokenAuthenticator()
         let credAuth = Identity.Consumer.CredentialsAuthenticator()

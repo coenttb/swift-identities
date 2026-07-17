@@ -16,11 +16,11 @@ import ServerFoundation
 import Testing
 import URLRouting
 
-@Suite("Consumer Configuration Tests")
-struct ConsumerConfigurationTests {
+@Suite
+struct Test {
 
-    @Test("Configuration initializes with provider and consumer")
-    func testConfigurationInitialization() async throws {
+    @Test
+    func `Configuration initializes with provider and consumer`() async throws {
         let providerConfig = Identity.Consumer.Configuration.Provider(
             baseURL: URL(string: "https://provider.example.com")!,
             domain: "example.com",
@@ -56,8 +56,8 @@ struct ConsumerConfigurationTests {
         #expect(configuration.consumer.currentUserName() == "testuser")
     }
 
-    @Test("Test configuration provides sensible defaults")
-    func testTestValue() async throws {
+    @Test
+    func `Test configuration provides sensible defaults`() async throws {
         let config = Identity.Consumer.Configuration.testValue
 
         #expect(config.provider.baseURL.absoluteString == "/")
@@ -66,8 +66,8 @@ struct ConsumerConfigurationTests {
         #expect(config.consumer.currentUserName() == nil)
     }
 
-    @Test("Consumer configuration with live factory method")
-    func testConsumerConfigurationLive() async throws {
+    @Test
+    func `Consumer configuration with live factory method`() async throws {
         let baseURL = URL(string: "https://example.com")!
         let router = Identity.Route.Router().eraseToAnyParserPrinter()
 
@@ -90,8 +90,8 @@ struct ConsumerConfigurationTests {
         #expect(config.currentUserName() == "currentuser")
     }
 
-    @Test("Redirect configuration provides default redirects")
-    func testRedirectConfiguration() throws {
+    @Test
+    func `Redirect configuration provides default redirects`() throws {
         withDependencies {
             $0[Identity.Consumer.Configuration.self] = .testValue
         } operation: {
@@ -114,8 +114,8 @@ struct ConsumerConfigurationTests {
         }
     }
 
-    @Test("Redirect configuration to home")
-    func testRedirectToHome() throws {
+    @Test
+    func `Redirect configuration to home`() throws {
         withDependencies {
             $0[Identity.Consumer.Configuration.self] = .testValue
         } operation: {
@@ -132,8 +132,8 @@ struct ConsumerConfigurationTests {
         }
     }
 
-    @Test("Cookie configuration for consumer")
-    func testConsumerCookieConfiguration() async throws {
+    @Test
+    func `Cookie configuration for consumer`() async throws {
         let router = Identity.Route.Router()
         let cookies = Identity.Frontend.Configuration.Cookies.consumer(
             domain: "example.com",
@@ -150,8 +150,8 @@ struct ConsumerConfigurationTests {
         #expect(cookies.reauthorizationToken.sameSitePolicy == .strict)
     }
 
-    @Test("Cookie configuration for consumer with cross-origin")
-    func testConsumerCookieConfigurationCrossOrigin() async throws {
+    @Test
+    func `Cookie configuration for consumer with cross-origin`() async throws {
         let router = Identity.Route.Router()
         let cookies = Identity.Frontend.Configuration.Cookies.consumer(
             domain: "example.com",
@@ -164,8 +164,8 @@ struct ConsumerConfigurationTests {
         #expect(cookies.reauthorizationToken.sameSitePolicy == .strict)  // Always strict
     }
 
-    @Test("Development cookie configuration")
-    func testDevelopmentCookieConfiguration() async throws {
+    @Test
+    func `Development cookie configuration`() async throws {
         let router = Identity.Route.Router()
         let cookies = Identity.Frontend.Configuration.Cookies.consumerDevelopment(router: router)
 
@@ -177,8 +177,8 @@ struct ConsumerConfigurationTests {
         #expect(cookies.reauthorizationToken.sameSitePolicy == .lax)
     }
 
-    @Test("Branding provides localized titles for views")
-    func testBrandingTitles() async throws {
+    @Test
+    func `Branding provides localized titles for views`() async throws {
         let credentialsTitle = Identity.Consumer.Configuration.Branding._title(
             for: .authenticate(.credentials)
         )
@@ -198,8 +198,8 @@ struct ConsumerConfigurationTests {
         #expect(deleteTitle.dutch == "Account Verwijderen")
     }
 
-    @Test("Branding provides localized descriptions for views")
-    func testBrandingDescriptions() async throws {
+    @Test
+    func `Branding provides localized descriptions for views`() async throws {
         let credentialsDesc = Identity.Consumer.Configuration.Branding._description(
             for: .authenticate(.credentials)
         )

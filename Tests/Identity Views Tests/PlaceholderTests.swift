@@ -10,15 +10,15 @@ import Testing
 // MARK: - Authentication Views Tests
 
 @Suite(
-    "Authentication Views Tests",
+
     .dependencies {
         $0.locale = Locale(identifier: "en_US")
     }
 )
-struct AuthenticationViewsTests {
+struct Test {
 
-    @Test("Login credentials view renders with required form elements")
-    func testLoginCredentialsViewStructure() async throws {
+    @Test
+    func `Login credentials view renders with required form elements`() async throws {
         let view = Identity.Authentication.Credentials.View(
             passwordResetHref: URL(string: "https://example.com/password-reset")!,
             accountCreateHref: URL(string: "https://example.com/signup")!,
@@ -57,8 +57,8 @@ struct AuthenticationViewsTests {
         #expect(html.contains("eye-closed"))
     }
 
-    @Test("Login view includes client-side JavaScript for form handling")
-    func testLoginViewJavaScript() async throws {
+    @Test
+    func `Login view includes client-side Java Script for form handling`() async throws {
         let view = Identity.Authentication.Credentials.View(
             passwordResetHref: URL(string: "https://example.com/password-reset")!,
             accountCreateHref: URL(string: "https://example.com/signup")!,
@@ -90,15 +90,15 @@ struct AuthenticationViewsTests {
 // MARK: - Account Creation Views Tests
 
 @Suite(
-    "Account Creation Views Tests",
+
     .dependencies {
         $0.locale = Locale(identifier: "en_US")
     }
 )
-struct AccountCreationViewsTests {
+struct Test {
 
-    @Test("Account creation request view renders with email and password fields")
-    func testAccountCreationRequestView() async throws {
+    @Test
+    func `Account creation request view renders with email and password fields`() async throws {
         let view = Identity.Creation.Request.View(
             loginHref: URL(string: "https://example.com/login")!,
             accountCreateHref: URL(string: "https://example.com/signup")!,
@@ -126,8 +126,8 @@ struct AccountCreationViewsTests {
         #expect(html.contains("form-create-identity"))
     }
 
-    @Test("Account creation confirmation receipt view displays success message")
-    func testAccountCreationConfirmReceipt() async throws {
+    @Test
+    func `Account creation confirmation receipt view displays success message`() async throws {
         let view = Identity.Creation.Request.View.ConfirmReceipt(
             loginHref: URL(string: "https://example.com/login")!
         )
@@ -140,8 +140,8 @@ struct AccountCreationViewsTests {
         #expect(html.contains("received") || html.contains("ontvangen"))
     }
 
-    @Test("Account verification view renders with verification in progress message")
-    func testAccountVerificationView() async throws {
+    @Test
+    func `Account verification view renders with verification in progress message`() async throws {
         let view = Identity.Creation.Verification.View(
             verificationAction: URL(string: "https://example.com/verify")!,
             redirectURL: URL(string: "https://example.com/dashboard")!
@@ -162,8 +162,8 @@ struct AccountCreationViewsTests {
         #expect(html.contains("id=\"spinner\""))
     }
 
-    @Test("Account verification confirmation displays success and redirect")
-    func testAccountVerificationConfirmation() async throws {
+    @Test
+    func `Account verification confirmation displays success and redirect`() async throws {
         let view = Identity.Creation.Verification.View.Confirmation(
             redirectURL: URL(string: "https://example.com/login")!
         )
@@ -186,15 +186,15 @@ struct AccountCreationViewsTests {
 // MARK: - Password Reset Views Tests
 
 @Suite(
-    "Password Reset Views Tests",
+
     .dependencies {
         $0.locale = Locale(identifier: "en_US")
     }
 )
-struct PasswordResetViewsTests {
+struct Test {
 
-    @Test("Password reset request view renders with email input")
-    func testPasswordResetRequestView() async throws {
+    @Test
+    func `Password reset request view renders with email input`() async throws {
         let view = Identity.Password.Reset.Request.View(
             formActionURL: URL(string: "https://example.com/password-reset")!,
             homeHref: URL(string: "https://example.com/")!
@@ -220,15 +220,15 @@ struct PasswordResetViewsTests {
         #expect(html.contains("form-forgot-password"))
     }
 
-    @Test("Password reset confirm receipt displays instructions")
-    func testPasswordResetConfirmReceipt() async throws {
+    @Test
+    func `Password reset confirm receipt displays instructions`() async throws {
         // Note: ConfirmReceipt has internal initializer, so we test the view flow indirectly
         // This test verifies the type exists and is used in the password reset flow
         #expect(Bool(true), "Password reset confirmation receipt view exists in module")
     }
 
-    @Test("Password reset confirm view renders with new password field")
-    func testPasswordResetConfirmView() async throws {
+    @Test
+    func `Password reset confirm view renders with new password field`() async throws {
         let view = Identity.Password.Reset.Confirm.View(
             token: "test-token-123",
             passwordResetAction: URL(string: "https://example.com/reset")!,
@@ -253,8 +253,8 @@ struct PasswordResetViewsTests {
         #expect(html.contains("form-password-reset"))
     }
 
-    @Test("Password reset confirmation displays success and redirect")
-    func testPasswordResetConfirmation() async throws {
+    @Test
+    func `Password reset confirmation displays success and redirect`() async throws {
         let view = Identity.Password.Reset.Confirm.View.Confirmation(
             redirect: URL(string: "https://example.com/login")!
         )
@@ -276,11 +276,11 @@ struct PasswordResetViewsTests {
 
 // MARK: - MFA TOTP Views Tests
 
-@Suite("MFA TOTP Views Tests")
-struct MFATOTPViewsTests {
+@Suite
+struct Test {
 
-    @Test("TOTP setup view renders QR code and manual entry")
-    func testTOTPSetupView() async throws {
+    @Test
+    func `TOTP setup view renders QR code and manual entry`() async throws {
         let view = Identity.MFA.TOTP.Setup.View(
             qrCodeURL: URL(
                 string:
@@ -319,8 +319,8 @@ struct MFATOTPViewsTests {
         #expect(html.contains("Auto-submit") || html.contains("dispatchEvent"))
     }
 
-    @Test("TOTP verify view renders code input with attempts warning")
-    func testTOTPVerifyView() async throws {
+    @Test
+    func `TOTP verify view renders code input with attempts warning`() async throws {
         let view = Identity.MFA.TOTP.Verify.View(
             sessionToken: "session-token-123",
             verifyAction: URL(string: "https://example.com/mfa/verify")!,
@@ -353,8 +353,8 @@ struct MFATOTPViewsTests {
         #expect(html.contains("totp-verify-form"))
     }
 
-    @Test("TOTP verify view without attempts warning when more than 2 attempts")
-    func testTOTPVerifyViewNoWarning() async throws {
+    @Test
+    func `TOTP verify view without attempts warning when more than 2 attempts`() async throws {
         let view = Identity.MFA.TOTP.Verify.View(
             sessionToken: "session-token-123",
             verifyAction: URL(string: "https://example.com/mfa/verify")!,
@@ -372,11 +372,11 @@ struct MFATOTPViewsTests {
 
 // MARK: - OAuth Views Tests
 
-@Suite("OAuth Views Tests")
-struct OAuthViewsTests {
+@Suite
+struct Test {
 
-    @Test("OAuth login view structure test")
-    func testOAuthLoginView() async throws {
+    @Test
+    func `OAuth login view structure test`() async throws {
         // Note: OAuth.Provider is a protocol with complex requirements including async methods
         // Testing this view requires full provider implementations which are beyond scope of view tests
         // The view is tested indirectly through integration tests with real OAuth providers
@@ -390,15 +390,15 @@ struct OAuthViewsTests {
 // MARK: - Delete Account Views Tests
 
 @Suite(
-    "Delete Account Views Tests",
+
     .dependencies {
         $0.locale = Locale(identifier: "en_US")
     }
 )
-struct DeleteAccountViewsTests {
+struct Test {
 
-    @Test("Delete account request view renders with warning")
-    func testDeleteRequestView() async throws {
+    @Test
+    func `Delete account request view renders with warning`() async throws {
         let view = Identity.Deletion.Request.View(
             deleteRequestAction: URL(string: "https://example.com/delete")!,
             cancelAction: URL(string: "https://example.com/cancel")!,
@@ -431,8 +431,8 @@ struct DeleteAccountViewsTests {
         #expect(html.contains("reauthResponse"))
     }
 
-    @Test("Delete pending receipt shows grace period")
-    func testDeletePendingReceipt() async throws {
+    @Test
+    func `Delete pending receipt shows grace period`() async throws {
         let view = Identity.Deletion.Request.View.PendingReceipt(
             daysRemaining: 7,
             cancelAction: URL(string: "https://example.com/cancel")!,
@@ -456,11 +456,11 @@ struct DeleteAccountViewsTests {
 
 // MARK: - Email Change Views Tests
 
-@Suite("Email Change Views Tests")
-struct EmailChangeViewsTests {
+@Suite
+struct Test {
 
-    @Test("Email change request view renders with new email field")
-    func testEmailChangeRequestView() async throws {
+    @Test
+    func `Email change request view renders with new email field`() async throws {
         // Note: These views may have similar structures to password reset
         // This test ensures the module compiles and basic structure exists
         #expect(Bool(true), "Email change views exist in module")
@@ -469,11 +469,11 @@ struct EmailChangeViewsTests {
 
 // MARK: - Reauthorization Views Tests
 
-@Suite("Reauthorization Views Tests")
-struct ReauthorizationViewsTests {
+@Suite
+struct Test {
 
-    @Test("Reauthorization view structure test")
-    func testReauthorizationView() async throws {
+    @Test
+    func `Reauthorization view structure test`() async throws {
         // Reauthorization views are used for sensitive operations
         // This test ensures the module compiles
         #expect(Bool(true), "Reauthorization views exist in module")
@@ -482,17 +482,17 @@ struct ReauthorizationViewsTests {
 
 // MARK: - Component Views Tests
 
-@Suite("Component Views Tests")
-struct ComponentViewsTests {
+@Suite
+struct Test {
 
-    @Test("Footer component test")
-    func testFooterComponent() async throws {
+    @Test
+    func `Footer component test`() async throws {
         // Footer is a reusable component across views
         #expect(Bool(true), "Footer component exists in module")
     }
 
-    @Test("Logo component test")
-    func testLogoComponent() async throws {
+    @Test
+    func `Logo component test`() async throws {
         // Logo is a reusable component across views
         #expect(Bool(true), "Logo component exists in module")
     }
@@ -500,11 +500,11 @@ struct ComponentViewsTests {
 
 // MARK: - HTMLDocument Tests
 
-@Suite("HTMLDocument Tests")
-struct HTMLDocumentTests {
+@Suite
+struct Test {
 
-    @Test("HTMLDocument structure includes head and body")
-    func testHTMLDocumentStructure() async throws {
+    @Test
+    func `HTMLDocument structure includes head and body`() async throws {
         // HTMLDocument is the base wrapper for all views
         // This ensures it's properly exported and accessible
         #expect(Bool(true), "HTMLDocument type exists in module")
@@ -514,15 +514,15 @@ struct HTMLDocumentTests {
 // MARK: - Integration Tests
 
 @Suite(
-    "Integration Tests",
+
     .dependencies {
         $0.locale = Locale(identifier: "en_US")
     }
 )
-struct IntegrationTests {
+struct Test {
 
-    @Test("All view types conform to HTML protocol")
-    func testViewsConformToHTML() async throws {
+    @Test
+    func `All view types conform to HTML protocol`() async throws {
         // Verify key view types exist and compile
         let loginView: any HTML = Identity.Authentication.Credentials.View(
             passwordResetHref: URL(string: "https://example.com/reset")!,
@@ -549,8 +549,8 @@ struct IntegrationTests {
         #expect(!createHtml.isEmpty, "Create view renders non-empty HTML")
     }
 
-    @Test("Views render valid HTML structure")
-    func testViewsRenderValidHTML() async throws {
+    @Test
+    func `Views render valid HTML structure`() async throws {
         let view = Identity.Authentication.Credentials.View(
             passwordResetHref: URL(string: "https://example.com/reset")!,
             accountCreateHref: URL(string: "https://example.com/create")!,

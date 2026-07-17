@@ -10,17 +10,17 @@ import Testing
 import Vapor
 
 @Suite(
-    "Constraint Violation Tests",
+
     .dependencies {
         $0.envVars = .development
         $0.defaultDatabase = Database.TestDatabase.withIdentitySchema()
     }
 )
-struct ConstraintViolationTests {
+struct Test {
     @Dependency(\.defaultDatabase) var database
 
-    @Test("INSERT duplicate email throws constraint violation")
-    func testDuplicateEmailViolation() async throws {
+    @Test
+    func `INSERT duplicate email throws constraint violation`() async throws {
         let email = TestFixtures.uniqueEmail(prefix: "duplicate")
 
         // Create first identity
@@ -44,8 +44,8 @@ struct ConstraintViolationTests {
         }
     }
 
-    @Test("INSERT duplicate email case insensitive throws violation")
-    func testDuplicateEmailCaseInsensitive() async throws {
+    @Test
+    func `INSERT duplicate email case insensitive throws violation`() async throws {
         let emailLower = try EmailAddress("casetest@example.com")
         let emailUpper = try EmailAddress("CASETEST@EXAMPLE.COM")
 
@@ -90,8 +90,8 @@ struct ConstraintViolationTests {
         }
     }
 
-    @Test("UPDATE to duplicate email throws constraint violation")
-    func testUpdateToDuplicateEmail() async throws {
+    @Test
+    func `UPDATE to duplicate email throws constraint violation`() async throws {
         let email1 = TestFixtures.uniqueEmail(prefix: "update1")
         let email2 = TestFixtures.uniqueEmail(prefix: "update2")
 
@@ -123,8 +123,8 @@ struct ConstraintViolationTests {
         }
     }
 
-    @Test("INSERT with negative sessionVersion throws check constraint violation")
-    func testNegativeSessionVersionViolation() async throws {
+    @Test
+    func `INSERT with negative session Version throws check constraint violation`() async throws {
         await #expect(throws: (any Error).self) {
             try await database.write { db in
                 // Try to insert with negative session version
@@ -139,8 +139,8 @@ struct ConstraintViolationTests {
         }
     }
 
-    @Test("UPDATE sessionVersion to negative throws check constraint violation")
-    func testUpdateSessionVersionToNegative() async throws {
+    @Test
+    func `UPDATE session Version to negative throws check constraint violation`() async throws {
         let identity = try await database.write { db in
             try await TestFixtures.createUniqueTestIdentity(
                 emailPrefix: "negative-update",
@@ -161,8 +161,8 @@ struct ConstraintViolationTests {
         }
     }
 
-    @Test("INSERT without required email throws NOT NULL violation")
-    func testMissingEmailViolation() async throws {
+    @Test
+    func `INSERT without required email throws NOT NULL violation`() async throws {
         await #expect(throws: (any Error).self) {
             try await database.write { db in
                 try await db.execute(
@@ -176,8 +176,8 @@ struct ConstraintViolationTests {
         }
     }
 
-    @Test("INSERT without required password_hash throws NOT NULL violation")
-    func testMissingPasswordHashViolation() async throws {
+    @Test
+    func `INSERT without required password hash throws NOT NULL violation`() async throws {
         await #expect(throws: (any Error).self) {
             try await database.write { db in
                 try await db.execute(
@@ -191,8 +191,8 @@ struct ConstraintViolationTests {
         }
     }
 
-    @Test("INSERT without email_verification_status throws NOT NULL violation")
-    func testMissingEmailVerificationStatusViolation() async throws {
+    @Test
+    func `INSERT without email verification status throws NOT NULL violation`() async throws {
         await #expect(throws: (any Error).self) {
             try await database.write { db in
                 try await db.execute(
@@ -206,8 +206,8 @@ struct ConstraintViolationTests {
         }
     }
 
-    @Test("INSERT invalid email_verification_status throws check constraint violation")
-    func testInvalidEmailVerificationStatus() async throws {
+    @Test
+    func `INSERT invalid email verification status throws check constraint violation`() async throws {
         await #expect(throws: (any Error).self) {
             try await database.write { db in
                 try await db.execute(
@@ -221,8 +221,8 @@ struct ConstraintViolationTests {
         }
     }
 
-    @Test("INSERT with empty email string throws check constraint violation")
-    func testEmptyEmailViolation() async throws {
+    @Test
+    func `INSERT with empty email string throws check constraint violation`() async throws {
         await #expect(throws: (any Error).self) {
             try await database.write { db in
                 try await db.execute(
@@ -236,8 +236,8 @@ struct ConstraintViolationTests {
         }
     }
 
-    @Test("INSERT with empty password_hash throws check constraint violation")
-    func testEmptyPasswordHashViolation() async throws {
+    @Test
+    func `INSERT with empty password hash throws check constraint violation`() async throws {
         await #expect(throws: (any Error).self) {
             try await database.write { db in
                 try await db.execute(
@@ -251,8 +251,8 @@ struct ConstraintViolationTests {
         }
     }
 
-    @Test("DELETE identity succeeds without cascade errors")
-    func testDeleteIdentity() async throws {
+    @Test
+    func `DELETE identity succeeds without cascade errors`() async throws {
         let identity = try await database.write { db in
             try await TestFixtures.createUniqueTestIdentity(
                 emailPrefix: "delete",
@@ -278,8 +278,8 @@ struct ConstraintViolationTests {
         #expect(fetched == nil)
     }
 
-    @Test("DELETE non-existent identity does not throw error")
-    func testDeleteNonExistentIdentity() async throws {
+    @Test
+    func `DELETE non-existent identity does not throw error`() async throws {
         let nonExistentId = Identity.ID(UUID())
 
         // Should not throw

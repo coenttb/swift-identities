@@ -9,19 +9,19 @@ import RecordsTestSupport
 import Testing
 
 @Suite(
-    "TOTP Verification Tests",
+
     .dependencies {
         $0.envVars = .development
         $0.defaultDatabase = Database.TestDatabase.withIdentitySchema()
         $0.date = .constant(Date())
     }
 )
-struct TOTPVerificationTests {
+struct Test {
     @Dependency(\.defaultDatabase) var database
     @Dependency(\.date) var date
 
-    @Test("Valid TOTP code verification succeeds")
-    func testValidCodeVerification() async throws {
+    @Test
+    func `Valid TOTP code verification succeeds`() async throws {
         // Create identity with confirmed TOTP
         let identity = try await database.write { db in
             try await TestFixtures.createUniqueTestIdentity(
@@ -63,8 +63,8 @@ struct TOTPVerificationTests {
         #expect(isValid == true)
     }
 
-    @Test("Invalid TOTP code verification fails")
-    func testInvalidCodeVerification() async throws {
+    @Test
+    func `Invalid TOTP code verification fails`() async throws {
         let identity = try await database.write { db in
             try await TestFixtures.createUniqueTestIdentity(
                 emailPrefix: "totp-verify-invalid",
@@ -104,8 +104,8 @@ struct TOTPVerificationTests {
         #expect(isValid == false, "Invalid TOTP code should return false")
     }
 
-    @Test("Expired TOTP code fails")
-    func testExpiredCodeVerification() async throws {
+    @Test
+    func `Expired TOTP code fails`() async throws {
         let identity = try await database.write { db in
             try await TestFixtures.createUniqueTestIdentity(
                 emailPrefix: "totp-verify-expired",
@@ -146,8 +146,8 @@ struct TOTPVerificationTests {
         #expect(isValid == false, "Expired/invalid TOTP code should return false")
     }
 
-    @Test("TOTP verification updates usage statistics")
-    func testVerificationUpdatesStats() async throws {
+    @Test
+    func `TOTP verification updates usage statistics`() async throws {
         let identity = try await database.write { db in
             try await TestFixtures.createUniqueTestIdentity(
                 emailPrefix: "totp-verify-stats",
@@ -203,8 +203,8 @@ struct TOTPVerificationTests {
         #expect(age < 3600)  // Within last hour
     }
 
-    @Test("TOTP verification with time window tolerance")
-    func testVerificationWithTimeWindow() async throws {
+    @Test
+    func `TOTP verification with time window tolerance`() async throws {
         let identity = try await database.write { db in
             try await TestFixtures.createUniqueTestIdentity(
                 emailPrefix: "totp-verify-window",

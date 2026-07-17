@@ -14,19 +14,19 @@ import Vapor
 /// These tests verify that database triggers properly capture changes
 /// to security-critical tables (identities, API keys, TOTP).
 @Suite(
-    "Audit Logging Tests",
+
     .dependencies {
         $0.envVars = .development
         $0.defaultDatabase = Database.TestDatabase.withIdentitySchema()
     }
 )
-struct AuditTests {
+struct Test {
     @Dependency(\.defaultDatabase) var database
 
     // MARK: - Identity Table Auditing
 
-    @Test("INSERT on identities creates audit record")
-    func testIdentityInsertAudit() async throws {
+    @Test
+    func `INSERT on identities creates audit record`() async throws {
         let email = TestFixtures.uniqueEmail(prefix: "audit-insert")
 
         // Create identity
@@ -53,8 +53,8 @@ struct AuditTests {
         #expect(audit.newData?.contains(email.rawValue) == true)
     }
 
-    @Test("UPDATE on identities creates audit record")
-    func testIdentityUpdateAudit() async throws {
+    @Test
+    func `UPDATE on identities creates audit record`() async throws {
         let oldEmail = TestFixtures.uniqueEmail(prefix: "audit-old")
         let newEmail = TestFixtures.uniqueEmail(prefix: "audit-new")
 
@@ -87,8 +87,8 @@ struct AuditTests {
         #expect(audit.newData?.contains(newEmail.rawValue) == true)
     }
 
-    @Test("DELETE on identities creates audit record")
-    func testIdentityDeleteAudit() async throws {
+    @Test
+    func `DELETE on identities creates audit record`() async throws {
         let email = TestFixtures.uniqueEmail(prefix: "audit-delete")
 
         // Create identity
@@ -121,8 +121,8 @@ struct AuditTests {
 
     // MARK: - Password Change Auditing
 
-    @Test("Password changes are audited")
-    func testPasswordChangeAudit() async throws {
+    @Test
+    func `Password changes are audited`() async throws {
         let identity = try await database.write { db in
             try await TestFixtures.createUniqueTestIdentity(
                 emailPrefix: "password-audit",
@@ -156,8 +156,8 @@ struct AuditTests {
 
     // MARK: - API Key Auditing
 
-    @Test("API key creation is audited")
-    func testApiKeyCreationAudit() async throws {
+    @Test
+    func `API key creation is audited`() async throws {
         let identity = try await database.write { db in
             try await TestFixtures.createUniqueTestIdentity(
                 emailPrefix: "apikey-audit",
@@ -197,8 +197,8 @@ struct AuditTests {
         #expect(audit.newData?.contains("Test Key") == true)
     }
 
-    @Test("API key deactivation is audited")
-    func testApiKeyDeactivationAudit() async throws {
+    @Test
+    func `API key deactivation is audited`() async throws {
         let identity = try await database.write { db in
             try await TestFixtures.createUniqueTestIdentity(
                 emailPrefix: "apikey-deactivate",
@@ -254,8 +254,8 @@ struct AuditTests {
 
     // MARK: - TOTP/MFA Auditing
 
-    @Test("TOTP setup is audited")
-    func testTotpSetupAudit() async throws {
+    @Test
+    func `TOTP setup is audited`() async throws {
         let identity = try await database.write { db in
             try await TestFixtures.createUniqueTestIdentity(
                 emailPrefix: "totp-audit",
@@ -295,8 +295,8 @@ struct AuditTests {
         #expect(audit.newData != nil)
     }
 
-    @Test("TOTP confirmation is audited")
-    func testTotpConfirmationAudit() async throws {
+    @Test
+    func `TOTP confirmation is audited`() async throws {
         let identity = try await database.write { db in
             try await TestFixtures.createUniqueTestIdentity(
                 emailPrefix: "totp-confirm",
@@ -354,8 +354,8 @@ struct AuditTests {
 
     // MARK: - Query Helper Tests
 
-    @Test("recentSecurityChanges returns cross-table changes")
-    func testRecentSecurityChanges() async throws {
+    @Test
+    func `Recent Security Changes returns cross-table changes`() async throws {
         let since = Date()
 
         // Create identity (audited)
@@ -404,8 +404,8 @@ struct AuditTests {
         }
     }
 
-    @Test("Audit records are timestamped correctly")
-    func testAuditTimestamps() async throws {
+    @Test
+    func `Audit records are timestamped correctly`() async throws {
         let before = Date()
 
         _ = try await database.write { db in
@@ -425,8 +425,8 @@ struct AuditTests {
         #expect(audit.changedAt <= after)
     }
 
-    @Test("historyFor returns table-specific changes")
-    func testHistoryFor() async throws {
+    @Test
+    func `History For returns table-specific changes`() async throws {
         // Create an identity (creates audit in identities table)
         _ = try await database.write { db in
             try await TestFixtures.createUniqueTestIdentity(

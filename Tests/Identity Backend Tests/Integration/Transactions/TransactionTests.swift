@@ -10,21 +10,21 @@ import Testing
 import Vapor
 
 @Suite(
-    "Transaction Tests",
+
     .dependencies {
         $0.envVars = .development
         $0.defaultDatabase = Database.TestDatabase.withIdentitySchema()
     }
 )
-struct TransactionTests {
+struct Test {
     @Dependency(\.defaultDatabase) var database
 
     enum TestError: Error {
         case intentionalRollback
     }
 
-    @Test("Transaction COMMIT persists identity creation")
-    func testTransactionCommit() async throws {
+    @Test
+    func `Transaction COMMIT persists identity creation`() async throws {
         let email = TestFixtures.uniqueEmail(prefix: "commit")
 
         let identityId = try await database.withTransaction { db in
@@ -47,8 +47,8 @@ struct TransactionTests {
         #expect(identity.email == email)
     }
 
-    @Test("Transaction ROLLBACK on error does not persist changes")
-    func testTransactionRollback() async throws {
+    @Test
+    func `Transaction ROLLBACK on error does not persist changes`() async throws {
         let countBefore = try await database.read { db in
             try await Identity.Record.fetchCount(db)
         }
@@ -77,8 +77,8 @@ struct TransactionTests {
         #expect(countBefore == countAfter)
     }
 
-    @Test("Transaction ROLLBACK on database error does not persist partial changes")
-    func testTransactionRollbackOnDatabaseError() async throws {
+    @Test
+    func `Transaction ROLLBACK on database error does not persist partial changes`() async throws {
         let email = TestFixtures.uniqueEmail(prefix: "dberror")
         let countBefore = try await database.read { db in
             try await Identity.Record.fetchCount(db)
@@ -113,8 +113,8 @@ struct TransactionTests {
         #expect(countBefore == countAfter)
     }
 
-    @Test("Nested transaction with SAVEPOINT commits inner changes")
-    func testSavepointCommit() async throws {
+    @Test
+    func `Nested transaction with SAVEPOINT commits inner changes`() async throws {
         let outerEmail = TestFixtures.uniqueEmail(prefix: "outer")
         let innerEmail = TestFixtures.uniqueEmail(prefix: "inner")
 
@@ -159,8 +159,8 @@ struct TransactionTests {
         #expect(innerFetched != nil)
     }
 
-    @Test("SAVEPOINT ROLLBACK reverts inner changes but keeps outer")
-    func testSavepointRollback() async throws {
+    @Test
+    func `SAVEPOINT ROLLBACK reverts inner changes but keeps outer`() async throws {
         let outerEmail = TestFixtures.uniqueEmail(prefix: "outer-rollback")
         let innerEmail = TestFixtures.uniqueEmail(prefix: "inner-rollback")
 
@@ -215,8 +215,8 @@ struct TransactionTests {
         #expect(innerFetched == nil)
     }
 
-    @Test("Multiple sequential transactions are isolated")
-    func testSequentialTransactionIsolation() async throws {
+    @Test
+    func `Multiple sequential transactions are isolated`() async throws {
         let email1 = TestFixtures.uniqueEmail(prefix: "seq1")
         let email2 = TestFixtures.uniqueEmail(prefix: "seq2")
 
@@ -251,8 +251,8 @@ struct TransactionTests {
         #expect(count == 2)
     }
 
-    @Test("Transaction with UPDATE and SELECT maintains consistency")
-    func testTransactionWithUpdateAndSelect() async throws {
+    @Test
+    func `Transaction with UPDATE and SELECT maintains consistency`() async throws {
         let email = TestFixtures.uniqueEmail(prefix: "update-select")
 
         // Create identity
@@ -294,8 +294,8 @@ struct TransactionTests {
         #expect(fetched.sessionVersion == 5)
     }
 
-    @Test("Transaction ROLLBACK reverts multiple operations")
-    func testTransactionRollbackMultipleOperations() async throws {
+    @Test
+    func `Transaction ROLLBACK reverts multiple operations`() async throws {
         let email1 = TestFixtures.uniqueEmail(prefix: "multi1")
         let email2 = TestFixtures.uniqueEmail(prefix: "multi2")
 
@@ -343,8 +343,8 @@ struct TransactionTests {
         #expect(count == 0)
     }
 
-    @Test("Concurrent transactions can create different identities")
-    func testConcurrentTransactions() async throws {
+    @Test
+    func `Concurrent transactions can create different identities`() async throws {
         let email1 = TestFixtures.uniqueEmail(prefix: "concurrent1")
         let email2 = TestFixtures.uniqueEmail(prefix: "concurrent2")
 

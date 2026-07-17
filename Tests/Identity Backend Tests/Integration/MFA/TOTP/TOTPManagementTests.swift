@@ -9,19 +9,19 @@ import RecordsTestSupport
 import Testing
 
 @Suite(
-    "TOTP Management Tests",
+
     .dependencies {
         $0.envVars = .development
         $0.defaultDatabase = Database.TestDatabase.withIdentitySchema()
         $0.date = .constant(Date())
     }
 )
-struct TOTPManagementTests {
+struct Test {
     @Dependency(\.defaultDatabase) var database
     @Dependency(\.date) var date
 
-    @Test("Get TOTP status returns correct information")
-    func testGetStatus() async throws {
+    @Test
+    func `Get TOTP status returns correct information`() async throws {
         let identity = try await database.write { db in
             try await TestFixtures.createUniqueTestIdentity(
                 emailPrefix: "totp-status",
@@ -74,8 +74,8 @@ struct TOTPManagementTests {
         #expect(afterSetupStatus.lastUsedAt == nil)
     }
 
-    @Test("Disable TOTP removes record from database")
-    func testDisableTOTP() async throws {
+    @Test
+    func `Disable TOTP removes record from database`() async throws {
         let identity = try await database.write { db in
             try await TestFixtures.createUniqueTestIdentity(
                 emailPrefix: "totp-disable",
@@ -136,8 +136,8 @@ struct TOTPManagementTests {
         #expect(backupCount == 0)
     }
 
-    @Test("QR code generation for existing TOTP")
-    func testQRCodeGeneration() async throws {
+    @Test
+    func `QR code generation for existing TOTP`() async throws {
         let identity = try await database.write { db in
             try await TestFixtures.createUniqueTestIdentity(
                 emailPrefix: "totp-qr",
@@ -166,8 +166,8 @@ struct TOTPManagementTests {
         #expect(urlString.contains(identity.email.rawValue))
     }
 
-    @Test("Multiple identities can have separate TOTP configs")
-    func testMultipleIdentitiesSeparateTOTP() async throws {
+    @Test
+    func `Multiple identities can have separate TOTP configs`() async throws {
         // Create two identities
         let (identity1, identity2) = try await database.write { db in
             let id1 = try await TestFixtures.createUniqueTestIdentity(

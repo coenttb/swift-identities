@@ -10,17 +10,17 @@ import Testing
 import Vapor
 
 @Suite(
-    "Identity Creation Tests",
+
     .dependencies {
         $0.envVars = .development
         $0.defaultDatabase = Database.TestDatabase.withIdentitySchema()
     }
 )
-struct IdentityCreationTests {
+struct Test {
     @Dependency(\.defaultDatabase) var database
 
-    @Test("INSERT identity with all required fields succeeds")
-    func testCreateIdentityWithRequiredFields() async throws {
+    @Test
+    func `INSERT identity with all required fields succeeds`() async throws {
         let email = TestFixtures.uniqueEmail(prefix: "create")
         let password = TestFixtures.testPassword
 
@@ -42,8 +42,8 @@ struct IdentityCreationTests {
         #expect(identity.lastLoginAt == nil)
     }
 
-    @Test("INSERT identity with verified email status")
-    func testCreateVerifiedIdentity() async throws {
+    @Test
+    func `INSERT identity with verified email status`() async throws {
         let email = TestFixtures.uniqueEmail(prefix: "verified")
 
         let identity = try await database.write { db in
@@ -58,8 +58,8 @@ struct IdentityCreationTests {
         #expect(identity.emailVerificationStatus == .verified)
     }
 
-    @Test("INSERT identity generates unique UUID for id")
-    func testIdentityHasUniqueId() async throws {
+    @Test
+    func `INSERT identity generates unique UUID for id`() async throws {
         let identity1 = try await database.write { db in
             try await TestFixtures.createUniqueTestIdentity(
                 emailPrefix: "uuid1",
@@ -77,8 +77,8 @@ struct IdentityCreationTests {
         #expect(identity1.id != identity2.id)
     }
 
-    @Test("INSERT identity sets createdAt timestamp")
-    func testIdentityCreatedAtTimestamp() async throws {
+    @Test
+    func `INSERT identity sets created At timestamp`() async throws {
         let identity = try await database.write { db in
             try await TestFixtures.createUniqueTestIdentity(
                 emailPrefix: "timestamp",
@@ -91,8 +91,8 @@ struct IdentityCreationTests {
         #expect(age < 3600)  // Less than 1 hour old
     }
 
-    @Test("INSERT identity initializes sessionVersion to 1")
-    func testIdentityInitialSessionVersion() async throws {
+    @Test
+    func `INSERT identity initializes session Version to 1`() async throws {
         let identity = try await database.write { db in
             try await TestFixtures.createUniqueTestIdentity(
                 emailPrefix: "session",
@@ -103,8 +103,8 @@ struct IdentityCreationTests {
         #expect(identity.sessionVersion == 1)
     }
 
-    @Test("INSERT identity leaves lastLoginAt as nil")
-    func testIdentityInitialLastLoginAt() async throws {
+    @Test
+    func `INSERT identity leaves last Login At as nil`() async throws {
         let identity = try await database.write { db in
             try await TestFixtures.createUniqueTestIdentity(
                 emailPrefix: "lastlogin",
@@ -115,8 +115,8 @@ struct IdentityCreationTests {
         #expect(identity.lastLoginAt == nil)
     }
 
-    @Test("INSERT identity hashes password with bcrypt")
-    func testIdentityPasswordHashing() async throws {
+    @Test
+    func `INSERT identity hashes password with bcrypt`() async throws {
         let password = "TestPassword123!"
         let email = TestFixtures.uniqueEmail(prefix: "bcrypt")
 
@@ -140,8 +140,8 @@ struct IdentityCreationTests {
         #expect(identity.passwordHash != password)
     }
 
-    @Test("INSERT multiple identities in sequence")
-    func testCreateMultipleIdentities() async throws {
+    @Test
+    func `INSERT multiple identities in sequence`() async throws {
         let count = 5
         var createdIds: [Identity.ID] = []
 
@@ -168,8 +168,8 @@ struct IdentityCreationTests {
         #expect(fetchedCount == count)
     }
 
-    @Test("SELECT created identity by ID returns correct record")
-    func testFetchIdentityById() async throws {
+    @Test
+    func `SELECT created identity by ID returns correct record`() async throws {
         let email = TestFixtures.uniqueEmail(prefix: "fetchbyid")
 
         let created = try await database.write { db in
@@ -192,8 +192,8 @@ struct IdentityCreationTests {
         #expect(identity.passwordHash == created.passwordHash)
     }
 
-    @Test("SELECT created identity by email returns correct record")
-    func testFetchIdentityByEmail() async throws {
+    @Test
+    func `SELECT created identity by email returns correct record`() async throws {
         let email = TestFixtures.uniqueEmail(prefix: "fetchbyemail")
 
         _ = try await database.write { db in
@@ -214,8 +214,8 @@ struct IdentityCreationTests {
         #expect(identity.email == email)
     }
 
-    @Test("SELECT returns nil for non-existent identity")
-    func testFetchNonExistentIdentity() async throws {
+    @Test
+    func `SELECT returns nil for non-existent identity`() async throws {
         let nonExistentId = Identity.ID(UUID())
 
         let fetched = try await database.read { db in
@@ -227,8 +227,8 @@ struct IdentityCreationTests {
         #expect(fetched == nil)
     }
 
-    @Test("COUNT identities returns correct number")
-    func testCountIdentities() async throws {
+    @Test
+    func `COUNT identities returns correct number`() async throws {
         let countBefore = try await database.read { db in
             try await Identity.Record.fetchCount(db)
         }
