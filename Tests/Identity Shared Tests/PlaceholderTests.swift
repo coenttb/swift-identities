@@ -10,7 +10,7 @@ import Testing
 // MARK: - Access Token Tests
 
 @Suite
-struct Test {
+struct `Access Token Tests` {
     @Test
     func `Access token creation with valid parameters`() async throws {
         let identityId = Identity.ID(UUID())
@@ -149,14 +149,14 @@ struct Test {
 // MARK: - Refresh Token Tests
 
 @Suite
-struct Test {
+struct `Refresh Token Tests` {
     @Test
     func `Refresh token creation with valid parameters`() async throws {
         let identityId = Identity.ID(UUID())
         let signingKey = SigningKey("test-secret-key")
 
         let token = try withDependencies {
-            $0.uuid = .incrementing
+            $0.uuid = { UUID(uuidString: "00000000-0000-0000-0000-000000000000")! }
         } operation: {
             try Identity.Token.Refresh(
                 identityId: identityId,
@@ -178,7 +178,7 @@ struct Test {
         let signingKey = SigningKey("test-secret")
 
         let token = try withDependencies {
-            $0.uuid = .incrementing
+            $0.uuid = { UUID(uuidString: "00000000-0000-0000-0000-000000000000")! }
         } operation: {
             try Identity.Token.Refresh(
                 identityId: identityId,
@@ -198,7 +198,7 @@ struct Test {
         let signingKey = SigningKey("test-secret")
 
         let token = try withDependencies {
-            $0.uuid = .incrementing
+            $0.uuid = { UUID(uuidString: "00000000-0000-0000-0000-000000000000")! }
         } operation: {
             try Identity.Token.Refresh(
                 identityId: identityId,
@@ -219,7 +219,7 @@ struct Test {
         let signingKey = SigningKey("test-secret")
 
         let token = try withDependencies {
-            $0.uuid = .incrementing
+            $0.uuid = { UUID(uuidString: "00000000-0000-0000-0000-000000000000")! }
         } operation: {
             try Identity.Token.Refresh(
                 identityId: identityId,
@@ -274,14 +274,14 @@ struct Test {
 // MARK: - Reauthorization Token Tests
 
 @Suite
-struct Test {
+struct `Reauthorization Token Tests` {
     @Test
     func `Reauthorization token creation with purpose`() async throws {
         let identityId = Identity.ID(UUID())
         let signingKey = SigningKey("test-secret")
 
         let token = try withDependencies {
-            $0.uuid = .incrementing
+            $0.uuid = { UUID(uuidString: "00000000-0000-0000-0000-000000000000")! }
         } operation: {
             try Identity.Token.Reauthorization(
                 identityId: identityId,
@@ -305,7 +305,7 @@ struct Test {
         let operations = ["change_password", "update_email"]
 
         let token = try withDependencies {
-            $0.uuid = .incrementing
+            $0.uuid = { UUID(uuidString: "00000000-0000-0000-0000-000000000000")! }
         } operation: {
             try Identity.Token.Reauthorization(
                 identityId: identityId,
@@ -327,7 +327,7 @@ struct Test {
         let signingKey = SigningKey("test-secret")
 
         let token = try withDependencies {
-            $0.uuid = .incrementing
+            $0.uuid = { UUID(uuidString: "00000000-0000-0000-0000-000000000000")! }
         } operation: {
             try Identity.Token.Reauthorization(
                 identityId: identityId,
@@ -351,7 +351,7 @@ struct Test {
         let signingKey = SigningKey("test-secret")
 
         let token = try withDependencies {
-            $0.uuid = .incrementing
+            $0.uuid = { UUID(uuidString: "00000000-0000-0000-0000-000000000000")! }
         } operation: {
             try Identity.Token.Reauthorization(
                 identityId: identityId,
@@ -373,7 +373,7 @@ struct Test {
         let signingKey = SigningKey("test-secret")
 
         let token = try withDependencies {
-            $0.uuid = .incrementing
+            $0.uuid = { UUID(uuidString: "00000000-0000-0000-0000-000000000000")! }
         } operation: {
             try Identity.Token.Reauthorization(
                 identityId: identityId,
@@ -396,7 +396,7 @@ struct Test {
 // MARK: - MFA Challenge Token Tests
 
 @Suite
-struct Test {
+struct `MFA Challenge Token Tests` {
     @Test
     func `MFA challenge token creation`() async throws {
         let identityId = Identity.ID(UUID())
@@ -474,7 +474,7 @@ struct Test {
 // MARK: - MFA TOTP Validation Tests
 
 @Suite
-struct Test {
+struct `MFA TOTP Validation Tests` {
     @Test
     func `Valid TOTP code format accepted`() {
         #expect(Identity.MFA.TOTP.isValidCode("123456"))
@@ -525,7 +525,7 @@ struct Test {
 // MARK: - MFA TOTP Utilities Tests
 
 @Suite
-struct Test {
+struct `MFA TOTP Utilities Tests` {
     @Test
     func `Format manual entry key with spaces`() {
         let formatted = Identity.MFA.TOTP.formatManualEntryKey("JBSWY3DPEHPK3PXP")
@@ -554,7 +554,7 @@ struct Test {
 // MARK: - Cookie Tests
 
 @Suite
-struct Test {
+struct `Cookie Tests` {
     @Test
     func `Cookie names are correctly defined`() {
         #expect(Identity.Cookies.Names.accessToken == "access_token")
@@ -576,7 +576,7 @@ struct Test {
 // MARK: - JWT Extensions Tests
 
 @Suite
-struct Test {
+struct `JWT Extensions Tests` {
     @Test
     func `JWT creation with issuer and subject`() throws {
         let key = SigningKey("test-secret")

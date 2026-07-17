@@ -8,6 +8,8 @@
 import Dependencies
 import Foundation
 import IdentitiesTypes
+import Logger_Dependencies
+import Logging
 
 extension Identity.MFA.BackupCodes.Client {
     public static func live(

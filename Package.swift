@@ -24,7 +24,12 @@ extension Target.Dependency {
 }
 
 extension Target.Dependency {
+    static var dependencies: Self { .product(name: "Dependencies", package: "swift-dependencies") }
     static var identitiesTypes: Self { .product(name: "IdentitiesTypes", package: "swift-identities-types") }
+    static var loggerDependencies: Self {
+        .product(name: "Logger Dependencies", package: "swift-logger-dependencies")
+    }
+    static var logging: Self { .product(name: "Logging", package: "swift-log") }
     static var serverFoundation: Self { .product(name: "ServerFoundation", package: "swift-server-foundation") }
     static var serverFoundationVapor: Self {
         .product(
@@ -115,6 +120,8 @@ let package = Package(
         .package(url: "https://github.com/swift-foundations/swift-identities-types.git", branch: "main"),
         .package(url: "https://github.com/swift-foundations/swift-time-based-one-time-password.git", branch: "main"),
         .package(url: "https://github.com/swift-foundations/swift-dependencies.git", branch: "main"),
+        .package(url: "https://github.com/swift-foundations/swift-logger-dependencies.git", branch: "main"),
+        .package(url: "https://github.com/apple/swift-log.git", from: "1.0.0"),
 
         .package(url: "https://github.com/swift-foundations/swift-records.git", branch: "main"),
         .package(url: "https://github.com/swift-primitives/swift-tagged-primitives.git", branch: "main"),
@@ -137,7 +144,10 @@ let package = Package(
         .target(
             name: .identityShared,
             dependencies: [
+                .dependencies,
                 .identitiesTypes,
+                .loggerDependencies,
+                .logging,
                 .serverFoundation,
                 .serverFoundationVapor,
                 .totp
@@ -156,7 +166,10 @@ let package = Package(
         .target(
             name: .identityBackend,
             dependencies: [
+                .dependencies,
                 .identityShared,
+                .loggerDependencies,
+                .logging,
                 .serverFoundation,
                 .serverFoundationVapor,
                 .records,
@@ -166,9 +179,12 @@ let package = Package(
         .target(
             name: .identityProvider,
             dependencies: [
+                .dependencies,
                 .identitiesTypes,
                 .identityShared,
                 .identityBackend,
+                .loggerDependencies,
+                .logging,
                 .serverFoundation,
                 .serverFoundationVapor
             ]
@@ -207,11 +223,14 @@ let package = Package(
         .target(
             name: .identityConsumer,
             dependencies: [
+                .dependencies,
                 .identitiesTypes,
                 .identityShared,
                 .identityViews,
                 .identityFrontend,
                 .language,
+                .loggerDependencies,
+                .logging,
                 .serverFoundation,
                 .serverFoundationVapor
             ]

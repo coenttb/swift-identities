@@ -5,8 +5,11 @@
 //  Created by Coen ten Thije Boonkkamp on 10/09/2024.
 //
 
+import Dependencies
 import Foundation
 import IdentitiesTypes
+import Logger_Dependencies
+import Logging
 import ServerFoundationVapor
 
 extension Identity.Password.API {
@@ -25,8 +28,7 @@ extension Identity.Password.API {
                     return Response.success(true)
                 } catch {
                     @Dependencies.Dependency(\.logger) var logger
-                    logger.log(
-                        .error,
+                    logger.error(
                         "Failed to request password reset. Error: \(String(describing: error))"
                     )
                     throw Abort(.internalServerError, reason: "Failed to request password reset")
@@ -38,8 +40,7 @@ extension Identity.Password.API {
                     return Response.success(true)
                 } catch {
                     @Dependencies.Dependency(\.logger) var logger
-                    logger.log(
-                        .error,
+                    logger.error(
                         "Failed to reset password. Error: \(String(describing: error))"
                     )
                     throw Abort(.internalServerError, reason: "Failed to reset password")
@@ -53,8 +54,7 @@ extension Identity.Password.API {
                     return Response.success(true)
                 } catch {
                     @Dependencies.Dependency(\.logger) var logger
-                    logger.log(
-                        .error,
+                    logger.error(
                         "Failed to change password. Error: \(String(describing: error))"
                     )
                     throw Abort(.internalServerError, reason: "Failed to change password")

@@ -1,6 +1,8 @@
 import Crypto
 import Dependencies
 import Foundation
+import Logger_Dependencies
+import Logging
 import RFC_6238
 import Records
 import TOTP

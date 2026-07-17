@@ -6,6 +6,7 @@
 //
 
 import Dependencies
+import Logger_Dependencies
 import Logging
 import Records
 import Vapor

@@ -8,6 +8,8 @@
 import Dependencies
 import Foundation
 import IdentitiesTypes
+import Logger_Dependencies
+import Logging
 import ServerFoundationVapor
 
 extension Identity.MFA.Status.Client {

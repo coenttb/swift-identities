@@ -9,6 +9,7 @@ import Crypto
 import Dependencies
 import EmailAddress
 import Foundation
+import Logger_Dependencies
 import Logging
 import Records
 

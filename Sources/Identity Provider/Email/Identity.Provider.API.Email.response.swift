@@ -5,8 +5,11 @@
 //  Created by Coen ten Thije Boonkkamp on 10/09/2024.
 //
 
+import Dependencies
 import Foundation
 import IdentitiesTypes
+import Logger_Dependencies
+import Logging
 import ServerFoundationVapor
 
 extension Identity.Email.API {
@@ -26,8 +29,7 @@ extension Identity.Email.API {
                     return Response.success(true, data: data)
                 } catch {
                     @Dependencies.Dependency(\.logger) var logger
-                    logger.log(
-                        .error,
+                    logger.error(
                         "Failed to request email change. Error: \(String(describing: error))"
                     )
                     throw Abort(.internalServerError, reason: "Failed to request email change")
@@ -38,13 +40,12 @@ extension Identity.Email.API {
                     let data = try await identity.email.change.confirm(confirm)
 
                     @Dependencies.Dependency(\.logger) var logger
-                    logger.log(.info, "Email change confirmed for new email")
+                    logger.info("Email change confirmed for new email")
 
                     return Response.success(true, data: data)
                 } catch {
                     @Dependencies.Dependency(\.logger) var logger
-                    logger.log(
-                        .error,
+                    logger.error(
                         "Failed to confirm email change. Error: \(String(describing: error))"
                     )
                     throw Abort(.internalServerError, reason: "Failed to confirm email change")

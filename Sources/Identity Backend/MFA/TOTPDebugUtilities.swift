@@ -1,5 +1,7 @@
 import Dependencies
 import Foundation
+import Logger_Dependencies
+import Logging
 
 extension Identity.MFA.TOTP {
     /// Check if a code is the debug bypass code

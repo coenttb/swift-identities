@@ -8,6 +8,7 @@
 import Crypto
 import Dependencies
 import Foundation
+import Logger_Dependencies
 import Logging
 
 extension Identity.OAuth {

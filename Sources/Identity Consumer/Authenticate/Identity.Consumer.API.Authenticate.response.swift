@@ -5,7 +5,10 @@
 //  Created by Coen ten Thije Boonkkamp on 16/10/2024.
 //
 
+import Dependencies
 import IdentitiesTypes
+import Logger_Dependencies
+import Logging
 import ServerFoundationVapor
 
 extension Identity.Authentication.API {
