@@ -9,12 +9,14 @@ import Dependencies
 import Foundation
 import IdentitiesTypes
 import Logger_Dependencies
+import Server
 import Server_Vapor
+import Vapor
 
 extension Identity.Creation.API {
     package static func providerResponse(
         create: Identity.Creation.API
-    ) async throws -> Response {
+    ) async throws -> Server.Response {
 
         @Dependency(\.identity) var identity
         @Dependency(\.logger) var logger
@@ -23,7 +25,7 @@ extension Identity.Creation.API {
         case .request(let request):
             do {
                 try await identity.create.request(request)
-                return Response.success(true)
+                return try Server.Response.json(success: true)
             } catch {
                 throw error
             }
@@ -39,7 +41,7 @@ extension Identity.Creation.API {
         case .verify(let verify):
             do {
                 try await identity.create.verify(verify)
-                return Response.success(true, status: .created)
+                return try Server.Response.json(success: true, status: .created)
             } catch {
                 throw Abort(
                     .internalServerError,

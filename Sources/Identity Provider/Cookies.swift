@@ -11,6 +11,7 @@ import Identity_Backend
 import Identity_Shared
 import Server_Vapor
 import URLRouting
+import HTTP_Cookies
 
 extension Identity.Provider {
     /// Cookie configuration for Provider services that serve identity to Consumer apps.

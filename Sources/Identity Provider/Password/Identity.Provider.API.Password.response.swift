@@ -10,12 +10,14 @@ import Foundation
 import IdentitiesTypes
 import Logger_Dependencies
 import Logging
+import Server
 import Server_Vapor
+import Vapor
 
 extension Identity.Password.API {
     package static func providerResponse(
         password: Identity.Password.API
-    ) async throws -> Response {
+    ) async throws -> Server.Response {
 
         @Dependency(\.identity) var identity
 
@@ -25,7 +27,7 @@ extension Identity.Password.API {
             case .request(let request):
                 do {
                     try await identity.password.reset.request(request)
-                    return Response.success(true)
+                    return try Server.Response.json(success: true)
                 } catch {
                     @Dependencies.Dependency(\.logger) var logger
                     logger.error(
@@ -37,7 +39,7 @@ extension Identity.Password.API {
                 do {
                     try await identity.password.reset.confirm(confirm)
 
-                    return Response.success(true)
+                    return try Server.Response.json(success: true)
                 } catch {
                     @Dependencies.Dependency(\.logger) var logger
                     logger.error(
@@ -51,7 +53,7 @@ extension Identity.Password.API {
             case .request(change: let request):
                 do {
                     try await identity.password.change.request(request)
-                    return Response.success(true)
+                    return try Server.Response.json(success: true)
                 } catch {
                     @Dependencies.Dependency(\.logger) var logger
                     logger.error(

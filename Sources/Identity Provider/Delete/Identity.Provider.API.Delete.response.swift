@@ -5,14 +5,17 @@
 //  Created by Coen ten Thije Boonkkamp on 10/09/2024.
 //
 
+import Dependencies
 import Foundation
 import IdentitiesTypes
+import Server
 import Server_Vapor
+import Vapor
 
 extension Identity.Deletion.API {
     package static func providerResponse(
         delete: Identity.Deletion.API
-    ) async throws -> Response {
+    ) async throws -> Server.Response {
 
         @Dependency(\.identity) var identity
 
@@ -24,21 +27,21 @@ extension Identity.Deletion.API {
 
             do {
                 try await identity.delete.request(request)
-                return Response.success(true)
+                return try Server.Response.json(success: true)
             } catch {
                 throw Abort(.internalServerError, reason: "Failed to delete")
             }
         case .cancel:
             do {
                 try await identity.delete.cancel()
-                return Response.success(true)
+                return try Server.Response.json(success: true)
             } catch {
                 throw Abort(.internalServerError, reason: "Failed to delete")
             }
         case .confirm:
             do {
                 try await identity.delete.confirm()
-                return Response.success(true)
+                return try Server.Response.json(success: true)
             } catch {
                 throw Abort(.internalServerError, reason: "Failed to confirm deletion")
             }

@@ -10,12 +10,14 @@ import Foundation
 import IdentitiesTypes
 import Logger_Dependencies
 import Logging
+import Server
 import Server_Vapor
+import Vapor
 
 extension Identity.Email.API {
     package static func providerResponse(
         email: Identity.Email.API
-    ) async throws -> Response {
+    ) async throws -> Server.Response {
 
         @Dependency(\.identity) var identity
 
@@ -26,7 +28,7 @@ extension Identity.Email.API {
                 do {
                     let data = try await identity.email.change.request(request)
 
-                    return Response.success(true, data: data)
+                    return try Server.Response.json(success: true, data: data)
                 } catch {
                     @Dependencies.Dependency(\.logger) var logger
                     logger.error(
@@ -42,7 +44,7 @@ extension Identity.Email.API {
                     @Dependencies.Dependency(\.logger) var logger
                     logger.info("Email change confirmed for new email")
 
-                    return Response.success(true, data: data)
+                    return try Server.Response.json(success: true, data: data)
                 } catch {
                     @Dependencies.Dependency(\.logger) var logger
                     logger.error(

@@ -5,14 +5,17 @@
 //  Created by Coen ten Thije Boonkkamp on 10/09/2024.
 //
 
+import Dependencies
 import Foundation
 import IdentitiesTypes
+import Server
 import Server_Vapor
+import Vapor
 
 extension Identity.Provider.API {
     public static func response(
         api: Identity.Provider.API
-    ) async throws -> Response {
+    ) async throws -> Server.Response {
 
         @Dependency(\.identityProviderConfiguration) var configuration
         let rateLimiters = configuration.provider.rateLimiters
@@ -76,7 +79,7 @@ extension Identity.Provider.API {
                 try await identity.logout.client.all()
             }
             await rateLimitClient.recordSuccess()
-            return Response.success(true)
+            return try Server.Response.json(success: true)
 
         case .password(let password):
             do {
@@ -107,7 +110,7 @@ extension Identity.Provider.API {
                 password: reauthorize.password
             )
             await rateLimitClient.recordSuccess()
-            return Response.success(true, data: data)
+            return try Server.Response.json(success: true, data: data)
 
         case .mfa:
             // MFA implementation will be added here
