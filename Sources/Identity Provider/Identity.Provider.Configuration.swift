@@ -10,6 +10,8 @@ import Foundation
 import IdentitiesTypes
 import Identity_Shared
 import URLRouting
+import URI
+import Throttling
 
 extension Identity.Provider {
     public struct Configuration: Sendable {
