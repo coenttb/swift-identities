@@ -14,7 +14,7 @@ import Logger_Dependencies
 import Logging
 import Records
 import ServerFoundation
-import ServerFoundationVapor
+import Server_Vapor
 
 extension Identity.OAuth.ProviderRegistry: Dependency.Key {
     public static var liveValue: Identity.OAuth.ProviderRegistry {

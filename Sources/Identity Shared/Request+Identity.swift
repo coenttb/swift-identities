@@ -8,5 +8,5 @@
 
 import Foundation
 import IdentitiesTypes
-import ServerFoundationVapor
+import Server_Vapor
 //

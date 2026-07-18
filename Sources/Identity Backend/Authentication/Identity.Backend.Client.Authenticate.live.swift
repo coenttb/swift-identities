@@ -20,7 +20,7 @@ import Logger_Dependencies
 import Logging
 import Records
 import ServerFoundation
-import ServerFoundationVapor
+import Server_Vapor
 
 extension Identity.Authentication.Client {
     public static func live() -> Self {

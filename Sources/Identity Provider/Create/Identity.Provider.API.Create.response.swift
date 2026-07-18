@@ -9,7 +9,7 @@ import Dependencies
 import Foundation
 import IdentitiesTypes
 import Logger_Dependencies
-import ServerFoundationVapor
+import Server_Vapor
 
 extension Identity.Creation.API {
     package static func providerResponse(

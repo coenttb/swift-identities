@@ -8,7 +8,7 @@
 import Dependencies
 import Identity_Shared
 import JWT
-import ServerFoundationVapor
+import Server_Vapor
 @preconcurrency import Vapor
 
 extension Identity.Provider {

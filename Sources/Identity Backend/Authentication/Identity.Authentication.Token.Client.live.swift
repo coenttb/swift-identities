@@ -12,7 +12,7 @@ import JWT
 import Logger_Dependencies
 import Logging
 import Records
-import ServerFoundationVapor
+import Server_Vapor
 
 extension Identity.Authentication.Token.Client {
     public static func live() -> Self {

@@ -9,7 +9,7 @@ import Dependencies
 import Foundation
 import Identity_Shared
 import JWT
-import ServerFoundationVapor
+import Server_Vapor
 
 extension Identity.Token.Access {
     /**

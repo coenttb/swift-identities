@@ -7,7 +7,7 @@
 
 import Foundation
 import IdentitiesTypes
-import ServerFoundationVapor
+import Server_Vapor
 
 extension Identity.Provider.API {
     public static func response(

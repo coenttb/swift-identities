@@ -10,7 +10,7 @@ import Foundation
 import IdentitiesTypes
 import Logger_Dependencies
 import Logging
-import ServerFoundationVapor
+import Server_Vapor
 
 extension Identity.Password.API {
     package static func providerResponse(

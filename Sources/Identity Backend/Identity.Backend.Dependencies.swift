@@ -9,7 +9,7 @@ import Dependencies
 import Foundation
 import Logging
 import Records
-import ServerFoundationVapor
+import Server_Vapor
 
 ///// Protocol providing common dependencies for Identity Backend operations
 //package protocol IdentityBackendDependencies {

@@ -6,7 +6,7 @@
 //
 
 import Dependencies
-import ServerFoundationVapor
+import Server_Vapor
 
 extension Identity.API {
     /// Requires authentication for the current request

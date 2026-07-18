@@ -33,8 +33,8 @@ extension Target.Dependency {
     static var serverFoundation: Self { .product(name: "ServerFoundation", package: "swift-server-foundation") }
     static var serverFoundationVapor: Self {
         .product(
-            name: "ServerFoundationVapor",
-            package: "swift-server-foundation-vapor",
+            name: "Server Vapor",
+            package: "swift-server-vapor",
             condition: .when(traits: ["Vapor"])
         )
     }
@@ -116,7 +116,7 @@ let package = Package(
     ],
     dependencies: [
         .package(url: "https://github.com/swift-foundations/swift-server-foundation.git", branch: "main"),
-        .package(url: "https://github.com/swift-foundations/swift-server-foundation-vapor.git", branch: "main"),
+        .package(url: "https://github.com/swift-foundations/swift-server-vapor.git", branch: "main"),
         .package(url: "https://github.com/swift-foundations/swift-identities-types.git", branch: "main"),
         .package(url: "https://github.com/swift-foundations/swift-time-based-one-time-password.git", branch: "main"),
         .package(url: "https://github.com/swift-foundations/swift-dependencies.git", branch: "main"),

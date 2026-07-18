@@ -9,7 +9,7 @@ import Foundation
 import IdentitiesTypes
 import Identity_Backend
 import Identity_Shared
-import ServerFoundationVapor
+import Server_Vapor
 import URLRouting
 
 extension Identity.Provider {

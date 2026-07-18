@@ -5,7 +5,7 @@
 //  Created by Coen ten Thije Boonkkamp on 07/02/2025.
 //
 
-import ServerFoundationVapor
+import Server_Vapor
 
 extension Identity.API {
     /// Protects an API endpoint based on its security requirements

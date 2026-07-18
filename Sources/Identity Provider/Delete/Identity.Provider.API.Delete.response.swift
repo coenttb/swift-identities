@@ -7,7 +7,7 @@
 
 import Foundation
 import IdentitiesTypes
-import ServerFoundationVapor
+import Server_Vapor
 
 extension Identity.Deletion.API {
     package static func providerResponse(
