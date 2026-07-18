@@ -10,7 +10,7 @@ import Foundation
 import IdentitiesTypes
 import Server
 import Server_Vapor
-import Vapor
+import struct Vapor.Abort
 
 extension Identity.Deletion.API {
     package static func providerResponse(

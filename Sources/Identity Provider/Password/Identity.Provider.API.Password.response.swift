@@ -12,7 +12,7 @@ import Logger_Dependencies
 import Logging
 import Server
 import Server_Vapor
-import Vapor
+import struct Vapor.Abort
 
 extension Identity.Password.API {
     package static func providerResponse(
