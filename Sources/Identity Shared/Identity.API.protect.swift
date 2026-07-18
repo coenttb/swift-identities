@@ -6,6 +6,7 @@
 //
 
 import Server_Vapor
+import Vapor
 
 extension Identity.API {
     /// Protects an API endpoint based on its security requirements

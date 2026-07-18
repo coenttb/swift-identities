@@ -30,6 +30,7 @@ extension Target.Dependency {
         .product(name: "Logger Dependencies", package: "swift-logger-dependencies")
     }
     static var logging: Self { .product(name: "Logging", package: "swift-log") }
+    static var vapor: Self { .product(name: "Vapor", package: "vapor") }
     static var serverFoundation: Self { .product(name: "ServerFoundation", package: "swift-server-foundation") }
     static var serverFoundationVapor: Self {
         .product(
@@ -117,6 +118,7 @@ let package = Package(
     dependencies: [
         .package(url: "https://github.com/swift-foundations/swift-server-foundation.git", branch: "main"),
         .package(url: "https://github.com/swift-foundations/swift-server-vapor.git", branch: "main"),
+        .package(url: "https://github.com/vapor/vapor.git", from: "4.102.1"),
         .package(url: "https://github.com/swift-foundations/swift-identities-types.git", branch: "main"),
         .package(url: "https://github.com/swift-foundations/swift-time-based-one-time-password.git", branch: "main"),
         .package(url: "https://github.com/swift-foundations/swift-dependencies.git", branch: "main"),
@@ -150,6 +152,7 @@ let package = Package(
                 .logging,
                 .serverFoundation,
                 .serverFoundationVapor,
+                .vapor,
                 .totp
             ]
         ),
@@ -172,6 +175,7 @@ let package = Package(
                 .logging,
                 .serverFoundation,
                 .serverFoundationVapor,
+                .vapor,
                 .records,
                 .tagged
             ]
@@ -186,7 +190,8 @@ let package = Package(
                 .loggerDependencies,
                 .logging,
                 .serverFoundation,
-                .serverFoundationVapor
+                .serverFoundationVapor,
+                .vapor,
             ]
         ),
 
