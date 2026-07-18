@@ -1,6 +1,7 @@
 import Dependencies
 import Foundation
 import Records
+private import PostgreSQL_Standard_Macros
 
 extension Identity.Deletion {
     @Table("identity_deletions")

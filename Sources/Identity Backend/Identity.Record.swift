@@ -2,6 +2,7 @@ import Dependencies
 import EmailAddress
 import Foundation
 import Records
+private import PostgreSQL_Standard_Macros
 import ServerFoundationEnvVars
 
 extension Identity {

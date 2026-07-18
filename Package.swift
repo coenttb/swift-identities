@@ -133,6 +133,7 @@ let package = Package(
         .package(url: "https://github.com/swift-foundations/swift-logger-dependencies.git", branch: "main"),
         .package(url: "https://github.com/apple/swift-log.git", from: "1.0.0"),
 
+        .package(url: "https://github.com/swift-standards/swift-postgresql-standard.git", branch: "main"),
         .package(url: "https://github.com/swift-foundations/swift-records.git", branch: "main"),
         .package(url: "https://github.com/swift-primitives/swift-tagged-primitives.git", branch: "main"),
         .package(url: "https://github.com/swift-foundations/swift-translating.git", branch: "main"),
@@ -185,6 +186,7 @@ let package = Package(
                 .serverFoundationVapor,
                 .vapor,
                 .records,
+                .product(name: "PostgreSQL Standard Macros", package: "swift-postgresql-standard"),
                 .tagged
             ]
         ),

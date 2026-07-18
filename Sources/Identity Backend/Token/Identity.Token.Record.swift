@@ -3,6 +3,7 @@ import Dependencies
 import Foundation
 import IdentitiesTypes
 import Records
+private import PostgreSQL_Standard_Macros
 
 extension Identity.Token {
     @Table("identity_tokens")

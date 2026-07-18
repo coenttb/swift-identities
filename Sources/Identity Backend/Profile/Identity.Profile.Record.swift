@@ -9,6 +9,7 @@ import Dependencies
 import Foundation
 import IdentitiesTypes
 import Records
+private import PostgreSQL_Standard_Macros
 
 extension Identity {
     public enum Profile {}

@@ -2,6 +2,7 @@ import Foundation
 import IdentitiesTypes
 import RFC_6238
 import Records
+private import PostgreSQL_Standard_Macros
 import TOTP
 
 extension Identity.MFA.TOTP {

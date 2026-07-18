@@ -11,6 +11,7 @@ import IdentitiesTypes
 import Logger_Dependencies
 import Logging
 import Records
+private import PostgreSQL_Standard_Macros
 import ServerFoundation
 
 extension Identity.Password.Reset.Client {

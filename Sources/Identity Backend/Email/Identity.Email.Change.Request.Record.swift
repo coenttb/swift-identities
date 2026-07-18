@@ -3,6 +3,7 @@ import Dependencies
 import EmailAddress
 import Foundation
 import Records
+private import PostgreSQL_Standard_Macros
 
 extension Identity.Email.Change.Request {
     @Table("identity_email_change_requests")

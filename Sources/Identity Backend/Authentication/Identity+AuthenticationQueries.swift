@@ -2,6 +2,7 @@ import Dependencies
 import EmailAddress
 import Foundation
 import Records
+private import PostgreSQL_Standard_Macros
 
 // MARK: - Selection Types for Combined Queries
 
