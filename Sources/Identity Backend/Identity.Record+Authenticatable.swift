@@ -7,6 +7,7 @@
 
 import Foundation
 import Server_Vapor
+import Vapor
 
 extension Identity.Record: Authenticatable {
 
