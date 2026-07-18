@@ -5,7 +5,24 @@
 //  Created by Coen ten Thije Boonkkamp on 07/02/2025.
 //
 
-import ServerFoundationVapor
+import Dependencies
+import Foundation
+import Server_Vapor
+import Throttling
+import Vapor
+
+private func rateLimitAbort(
+    nextAllowedAttempt: Date? = nil,
+    defaultDelay: TimeInterval = 60
+) -> Abort {
+    let delay = nextAllowedAttempt.map { max(1, Int($0.timeIntervalSinceNow)) }
+        ?? Int(defaultDelay)
+    return Abort(.tooManyRequests, headers: ["Retry-After": "\(delay)"])
+}
+
+private func rateLimitAbort(delay: TimeInterval) -> Abort {
+    Abort(.tooManyRequests, headers: ["Retry-After": "\(max(1, Int(delay)))"])
+}
 
 extension Identity.API {
     package static func rateLimit(
@@ -32,7 +49,8 @@ extension Identity.API {
                 }
 
                 // Also check rate limit by IP address if available
-                @Dependency(\.vapor.request?.realIP) var realIP
+                @Dependency(\.vapor.request) var vaporRequest
+                let realIP = vaporRequest?.peerAddress?.ipAddress
 
                 if let clientIP = realIP {
                     let ipRateLimit = await rateLimiter.credentials.checkLimit("ip:\(clientIP)")
@@ -106,7 +124,7 @@ extension Identity.API {
                 guard rateLimit.isAllowed
                 else {
                     if let nextAttempt = rateLimit.nextAllowedAttempt {
-                        throw Abort.rateLimit(delay: nextAttempt.timeIntervalSinceNow)
+                        throw rateLimitAbort(delay: nextAttempt.timeIntervalSinceNow)
                     }
                     throw Abort(.tooManyRequests)
                 }
@@ -121,18 +139,19 @@ extension Identity.API {
                 let emailRateLimit = await rateLimiter.createRequest.checkLimit(request.email)
 
                 guard emailRateLimit.isAllowed else {
-                    throw Abort.rateLimit(nextAllowedAttempt: emailRateLimit.nextAllowedAttempt)
+                    throw rateLimitAbort(nextAllowedAttempt: emailRateLimit.nextAllowedAttempt)
                 }
 
                 // Get IP address for rate limiting if available
-                @Dependency(\.vapor.request?.realIP) var realIP
+                @Dependency(\.vapor.request) var vaporRequest
+                let realIP = vaporRequest?.peerAddress?.ipAddress
 
                 // For tests where realIP might not be available
                 if let clientIP = realIP {
                     let ipRateLimit = await rateLimiter.createRequest.checkLimit("ip:\(clientIP)")
 
                     guard ipRateLimit.isAllowed else {
-                        throw Abort.rateLimit(nextAllowedAttempt: ipRateLimit.nextAllowedAttempt)
+                        throw rateLimitAbort(nextAllowedAttempt: ipRateLimit.nextAllowedAttempt)
                     }
 
                     // Create combined client that tracks both email and IP
@@ -156,7 +175,7 @@ extension Identity.API {
 
                 guard rateLimit.isAllowed
                 else {
-                    throw Abort.rateLimit(nextAllowedAttempt: rateLimit.nextAllowedAttempt)
+                    throw rateLimitAbort(nextAllowedAttempt: rateLimit.nextAllowedAttempt)
                 }
 
                 return .init(limiter: rateLimiter.createVerify, key: verify.token)
@@ -166,14 +185,14 @@ extension Identity.API {
             @Dependency(\.vapor.request) var request
             guard let request else { throw Abort.requestUnavailable }
 
-            let key = request.realIP
+            let key = request.peerAddress?.ipAddress ?? "unknown"
             switch delete {
             case .request:
                 let rateLimit = await rateLimiter.deleteRequest.checkLimit(key)
 
                 guard rateLimit.isAllowed
                 else {
-                    throw Abort.rateLimit(nextAllowedAttempt: rateLimit.nextAllowedAttempt)
+                        throw rateLimitAbort(nextAllowedAttempt: rateLimit.nextAllowedAttempt)
                 }
 
                 return .init(limiter: rateLimiter.deleteRequest, key: key)
@@ -183,7 +202,7 @@ extension Identity.API {
 
                 guard rateLimit.isAllowed
                 else {
-                    throw Abort.rateLimit(nextAllowedAttempt: rateLimit.nextAllowedAttempt)
+                        throw rateLimitAbort(nextAllowedAttempt: rateLimit.nextAllowedAttempt)
                 }
 
                 return .init(limiter: rateLimiter.deleteConfirm, key: key)
@@ -193,7 +212,7 @@ extension Identity.API {
 
                 guard rateLimit.isAllowed
                 else {
-                    throw Abort.rateLimit(nextAllowedAttempt: rateLimit.nextAllowedAttempt)
+                        throw rateLimitAbort(nextAllowedAttempt: rateLimit.nextAllowedAttempt)
                 }
 
                 return .init(limiter: rateLimiter.deleteCancel, key: key)
@@ -211,11 +230,12 @@ extension Identity.API {
 
                     guard emailRateLimit.isAllowed
                     else {
-                        throw Abort.rateLimit(nextAllowedAttempt: emailRateLimit.nextAllowedAttempt)
+                        throw rateLimitAbort(nextAllowedAttempt: emailRateLimit.nextAllowedAttempt)
                     }
 
                     // Also check rate limit by IP address if available
-                    @Dependency(\.vapor.request?.realIP) var realIP
+                    @Dependency(\.vapor.request) var vaporRequest
+                    let realIP = vaporRequest?.peerAddress?.ipAddress
 
                     if let clientIP = realIP {
                         let ipRateLimit = await rateLimiter.emailChangeRequest.checkLimit(
@@ -224,7 +244,7 @@ extension Identity.API {
 
                         guard ipRateLimit.isAllowed
                         else {
-                            throw Abort.rateLimit(
+                            throw rateLimitAbort(
                                 nextAllowedAttempt: ipRateLimit.nextAllowedAttempt
                             )
                         }
@@ -252,11 +272,12 @@ extension Identity.API {
 
                     guard tokenRateLimit.isAllowed
                     else {
-                        throw Abort.rateLimit(nextAllowedAttempt: tokenRateLimit.nextAllowedAttempt)
+                        throw rateLimitAbort(nextAllowedAttempt: tokenRateLimit.nextAllowedAttempt)
                     }
 
                     // Also check rate limit by IP address if available
-                    @Dependency(\.vapor.request?.realIP) var realIP
+                    @Dependency(\.vapor.request) var vaporRequest
+                    let realIP = vaporRequest?.peerAddress?.ipAddress
 
                     if let clientIP = realIP {
                         let ipRateLimit = await rateLimiter.emailChangeConfirm.checkLimit(
@@ -265,7 +286,7 @@ extension Identity.API {
 
                         guard ipRateLimit.isAllowed
                         else {
-                            throw Abort.rateLimit(
+                            throw rateLimitAbort(
                                 nextAllowedAttempt: ipRateLimit.nextAllowedAttempt
                             )
                         }
@@ -290,24 +311,24 @@ extension Identity.API {
         case .logout(.current):
             @Dependency(\.vapor.request) var request
             guard let request else { throw Abort.requestUnavailable }
-            let key = request.realIP
+            let key = request.peerAddress?.ipAddress ?? "unknown"
             let rateLimit = await rateLimiter.logout.checkLimit(key)
 
             guard rateLimit.isAllowed
             else {
-                throw Abort.rateLimit(nextAllowedAttempt: rateLimit.nextAllowedAttempt)
+                throw rateLimitAbort(nextAllowedAttempt: rateLimit.nextAllowedAttempt)
             }
             return .init(limiter: rateLimiter.logout, key: key)
 
         case .logout(.all):
             @Dependency(\.vapor.request) var request
             guard let request else { throw Abort.requestUnavailable }
-            let key = request.realIP
+            let key = request.peerAddress?.ipAddress ?? "unknown"
             let rateLimit = await rateLimiter.logout.checkLimit(key)
 
             guard rateLimit.isAllowed
             else {
-                throw Abort.rateLimit(nextAllowedAttempt: rateLimit.nextAllowedAttempt)
+                throw rateLimitAbort(nextAllowedAttempt: rateLimit.nextAllowedAttempt)
             }
             return .init(limiter: rateLimiter.logout, key: key)
 
@@ -323,11 +344,12 @@ extension Identity.API {
 
                     guard emailRateLimit.isAllowed
                     else {
-                        throw Abort.rateLimit(nextAllowedAttempt: emailRateLimit.nextAllowedAttempt)
+                        throw rateLimitAbort(nextAllowedAttempt: emailRateLimit.nextAllowedAttempt)
                     }
 
                     // Also check rate limit by IP address if available
-                    @Dependency(\.vapor.request?.realIP) var realIP
+                    @Dependency(\.vapor.request) var vaporRequest
+                    let realIP = vaporRequest?.peerAddress?.ipAddress
 
                     if let clientIP = realIP {
                         let ipRateLimit = await rateLimiter.passwordResetRequest.checkLimit(
@@ -336,7 +358,7 @@ extension Identity.API {
 
                         guard ipRateLimit.isAllowed
                         else {
-                            throw Abort.rateLimit(
+                            throw rateLimitAbort(
                                 nextAllowedAttempt: ipRateLimit.nextAllowedAttempt
                             )
                         }
@@ -364,11 +386,12 @@ extension Identity.API {
 
                     guard tokenRateLimit.isAllowed
                     else {
-                        throw Abort.rateLimit(nextAllowedAttempt: tokenRateLimit.nextAllowedAttempt)
+                        throw rateLimitAbort(nextAllowedAttempt: tokenRateLimit.nextAllowedAttempt)
                     }
 
                     // Also check rate limit by IP address if available
-                    @Dependency(\.vapor.request?.realIP) var realIP
+                    @Dependency(\.vapor.request) var vaporRequest
+                    let realIP = vaporRequest?.peerAddress?.ipAddress
 
                     if let clientIP = realIP {
                         let ipRateLimit = await rateLimiter.passwordResetConfirm.checkLimit(
@@ -377,7 +400,7 @@ extension Identity.API {
 
                         guard ipRateLimit.isAllowed
                         else {
-                            throw Abort.rateLimit(
+                            throw rateLimitAbort(
                                 nextAllowedAttempt: ipRateLimit.nextAllowedAttempt
                             )
                         }
@@ -402,12 +425,12 @@ extension Identity.API {
             case .change:
                 @Dependency(\.vapor.request) var request
                 guard let request else { throw Abort.requestUnavailable }
-                let key = request.realIP
+                let key = request.peerAddress?.ipAddress ?? "unknown"
                 let rateLimit = await rateLimiter.passwordChangeRequest.checkLimit(key)
 
                 guard rateLimit.isAllowed
                 else {
-                    throw Abort.rateLimit(nextAllowedAttempt: rateLimit.nextAllowedAttempt)
+                    throw rateLimitAbort(nextAllowedAttempt: rateLimit.nextAllowedAttempt)
                 }
 
                 return .init(limiter: rateLimiter.passwordChangeRequest, key: key)
@@ -416,12 +439,12 @@ extension Identity.API {
         case .reauthorize:
             @Dependency(\.vapor.request) var request
             guard let request else { throw Abort.requestUnavailable }
-            let key = request.realIP
+            let key = request.peerAddress?.ipAddress ?? "unknown"
             let rateLimit = await rateLimiter.reauthorize.checkLimit(key)
 
             guard rateLimit.isAllowed
             else {
-                throw Abort.rateLimit(nextAllowedAttempt: rateLimit.nextAllowedAttempt)
+                throw rateLimitAbort(nextAllowedAttempt: rateLimit.nextAllowedAttempt)
             }
             return .init(limiter: rateLimiter.reauthorize, key: key)
 
@@ -432,7 +455,7 @@ extension Identity.API {
                 let key = "public:mfa:verify"
                 let rateLimit = await rateLimiter.reauthorize.checkLimit(key)
                 guard rateLimit.isAllowed else {
-                    throw Abort.rateLimit(nextAllowedAttempt: rateLimit.nextAllowedAttempt)
+                    throw rateLimitAbort(nextAllowedAttempt: rateLimit.nextAllowedAttempt)
                 }
                 return .init(limiter: rateLimiter.reauthorize, key: key)
 
@@ -440,12 +463,12 @@ extension Identity.API {
                 // Protected MFA operations use authenticated user's IP for rate limiting
                 @Dependency(\.vapor.request) var request
                 guard let request else { throw Abort.requestUnavailable }
-                let key = request.realIP
+                let key = request.peerAddress?.ipAddress ?? "unknown"
 
                 // Use a general MFA rate limiter
                 let rateLimit = await rateLimiter.reauthorize.checkLimit(key)
                 guard rateLimit.isAllowed else {
-                    throw Abort.rateLimit(nextAllowedAttempt: rateLimit.nextAllowedAttempt)
+                    throw rateLimitAbort(nextAllowedAttempt: rateLimit.nextAllowedAttempt)
                 }
                 return .init(limiter: rateLimiter.reauthorize, key: key)
             }
@@ -457,7 +480,7 @@ extension Identity.API {
                 let key = "public:oauth:providers"
                 let rateLimit = await rateLimiter.reauthorize.checkLimit(key)
                 guard rateLimit.isAllowed else {
-                    throw Abort.rateLimit(nextAllowedAttempt: rateLimit.nextAllowedAttempt)
+                    throw rateLimitAbort(nextAllowedAttempt: rateLimit.nextAllowedAttempt)
                 }
                 return .init(limiter: rateLimiter.reauthorize, key: key)
 
@@ -466,7 +489,7 @@ extension Identity.API {
                 let key = "public:oauth:authorize"
                 let rateLimit = await rateLimiter.credentials.checkLimit(key)
                 guard rateLimit.isAllowed else {
-                    throw Abort.rateLimit(nextAllowedAttempt: rateLimit.nextAllowedAttempt)
+                    throw rateLimitAbort(nextAllowedAttempt: rateLimit.nextAllowedAttempt)
                 }
                 return .init(limiter: rateLimiter.credentials, key: key)
 
@@ -475,7 +498,7 @@ extension Identity.API {
                 let key = "public:oauth:callback"
                 let rateLimit = await rateLimiter.credentials.checkLimit(key)
                 guard rateLimit.isAllowed else {
-                    throw Abort.rateLimit(nextAllowedAttempt: rateLimit.nextAllowedAttempt)
+                    throw rateLimitAbort(nextAllowedAttempt: rateLimit.nextAllowedAttempt)
                 }
                 return .init(limiter: rateLimiter.credentials, key: key)
 
@@ -483,10 +506,10 @@ extension Identity.API {
                 // Protected endpoints - require request for per-user rate limiting
                 @Dependency(\.vapor.request) var request
                 guard let request else { throw Abort.requestUnavailable }
-                let key = request.realIP
+                let key = request.peerAddress?.ipAddress ?? "unknown"
                 let rateLimit = await rateLimiter.reauthorize.checkLimit(key)
                 guard rateLimit.isAllowed else {
-                    throw Abort.rateLimit(nextAllowedAttempt: rateLimit.nextAllowedAttempt)
+                    throw rateLimitAbort(nextAllowedAttempt: rateLimit.nextAllowedAttempt)
                 }
                 return .init(limiter: rateLimiter.reauthorize, key: key)
             }

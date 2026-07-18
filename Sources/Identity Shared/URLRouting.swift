@@ -7,32 +7,18 @@
 
 import Foundation
 import RFC_3986
-import ServerFoundationVapor
+import Server_Vapor
 import URLRouting
+import Vapor
 
 extension HTTPHeaders {
     /// Access or set the `Reauthorization: Bearer: ...` header.
     public var reauthorizationToken: BearerAuthorization? {
         get {
-            guard let string = self.first(name: .reauthorization) else {
-                return nil
-            }
-
-            let headerParts = string.split(separator: " ")
-            guard headerParts.count == 2 else {
-                return nil
-            }
-            guard headerParts[0].lowercased() == "bearer" else {
-                return nil
-            }
-            return .init(token: String(headerParts[1]))
+            self.bearerAuthorization
         }
         set {
-            if let bearer = newValue {
-                replaceOrAdd(name: .reauthorization, value: "Bearer \(bearer.token)")
-            } else {
-                remove(name: .reauthorization)
-            }
+            self.bearerAuthorization = newValue
         }
     }
 }
@@ -60,7 +46,7 @@ extension ParserPrinter where Input == URLRequestData {
         return transform { urlRequestData in
             if let token = token {
                 var data = urlRequestData
-                data.headers[HTTPHeaders.Name.reauthorization.description] =
+                data.headers["authorization"] =
                     ["Bearer \(token)"][...].map { Substring($0) }[...]
                 return data
             }

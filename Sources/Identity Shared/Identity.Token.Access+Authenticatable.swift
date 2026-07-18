@@ -6,6 +6,7 @@
 //
 
 import Foundation
-import ServerFoundationVapor
+import Server_Vapor
+import Vapor
 
 extension Identity.Token.Access: Authenticatable {}
