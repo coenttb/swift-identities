@@ -6,11 +6,14 @@
 //
 
 import Dependencies
+import Foundation
 import HTML
 import IdentitiesTypes
 import Identity_Views
 import Language
-import ServerFoundationVapor
+import enum Server.Server
+import Server_HTML
+import Server_Vapor
 
 extension Identity.Frontend {
     /// Creates an HTML document wrapper for identity views.
@@ -18,7 +21,7 @@ extension Identity.Frontend {
     public static func htmlDocument<Content: HTML.View>(
         for view: Identity.View,
         @HTML.Builder content: () async throws -> Content
-    ) async throws -> any AsyncResponseEncodable {
+    ) async throws -> Server.Response {
         @Dependency(\.identityFrontendConfiguration) var configuration
 
         return try await htmlDocument(
@@ -39,8 +42,9 @@ extension Identity.Frontend {
         hreflang: @Sendable @escaping (Identity.View, Translating.Language) -> URL,
         footer_links: [(TranslatedString, URL)],
         @HTML.Builder content: () async throws -> Content
-    ) async throws -> any AsyncResponseEncodable {
-        return try await Identity.View.HTMLDocument(
+    ) async throws -> Server.Response {
+        return try Server.Response.html(
+            await Identity.View.HTMLDocument(
             view: view,
             title: { view in
                 switch view {
@@ -70,9 +74,10 @@ extension Identity.Frontend {
             canonicalHref: canonicalHref,
             hreflang: hreflang,
             footer_links: footer_links
-        ) {
-            try await content()
-        }
+            ) {
+                try await content()
+            }
+        )
     }
 
     /// Creates an HTML document wrapper with custom title and description.
@@ -81,11 +86,12 @@ extension Identity.Frontend {
         title: String,
         description: String,
         @HTML.Builder content: () async throws -> Content
-    ) async throws -> any AsyncResponseEncodable {
+    ) async throws -> Server.Response {
 
         @Dependency(\.identityFrontendConfiguration) var configuration
 
-        return try await Identity.View.HTMLDocument(
+        return try Server.Response.html(
+            await Identity.View.HTMLDocument(
             view: view,
             title: { _ in title },
             description: { _ in description },
@@ -93,8 +99,10 @@ extension Identity.Frontend {
             canonicalHref: configuration.canonicalHref,
             hreflang: configuration.hreflang,
             footer_links: configuration.branding.footer_links
-        ) {
-            try await content()
-        }
+            ) {
+                try await content()
+            }
+        )
     }
 }
+

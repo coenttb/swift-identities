@@ -9,7 +9,7 @@ import Dependencies
 import Foundation
 import IdentitiesTypes
 import Identity_Shared
-import ServerFoundation
+import Server
 
 extension Identity.Token.Client {
 

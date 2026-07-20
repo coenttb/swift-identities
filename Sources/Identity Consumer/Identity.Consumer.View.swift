@@ -6,7 +6,7 @@
 //
 
 import IdentitiesTypes
-import ServerFoundation
+import Server
 
 extension Identity.Consumer {
     /// View routing and navigation states for the identity consumer interface.

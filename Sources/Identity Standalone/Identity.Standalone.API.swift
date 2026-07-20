@@ -7,7 +7,7 @@
 
 import Foundation
 import IdentitiesTypes
-import ServerFoundation
+import Server
 
 extension Identity.Standalone {
     /// Extended API for standalone identity management.

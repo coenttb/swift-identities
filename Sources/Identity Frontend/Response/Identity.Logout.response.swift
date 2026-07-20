@@ -7,8 +7,8 @@
 
 import Dependencies
 import IdentitiesTypes
-import ServerFoundationVapor
-import Vapor
+import enum Server.Server
+import Server_Vapor
 
 // MARK: - Response Handler
 
@@ -17,16 +17,10 @@ extension Identity.Logout {
     public static func response(
         client: Identity.Logout.Client,
         redirect: Identity.Frontend.Configuration.Redirect
-    ) async throws -> any AsyncResponseEncodable {
+    ) async throws -> Server.Response {
         try? await client.current()
 
-        @Dependency(\.request) var request
-        guard let request else { throw Abort.requestUnavailable }
-
-        let response = try await request.redirect(to: redirect.logoutSuccess().absoluteString)
-
-        response.expire(cookies: .identity)
-
-        return response
+        return Server.Response.redirect(to: try await redirect.logoutSuccess().absoluteString)
+            .expiringIdentityCookies()
     }
 }

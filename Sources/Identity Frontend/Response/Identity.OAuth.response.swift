@@ -6,11 +6,14 @@
 //
 
 import Dependencies
+import Foundation
 import HTML
 import IdentitiesTypes
 import Identity_Views
 import Language
-import ServerFoundationVapor
+import enum Server.Server
+import Server_Vapor
+import Vapor
 
 // MARK: - Response Dispatcher
 
@@ -18,7 +21,7 @@ extension Identity.OAuth {
     /// Dispatches OAuth view requests to appropriate handlers.
     public static func response(
         view: Identity.View.OAuth
-    ) async throws -> any AsyncResponseEncodable {
+    ) async throws -> Server.Response {
         @Dependency(\.identityFrontendConfiguration) var configuration
         @Dependency(\.identity.router) var router
 
@@ -50,7 +53,7 @@ extension Identity.OAuth {
     /// Handles OAuth login view showing available providers.
     private static func handleLogin(
 
-        ) async throws -> any AsyncResponseEncodable
+        ) async throws -> Server.Response
     {
         @Dependency(\.identityFrontendConfiguration) var configuration
 
@@ -62,7 +65,7 @@ extension Identity.OAuth {
         let providers = try await oauth.client.providers()
 
         // Generate authorization URLs for each provider
-        @Dependency(\.request) var request
+        @Dependency(\.vapor.request) var request
         guard let request else { throw Abort.requestUnavailable }
 
         let scheme = request.headers.first(name: "X-Forwarded-Proto") ?? "http"
@@ -94,7 +97,7 @@ extension Identity.OAuth {
     private static func handleCallback(
         callbackRequest: Identity.OAuth.CallbackRequest,
 
-    ) async throws -> any AsyncResponseEncodable {
+    ) async throws -> Server.Response {
         // The callback is typically handled by the API endpoint
         // This view can show a processing state or error
         return try await Identity.Frontend.htmlDocument(
@@ -114,7 +117,7 @@ extension Identity.OAuth {
     /// Handles OAuth connections management view.
     private static func handleConnections(
 
-        ) async throws -> any AsyncResponseEncodable
+        ) async throws -> Server.Response
     {
         @Dependency(\.identityFrontendConfiguration) var configuration
 
@@ -157,7 +160,7 @@ extension Identity.OAuth {
     private static func handleError(
         message: String,
 
-    ) async throws -> any AsyncResponseEncodable {
+    ) async throws -> Server.Response {
         return try await Identity.Frontend.htmlDocument(
             for: .oauth(.error(message)),
             title: "OAuth Error",

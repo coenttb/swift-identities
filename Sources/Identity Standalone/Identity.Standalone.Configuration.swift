@@ -6,13 +6,15 @@
 //
 
 import Dependencies
+import Foundation
 import IdentitiesTypes
 import Identity_Backend
 @preconcurrency import Identity_Frontend
 import Identity_Shared
 import Language
-import ServerFoundation
+import Server
 import URLRouting
+import Throttling
 
 extension Identity.Standalone {
     /// Standalone configuration that includes both Frontend and Backend configurations

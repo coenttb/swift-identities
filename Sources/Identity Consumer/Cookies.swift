@@ -9,8 +9,9 @@ import Foundation
 import IdentitiesTypes
 import Identity_Frontend
 import Identity_Shared
-import ServerFoundationVapor
+import Server_Vapor
 import URLRouting
+import HTTP_Cookies
 
 extension Identity.Frontend.Configuration.Cookies {
     /// Configuration for Consumer applications that connect to an Identity Provider.
@@ -34,11 +35,10 @@ extension Identity.Frontend.Configuration.Cookies {
         }()
 
         // For cross-origin scenarios, use less restrictive SameSite policy
-        let sameSitePolicy: HTTPCookies.SameSitePolicy = crossOrigin ? .none : .lax
+        let sameSitePolicy: HTTP_Cookies.HTTPCookies.SameSitePolicy = crossOrigin ? .none : .lax
 
         return Self(
             accessToken: .init(
-                expires: 60 * 15,  // 15 minutes
                 maxAge: 60 * 15,
                 domain: domain,
                 path: "/",
@@ -47,7 +47,6 @@ extension Identity.Frontend.Configuration.Cookies {
                 sameSitePolicy: sameSitePolicy
             ),
             refreshToken: .init(
-                expires: 60 * 60 * 24 * 30,  // 30 days
                 maxAge: 60 * 60 * 24 * 30,
                 domain: domain,
                 path: refreshPath,
@@ -56,7 +55,6 @@ extension Identity.Frontend.Configuration.Cookies {
                 sameSitePolicy: sameSitePolicy
             ),
             reauthorizationToken: .init(
-                expires: 60 * 5,  // 5 minutes
                 maxAge: 60 * 5,
                 domain: domain,
                 path: "/",
@@ -87,7 +85,6 @@ extension Identity.Frontend.Configuration.Cookies {
 
         return Self(
             accessToken: .init(
-                expires: 60 * 15,  // 15 minutes
                 maxAge: 60 * 15,
                 domain: nil,
                 path: "/",
@@ -96,7 +93,6 @@ extension Identity.Frontend.Configuration.Cookies {
                 sameSitePolicy: .none  // Allow cross-origin for development
             ),
             refreshToken: .init(
-                expires: 60 * 60 * 24 * 30,  // 30 days
                 maxAge: 60 * 60 * 24 * 30,
                 domain: nil,
                 path: refreshPath,
@@ -105,7 +101,6 @@ extension Identity.Frontend.Configuration.Cookies {
                 sameSitePolicy: .none
             ),
             reauthorizationToken: .init(
-                expires: 60 * 5,  // 5 minutes
                 maxAge: 60 * 5,
                 domain: nil,
                 path: "/",

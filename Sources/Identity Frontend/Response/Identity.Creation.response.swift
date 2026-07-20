@@ -10,14 +10,15 @@ import HTML
 import IdentitiesTypes
 import Identity_Views
 import Language
-import ServerFoundationVapor
+import enum Server.Server
+import Server_Vapor
 import Vapor
 
 extension Identity.Creation {
     /// Dispatches password view requests to appropriate handlers.
     public static func response(
         view: Identity.Creation.View
-    ) async throws -> any AsyncResponseEncodable {
+    ) async throws -> Server.Response {
 
         switch view {
         case .request:
@@ -41,7 +42,7 @@ extension Identity.Creation {
     // MARK: - Create Handlers
 
     /// Handles the account creation request view.
-    public static func handleCreateRequest() async throws -> any AsyncResponseEncodable {
+    public static func handleCreateRequest() async throws -> Server.Response {
         @Dependency(\.identityFrontendConfiguration) var configuration
         @Dependency(\.identity.router) var router
 

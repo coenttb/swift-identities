@@ -5,10 +5,12 @@
 //  Created by Coen ten Thije Boonkkamp on 06/02/2025.
 //
 
+import Dependencies
 import IdentitiesTypes
 import Identity_Shared
 import JWT
-import ServerFoundationVapor
+import Server_Vapor
+import Vapor
 
 extension Identity.Consumer {
     public struct CredentialsAuthenticator: AsyncBasicAuthenticator {
@@ -20,7 +22,7 @@ extension Identity.Consumer {
             for request: Request
         ) async throws {
             try await withDependencies {
-                $0.request = request
+                $0.vapor.request = request
             } operation: {
                 @Dependency(\.identity) var identity
                 _ = try await identity.authenticate.client.credentials(

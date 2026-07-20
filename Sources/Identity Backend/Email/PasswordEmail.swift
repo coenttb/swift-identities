@@ -5,8 +5,9 @@
 //  Created by Coen ten Thije Boonkkamp on 17/10/2024.
 //
 
+import Foundation
 import IdentitiesTypes
-import ServerFoundation
+import Server
 
 package enum PasswordEmail {
     case reset(PasswordEmail.Reset)

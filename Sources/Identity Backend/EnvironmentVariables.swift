@@ -1,6 +1,6 @@
 import Dependencies
 import Foundation
-import ServerFoundationEnvVars
+import Environment_Dependencies
 
 extension EnvVars {
     /// Encryption key for sensitive data (TOTP secrets, OAuth tokens)

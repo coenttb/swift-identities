@@ -5,8 +5,9 @@
 //  Created by Coen ten Thije Boonkkamp on 10/10/2024.
 //
 
+import Foundation
 import IdentitiesTypes
-import ServerFoundation
+import Server
 
 // MARK: - Email Change Messages Namespace
 

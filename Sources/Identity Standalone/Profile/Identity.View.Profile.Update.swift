@@ -9,7 +9,7 @@ import Foundation
 import HTML
 import IdentitiesTypes
 import Identity_Views
-import ServerFoundationVapor
+import Server_Vapor
 
 extension Identity.View {
     public enum Profile {}

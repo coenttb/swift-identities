@@ -9,12 +9,14 @@ import Dependencies
 import IdentitiesTypes
 import Logger_Dependencies
 import Logging
-import ServerFoundationVapor
+import Server_Vapor
+import Vapor
+import enum Server.Server
 
 extension Identity.Authentication.API {
     package static func response(
         authenticate: Identity.Authentication.API
-    ) async throws -> Response {
+    ) async throws -> Server.Response {
 
         @Dependency(\.identity) var identity
         @Dependency(\.logger) var logger
@@ -29,7 +31,7 @@ extension Identity.Authentication.API {
                 case .access(let access):
                     do {
                         try await tokenClient.access(access)
-                        return Response.success(true)
+                        return try Server.Response.json(success: true)
                     } catch {
                         logger.error(
                             "Access token validation failed",
@@ -46,7 +48,7 @@ extension Identity.Authentication.API {
                     do {
                         let identityAuthenticationResponse = try await tokenClient.refresh(refresh)
 
-                        return Response.success(true)
+                        return try Server.Response.json(success: true)
                             .withTokens(for: identityAuthenticationResponse)
                     } catch {
                         logger.error(
@@ -66,7 +68,7 @@ extension Identity.Authentication.API {
 
                     let identityAuthenticationResponse = try await client.credentials(credentials)
 
-                    return Response.success(true)
+                    return try Server.Response.json(success: true)
                         .withTokens(for: identityAuthenticationResponse)
                 } catch {
                     logger.error(
@@ -84,7 +86,7 @@ extension Identity.Authentication.API {
                 do {
                     let identityAuthenticationResponse = try await client.apiKey(apiKey.token)
 
-                    return Response.success(true)
+                    return try Server.Response.json(success: true)
                         .withTokens(for: identityAuthenticationResponse)
                 } catch {
                     logger.error(
@@ -99,9 +101,8 @@ extension Identity.Authentication.API {
                 }
             }
         } catch {
-            let response = Response.success(false, message: "Authentication failed")
-            response.expire(cookies: .identity)
-            return response
+            return try Server.Response.json(success: false, message: "Authentication failed")
+                .expiringIdentityCookies()
         }
     }
 }

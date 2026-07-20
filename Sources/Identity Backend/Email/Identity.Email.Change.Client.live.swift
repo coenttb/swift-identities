@@ -7,11 +7,12 @@
 
 import Dependencies
 import EmailAddress
+import Foundation
 import IdentitiesTypes
 import Logger_Dependencies
 import Logging
 import Records
-import ServerFoundation
+import Server
 
 extension Identity.Email.Change.Client {
     public static func live(

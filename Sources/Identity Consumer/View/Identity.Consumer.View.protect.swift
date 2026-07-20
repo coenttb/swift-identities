@@ -5,15 +5,17 @@
 //  Created by Coen ten Thije Boonkkamp on 07/02/2025.
 //
 
+import Dependencies
 import IdentitiesTypes
-import ServerFoundationVapor
+import Server_Vapor
+import Vapor
 
 extension Identity.Consumer.View {
     package static func protect<Authenticatable: Vapor.Authenticatable>(
         view: Identity.Consumer.View,
         with type: Authenticatable.Type
     ) async throws {
-        @Dependency(\.request) var request
+        @Dependency(\.vapor.request) var request
         guard let request else { throw Abort.requestUnavailable }
 
         switch view {

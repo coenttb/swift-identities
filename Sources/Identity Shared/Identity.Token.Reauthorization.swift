@@ -1,7 +1,7 @@
 import Dependencies
 import Foundation
 import JWT
-import ServerFoundation
+import Server
 
 extension Identity.Token {
     /// Reauthorization token for sensitive operations requiring fresh authentication

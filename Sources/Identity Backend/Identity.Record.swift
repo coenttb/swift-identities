@@ -3,7 +3,7 @@ import EmailAddress
 import Foundation
 import Records
 private import PostgreSQL_Standard_Macros
-import ServerFoundationEnvVars
+import Environment_Dependencies
 
 extension Identity {
     @Table("identities")

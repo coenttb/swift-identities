@@ -6,6 +6,7 @@
 //
 
 import Dependencies
+import Foundation
 import IdentitiesTypes
 import Identity_Backend
 import Identity_Frontend
@@ -13,8 +14,8 @@ import Identity_Shared
 import JWT
 import Language
 import Records
-import ServerFoundation
-import ServerFoundationVapor
+import Server
+import Server_Vapor
 import URLRouting
 
 // MARK: - Helper Functions

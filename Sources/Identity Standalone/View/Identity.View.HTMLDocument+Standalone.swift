@@ -11,7 +11,7 @@ import IdentitiesTypes
 import Identity_Shared
 import Identity_Views
 import Language
-import ServerFoundation
+import Server
 
 extension Identity.View.HTMLDocument {
     /// Convenience initializer for Standalone that uses configuration parameters.

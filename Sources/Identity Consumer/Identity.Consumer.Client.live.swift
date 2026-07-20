@@ -3,7 +3,7 @@ import EmailAddress
 import IdentitiesTypes
 import Identity_Shared
 import JWT
-import ServerFoundationVapor
+import Server_Vapor
 import Throttling
 
 // NOTE: Identity.Consumer.Client.live is deprecated.
@@ -25,7 +25,7 @@ import Throttling
 //            authenticate: .live { try makeRequest(.authenticate($0)) },
 //            logout: .init(
 //                current: {
-//                    @Dependency(\.request) var request
+//                    @Dependency(\.vapor.request) var request
 //                    guard let request else { throw Abort.requestUnavailable }
 //                    request.auth.logout(Identity.Token.Access.self)
 //                },

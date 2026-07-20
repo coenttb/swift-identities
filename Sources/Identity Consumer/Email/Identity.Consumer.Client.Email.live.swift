@@ -7,11 +7,14 @@
 
 import Dependencies
 import EmailAddress
+import Foundation
+import URLRequestHandler
 import IdentitiesTypes
 import Identity_Shared
 import JWT
-import ServerFoundationVapor
+import Server_Vapor
 import Throttling
+import Vapor
 
 extension Identity.Email.Change.Client {
     public static func live(

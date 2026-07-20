@@ -11,6 +11,6 @@ import IdentitiesTypes
 import Identity_Shared
 import Identity_Views
 import Language
-import ServerFoundation
+import Server
 
 // No convenience initializer needed - Consumer response uses the main initializer directly

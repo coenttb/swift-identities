@@ -7,7 +7,7 @@
 
 import Foundation
 import IdentitiesTypes
-import ServerFoundation
+import Server
 
 extension Identity.API {
     /// Profile management endpoints for standalone identity deployments.

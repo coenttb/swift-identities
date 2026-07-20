@@ -8,7 +8,8 @@
 import IdentitiesTypes
 import Identity_Shared
 import JWT
-import ServerFoundationVapor
+import Server_Vapor
+import Vapor
 @preconcurrency import Vapor
 
 extension Identity.Consumer {

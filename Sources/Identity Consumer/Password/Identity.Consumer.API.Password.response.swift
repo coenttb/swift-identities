@@ -5,13 +5,16 @@
 //  Created by Coen ten Thije Boonkkamp on 16/10/2024.
 //
 
+import Dependencies
 import IdentitiesTypes
-import ServerFoundationVapor
+import Server_Vapor
+import Vapor
+import enum Server.Server
 
 extension Identity.Password.API {
     public static func response(
         password: Identity.Password.API
-    ) async throws -> Response {
+    ) async throws -> Server.Response {
 
         @Dependency(\.identity) var identity
 
@@ -21,7 +24,7 @@ extension Identity.Password.API {
             case .request(let request):
                 do {
                     try await identity.password.reset.client.request(request)
-                    return Response.success(true)
+                    return try Server.Response.json(success: true)
                 } catch {
                     throw Abort(.internalServerError, reason: "Failed to request password reset")
                 }
@@ -29,7 +32,7 @@ extension Identity.Password.API {
             case .confirm(let confirm):
                 do {
                     try await identity.password.reset.client.confirm(confirm)
-                    return Response.success(true)
+                    return try Server.Response.json(success: true)
                 } catch {
                     throw Abort(.internalServerError, reason: "Failed to confirm password reset")
                 }
@@ -39,7 +42,7 @@ extension Identity.Password.API {
             case .request(let request):
                 do {
                     try await identity.password.change.client.request(request)
-                    return Response.success(true)
+                    return try Server.Response.json(success: true)
                 } catch {
                     throw Abort(.internalServerError, reason: "Failed to request password change")
                 }

@@ -6,7 +6,7 @@
 //
 
 import IdentitiesTypes
-import ServerFoundationVapor
+import Server_Vapor
 
 extension Identity.Standalone {
     /// Middleware configuration for standalone identity management.

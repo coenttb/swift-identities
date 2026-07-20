@@ -5,14 +5,20 @@
 //  Created by Coen ten Thije Boonkkamp on 29/01/2025.
 //
 
+import Dependencies
+import Foundation
+import HTTP_Cookies
+import HTTP_Standard
 import IdentitiesTypes
-import ServerFoundationVapor
+import enum Server.Server
+import Server_Vapor
+import Vapor
 
 extension Identity.Frontend {
     package static func response(
         api: Identity.API,
         configuration: Identity.Frontend.Configuration
-    ) async throws -> any AsyncResponseEncodable {
+    ) async throws -> Server.Response {
         return try await Self.response(
             api: api,
             identity: configuration.identity,
@@ -30,7 +36,7 @@ extension Identity.Frontend {
         identity: Identity,
         cookies: Identity.Frontend.Configuration.Cookies,
         redirect: Identity.Frontend.Configuration.Redirect
-    ) async throws -> any AsyncResponseEncodable {
+    ) async throws -> Server.Response {
         switch api {
         case .authenticate(let authenticate):
             return try await handleAuthenticate(
@@ -62,13 +68,13 @@ extension Identity.Frontend {
             )
         case .logout(.current):
             try await identity.logout.client.current()
-            return Response.success(true)
+            return try Server.Response.json(success: true)
         case .logout(.all):
             try await identity.logout.client.all()
-            return Response.success(true)
+            return try Server.Response.json(success: true)
         case .mfa:
             // MFA not yet implemented in Frontend
-            throw Abort(.notImplemented, reason: "MFA not yet implemented in Frontend")
+            throw Server.Error.notImplemented("MFA not yet implemented in Frontend")
         case .oauth(let oauth):
             return try await handleOAuth(
                 oauth,
@@ -81,7 +87,7 @@ extension Identity.Frontend {
         _ authenticate: Identity.Authentication.API,
         authentication: Identity.Authentication,
         loginSuccessRedirect: (Identity.ID) async throws -> URL
-    ) async throws -> any AsyncResponseEncodable {
+    ) async throws -> Server.Response {
         switch authenticate {
         case .credentials(let credentials):
             do {
@@ -96,7 +102,7 @@ extension Identity.Frontend {
 
                 let redirectUrl = try await loginSuccessRedirect(identityId)
 
-                return Response.json(
+                return try Server.Response.json(
                     success: true,
                     data: [
                         "redirectUrl": redirectUrl.absoluteString
@@ -105,54 +111,62 @@ extension Identity.Frontend {
                 .withTokens(for: response)
             } catch let mfaRequired as Identity.Authentication.MFARequired {
                 // Return MFA challenge response
-                let responseData: [String: Any] = [
-                    "mfaRequired": true,
-                    "sessionToken": mfaRequired.sessionToken,
-                    "availableMethods": mfaRequired.availableMethods.map { $0.rawValue },
-                    "attemptsRemaining": mfaRequired.attemptsRemaining,
-                    "expiresAt": mfaRequired.expiresAt.timeIntervalSince1970,
-                ]
+                struct MFAChallenge: Encodable {
+                    let mfaRequired: Bool
+                    let sessionToken: String
+                    let availableMethods: [String]
+                    let attemptsRemaining: Int
+                    let expiresAt: Double
+                }
 
-                return try Response.json(success: true, data: responseData)
-
+                return try Server.Response.json(
+                    success: true,
+                    data: MFAChallenge(
+                        mfaRequired: true,
+                        sessionToken: mfaRequired.sessionToken,
+                        availableMethods: mfaRequired.availableMethods.map { $0.rawValue },
+                        attemptsRemaining: mfaRequired.attemptsRemaining,
+                        expiresAt: mfaRequired.expiresAt.timeIntervalSince1970
+                    )
+                )
             }
 
         case .token(let token):
             switch token {
             case .access(let jwt):
                 try await authentication.token.access(jwt)
-                return Response.success(true)
+                return try Server.Response.json(success: true)
             case .refresh(let jwt):
                 let response = try await authentication.token.refresh(jwt)
-                return Response.success(true)
+                return try Server.Response.json(success: true)
                     .withTokens(for: response)
 
             }
 
         case .apiKey:
             // API key authentication not yet implemented in Frontend
-            throw Abort(.notImplemented, reason: "API key authentication not yet implemented")
+            throw Server.Error.notImplemented("API key authentication not yet implemented")
         }
     }
 
     private static func handleCreate(
         _ create: Identity.Creation.API,
         client: Identity.Creation.Client
-    ) async throws -> any AsyncResponseEncodable {
+    ) async throws -> Server.Response {
         switch create {
         case .request(let request):
             try await client.request(
                 email: request.email,
                 password: request.password
             )
-            return Response.success(true)
+            return try Server.Response.json(success: true)
 
         case .verify(let verify):
             try await client.verify(
                 email: verify.email,
                 token: verify.token
             )
-            return Response.success(true)
+            return try Server.Response.json(success: true)
         }
     }
 
@@ -160,39 +174,33 @@ extension Identity.Frontend {
         _ delete: Identity.Deletion.API,
         client: Identity.Deletion.Client,
         router: any ParserPrinter<URLRequestData, Identity.Route>
-    ) async throws -> any AsyncResponseEncodable {
+    ) async throws -> Server.Response {
 
         switch delete {
         case .request(let request):
             try await client.request(request.reauthToken)
-            return Response.success(true)
+            return try Server.Response.json(success: true)
 
         case .cancel:
             try await client.cancel()
             // Redirect to delete view with cancelled query parameter
             var deleteURL = router.url(for: .delete(.view(.request)))
             deleteURL.append(queryItems: [.init(name: "status", value: "cancelled")])
-            return Response(
-                status: .seeOther,
-                headers: ["Location": deleteURL.absoluteString]
-            )
+            return Server.Response.redirect(to: deleteURL.absoluteString)
 
         case .confirm:
             try await client.confirm()
             // Redirect to delete view with confirmed query parameter
             var deleteURL = router.url(for: .delete(.view(.request)))
             deleteURL.append(queryItems: [.init(name: "status", value: "confirmed")])
-            return Response(
-                status: .seeOther,
-                headers: ["Location": deleteURL.absoluteString]
-            )
+            return Server.Response.redirect(to: deleteURL.absoluteString)
         }
     }
 
     private static func handleEmail(
         _ email: Identity.Email.API,
         client: Identity.Email.Change.Client
-    ) async throws -> any AsyncResponseEncodable {
+    ) async throws -> Server.Response {
         switch email {
         case .change(let change):
             switch change {
@@ -200,19 +208,19 @@ extension Identity.Frontend {
                 let result = try await client.request(request.newEmail)
                 switch result {
                 case .success:
-                    return Response.success(true)
+                    return try Server.Response.json(success: true)
                 case .requiresReauthentication:
-                    return Response(
+                    return Server.Response(
                         status: .unauthorized,
-                        headers: ["X-Requires-Reauth": "true"],
-                        body: .init(string: "Reauthorization required")
+                        headers: HTTP.Headers([try! .init(name: "X-Requires-Reauth", value: "true")]),
+                        body: Array("Reauthorization required".utf8)
                     )
                 }
 
             case .confirm(let confirm):
                 let authResponse = try await client.confirm(confirm.token)
                 // Return success with new tokens (email has changed, so tokens need updating)
-                return Response.success(true)
+                return try Server.Response.json(success: true)
                     .withTokens(for: authResponse)
             }
         }
@@ -221,20 +229,20 @@ extension Identity.Frontend {
     private static func handlePassword(
         _ password: Identity.Password.API,
         client: (change: Identity.Password.Change.Client, reset: Identity.Password.Reset.Client)
-    ) async throws -> any AsyncResponseEncodable {
+    ) async throws -> Server.Response {
         switch password {
         case .reset(let reset):
             switch reset {
             case .request(let request):
                 try await client.reset.request(request.email)
-                return Response.success(true)
+                return try Server.Response.json(success: true)
 
             case .confirm(let confirm):
                 try await client.reset.confirm(
                     newPassword: confirm.newPassword,
                     token: confirm.token
                 )
-                return Response.success(true)
+                return try Server.Response.json(success: true)
             }
 
         case .change(let change):
@@ -244,7 +252,7 @@ extension Identity.Frontend {
                     currentPassword: request.currentPassword,
                     newPassword: request.newPassword
                 )
-                return Response.success(true)
+                return try Server.Response.json(success: true)
             }
         }
     }
@@ -254,39 +262,31 @@ extension Identity.Frontend {
         client: Identity.Reauthorization.Client,
         router: any ParserPrinter<URLRequestData, Identity.Route>,
         cookies: Identity.Frontend.Configuration.Cookies
-    ) async throws -> any AsyncResponseEncodable {
-        @Dependency(\.request) var request
+    ) async throws -> Server.Response {
+        @Dependency(\.vapor.request) var request
 
         let jwt = try await client.reauthorize(reauthorize.password)
-
-        // Set reauthorization cookie
-        let cookieValue = HTTPCookies.Value(
-            string: try jwt.compactSerialization(),
-            expires: Date(timeIntervalSinceNow: TimeInterval(cookies.reauthorizationToken.expires)),
-            maxAge: Int(cookies.reauthorizationToken.expires),
-            domain: cookies.reauthorizationToken.domain,
-            path: cookies.reauthorizationToken.path,
-            isSecure: cookies.reauthorizationToken.isSecure,
-            isHTTPOnly: cookies.reauthorizationToken.isHTTPOnly,
-            sameSite: cookies.reauthorizationToken.sameSitePolicy
-        )
+        let token = try jwt.compactSerialization()
 
         // Check if this is an AJAX request
         if request?.headers["Accept"].first?.contains("application/json") == true {
             // Return JSON response for AJAX requests with the token
-            let response = Response.success(true, data: ["token": try jwt.compactSerialization()])
-            response.cookies["reauthorization_token"] = cookieValue
-            return response
+            return try Server.Response.json(success: true, data: ["token": token])
+                .setting(
+                    cookie: Identity.Cookies.Names.reauthorizationToken,
+                    token: token,
+                    configuration: cookies.reauthorizationToken
+                )
         } else {
             // For regular form submissions, redirect to the email change page
-            let response = Response(
-                status: .seeOther,
-                headers: [
-                    "Location": router.url(for: .email(.view(.change(.request)))).absoluteString
-                ]
+            return Server.Response.redirect(
+                to: router.url(for: .email(.view(.change(.request)))).absoluteString
             )
-            response.cookies["reauthorization_token"] = cookieValue
-            return response
+            .setting(
+                cookie: Identity.Cookies.Names.reauthorizationToken,
+                token: token,
+                configuration: cookies.reauthorizationToken
+            )
         }
 
     }
@@ -294,9 +294,9 @@ extension Identity.Frontend {
     private static func handleOAuth(
         _ oauth: Identity.OAuth.API,
         client: Identity.OAuth.Client?
-    ) async throws -> any AsyncResponseEncodable {
+    ) async throws -> Server.Response {
         guard let client else {
-            throw Abort(.notImplemented, reason: "OAuth not configured")
+            throw Server.Error.notImplemented("OAuth not configured")
         }
 
         switch oauth {
@@ -306,12 +306,14 @@ extension Identity.Frontend {
             let providerData = providers.map { provider in
                 ["id": provider.identifier, "name": provider.displayName]
             }
-            return Response.json(success: true, data: providerData)
+            return try Server.Response.json(success: true, data: providerData)
 
         case .authorize(let providerName):
             // Generate authorization URL and redirect
-            @Dependency(\.request) var request
-            guard let request else { throw Abort.requestUnavailable }
+            @Dependency(\.vapor.request) var request
+            guard let request else {
+                throw Server.Error.internalError("Request is unavailable")
+            }
 
             // Build redirect URI from current request
             let scheme = request.headers.first(name: "X-Forwarded-Proto") ?? "http"
@@ -322,59 +324,32 @@ extension Identity.Frontend {
                 providerName,
                 redirectURI
             )
-            return Response(status: .seeOther, headers: ["Location": authURL.absoluteString])
+            return Server.Response.redirect(to: authURL.absoluteString)
 
         case .callback(let credentials):
             // Handle OAuth callback
             let authResponse = try await client.callback(credentials)
 
             @Dependency(\.identityFrontendConfiguration) var config
-            let cookies = config.cookies
-
-            // Set authentication cookies
-            let accessCookieValue = HTTPCookies.Value(
-                string: authResponse.accessToken,
-                expires: Date(timeIntervalSinceNow: TimeInterval(cookies.accessToken.expires)),
-                maxAge: Int(cookies.accessToken.expires),
-                domain: cookies.accessToken.domain,
-                path: cookies.accessToken.path,
-                isSecure: cookies.accessToken.isSecure,
-                isHTTPOnly: cookies.accessToken.isHTTPOnly,
-                sameSite: cookies.accessToken.sameSitePolicy
-            )
-
-            let refreshCookieValue = HTTPCookies.Value(
-                string: authResponse.refreshToken,
-                expires: Date(timeIntervalSinceNow: TimeInterval(cookies.refreshToken.expires)),
-                maxAge: Int(cookies.refreshToken.expires),
-                domain: cookies.refreshToken.domain,
-                path: cookies.refreshToken.path,
-                isSecure: cookies.refreshToken.isSecure,
-                isHTTPOnly: cookies.refreshToken.isHTTPOnly,
-                sameSite: cookies.refreshToken.sameSitePolicy
-            )
 
             let jwt = try JWT.parse(from: authResponse.accessToken)
             let accessToken = try Identity.Token.Access(jwt: jwt)
             let identityId = accessToken.identityId
 
-            let response = try await Response(
-                status: .seeOther,
-                headers: ["Location": "\(config.redirect.loginSuccess(identityId))"]  // Or redirect to intended destination
+            return Server.Response.redirect(
+                to: "\(try await config.redirect.loginSuccess(identityId))"
             )
-            response.cookies[Identity.Cookies.Names.accessToken] = accessCookieValue
-            response.cookies[Identity.Cookies.Names.refreshToken] = refreshCookieValue
-            return response
+            .withTokens(for: authResponse)
 
         case .connections:
             // Get OAuth connections for current user
             let connections = try await client.getAllConnections()
-            return Response.json(success: true, data: connections)
+            return try Server.Response.json(success: true, data: connections)
 
         case .disconnect(let providerName):
             // Disconnect OAuth provider
             try await client.disconnect(providerName)
-            return Response.success(true)
+            return try Server.Response.json(success: true)
         }
     }
 }

@@ -8,15 +8,16 @@
 import Dependencies
 import IdentitiesTypes
 import Identity_Frontend
-import ServerFoundationVapor
+import Server_Vapor
 import Vapor
+import enum Server.Server
 
 extension Identity.View {
     /// Handles view requests for Consumer deployments.
     /// Delegates to domain-specific response handlers.
     public static func consumerResponse(
         view: Identity.View
-    ) async throws -> any AsyncResponseEncodable {
+    ) async throws -> Server.Response {
 
         @Dependency(\.identityConsumerConfiguration) var config
         @Dependency(\.identity) var identity

@@ -7,6 +7,7 @@
 
 import Dependencies
 import EmailAddress
+import Foundation
 import IdentitiesTypes
 import JWT
 import Logger_Dependencies

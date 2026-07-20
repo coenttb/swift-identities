@@ -10,8 +10,9 @@ import IdentitiesTypes
 import Identity_Frontend
 import Identity_Shared
 import JWT
-import ServerFoundationVapor
+import Server_Vapor
 import Vapor
+import Throttling
 
 extension Identity.API {
     public static func response(

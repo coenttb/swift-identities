@@ -8,8 +8,8 @@
 import Dependencies
 import Foundation
 import IdentitiesTypes
-import ServerFoundationVapor
-import Vapor
+import HTTP_Cookies
+import Server_Vapor
 
 extension Identity.Frontend.Configuration {
     public struct Cookies: Sendable, Hashable {
@@ -72,8 +72,7 @@ extension Identity.Frontend.Configuration {
 //                sameSitePolicy: .none
 //            ),
 //            reauthorizationToken: .init(
-//                expires: 60 * 5,
-//                maxAge: 60 * 5,
+////                maxAge: 60 * 5,
 //                domain: nil,
 //                path: router.url(for: .reauthorize(.init(password: dummy))).absoluteString,
 //                isSecure: false,
@@ -110,7 +109,6 @@ extension Identity.Frontend.Configuration.Cookies {
 
         return .init(
             accessToken: .init(
-                expires: 60 * 15,  // 15 minutes
                 maxAge: 60 * 15,
                 domain: domain,
                 isSecure: true,
@@ -118,7 +116,6 @@ extension Identity.Frontend.Configuration.Cookies {
                 sameSitePolicy: .strict
             ),
             refreshToken: .init(
-                expires: 60 * 60 * 24 * 30,  // 30 days
                 maxAge: 60 * 60 * 24 * 30,
                 domain: domain,
                 path: path,
@@ -127,7 +124,6 @@ extension Identity.Frontend.Configuration.Cookies {
                 sameSitePolicy: .lax
             ),
             reauthorizationToken: .init(
-                expires: 60 * 5,
                 maxAge: 60 * 5,
                 domain: domain,
                 isSecure: true,

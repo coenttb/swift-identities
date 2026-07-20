@@ -7,11 +7,13 @@
 
 import Dependencies
 import EmailAddress
+import Foundation
 import IdentitiesTypes
 import Logger_Dependencies
 import Logging
+import PasswordValidation
 import Records
-import ServerFoundation
+import Server
 
 extension Identity.Password.Change.Client {
     public static func live(

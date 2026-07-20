@@ -12,7 +12,7 @@ import HTML
 import IdentitiesTypes
 import Identity_Views
 import Language
-import ServerFoundationVapor
+import Server_Vapor
 import Vapor
 
 // This file is now mostly empty as feature-specific handlers have been moved

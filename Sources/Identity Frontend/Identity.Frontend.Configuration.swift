@@ -11,9 +11,11 @@ import HTML
 @preconcurrency import IdentitiesTypes
 import Identity_Shared
 import Language
-import ServerFoundation
-import ServerFoundationVapor
+import Server
+import Server_Vapor
+import Throttling
 import URLRouting
+import Vapor
 
 extension Identity.Frontend {
     /// Configuration required for Frontend operations.
@@ -56,7 +58,7 @@ extension Identity.Frontend {
             self.rateLimiters = rateLimiters
             self.currentUserName =
                 currentUserName ?? {
-                    @Dependency(\.request) var request
+                    @Dependency(\.vapor.request) var request
                     guard
                         let request,
                         let accessToken = request.auth.get(Identity.Token.Access.self)
@@ -163,7 +165,6 @@ extension Identity.Frontend.Configuration: Dependency.Key.Test {
             ),
             cookies: .init(
                 accessToken: .init(
-                    expires: 60,  // 1 minute for fast testing
                     maxAge: 60,
                     domain: nil,
                     path: "/",
@@ -172,7 +173,6 @@ extension Identity.Frontend.Configuration: Dependency.Key.Test {
                     sameSitePolicy: .none
                 ),
                 refreshToken: .init(
-                    expires: 300,  // 5 minutes
                     maxAge: 300,
                     domain: nil,
                     path: "/",
@@ -181,7 +181,6 @@ extension Identity.Frontend.Configuration: Dependency.Key.Test {
                     sameSitePolicy: .none
                 ),
                 reauthorizationToken: .init(
-                    expires: 30,  // 30 seconds
                     maxAge: 30,
                     domain: nil,
                     path: "/",

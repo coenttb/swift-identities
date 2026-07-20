@@ -11,7 +11,7 @@ import Identity_Backend
 import Identity_Frontend
 import JWT
 import Records
-import ServerFoundationVapor
+import Server_Vapor
 
 extension Identity.Standalone {
     /// Token authenticator middleware for JWT-based authentication in standalone deployments.

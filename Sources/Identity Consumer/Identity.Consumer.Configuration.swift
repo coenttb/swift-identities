@@ -12,10 +12,13 @@ import IdentitiesTypes
 import Identity_Frontend
 import Identity_Shared
 import Identity_Views
-import ServerFoundation
-import ServerFoundationVapor
+import Server
+import Server_Vapor
 import URLRouting
 import Vapor
+import HTTP_Cookies
+import URI
+import Throttling
 
 extension Identity.Consumer {
     public struct Configuration: Sendable {
@@ -43,9 +46,9 @@ extension Identity.Consumer.Configuration.Consumer: Dependency.Key.Test {
     public static let testValue: Self = .live(
         baseURL: URL(string: "/")!,
         cookies: Identity.Frontend.Configuration.Cookies(
-            accessToken: HTTPCookies.Configuration.testValue,
-            refreshToken: HTTPCookies.Configuration.testValue,
-            reauthorizationToken: HTTPCookies.Configuration.testValue
+            accessToken: .init(maxAge: 60 * 60 * 24),
+            refreshToken: .init(maxAge: 60 * 60 * 24),
+            reauthorizationToken: .init(maxAge: 60 * 60 * 24)
         ),
         router: Identity.Route.Router().eraseToAnyParserPrinter(),
         currentUserName: { String?.none },

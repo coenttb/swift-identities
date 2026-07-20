@@ -7,12 +7,14 @@
 
 import Dependencies
 import EmailAddress
+import Foundation
 import IdentitiesTypes
 import Logger_Dependencies
 import Logging
+import PasswordValidation
 import Records
 private import PostgreSQL_Standard_Macros
-import ServerFoundation
+import Server
 
 @Selection
 struct EmailVerificationData: Sendable {

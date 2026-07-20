@@ -5,13 +5,16 @@
 //  Created by Coen ten Thije Boonkkamp on 16/10/2024.
 //
 
+import Dependencies
 import IdentitiesTypes
-import ServerFoundationVapor
+import Server_Vapor
+import Vapor
+import enum Server.Server
 
 extension Identity.Deletion.API {
     public static func response(
         delete: Identity.Deletion.API
-    ) async throws -> Response {
+    ) async throws -> Server.Response {
 
         @Dependency(\.identity) var identity
         let client = identity.delete.client
@@ -20,7 +23,7 @@ extension Identity.Deletion.API {
         case .request(let request):
             do {
                 try await client.request(request)
-                return Response.success(true)
+                return try Server.Response.json(success: true)
             } catch {
                 throw Abort(.internalServerError, reason: "Failed to delete account")
             }
@@ -28,7 +31,7 @@ extension Identity.Deletion.API {
         case .cancel:
             do {
                 try await client.cancel()
-                return Response.success(true)
+                return try Server.Response.json(success: true)
             } catch {
                 throw Abort(.internalServerError, reason: "Failed to cancel account deletion")
             }
@@ -36,7 +39,7 @@ extension Identity.Deletion.API {
         case .confirm:
             do {
                 try await client.confirm()
-                return Response.success(true)
+                return try Server.Response.json(success: true)
             } catch {
                 throw Abort(.internalServerError, reason: "Failed to confirm account deletion")
             }

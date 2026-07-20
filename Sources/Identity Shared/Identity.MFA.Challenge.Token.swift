@@ -1,7 +1,7 @@
 import Dependencies
 import Foundation
 import JWT
-import ServerFoundation
+import Server
 
 extension Identity.MFA.Challenge {
     /// MFA session token for multi-factor authentication flow

@@ -6,7 +6,8 @@
 //
 
 import IdentitiesTypes
-import ServerFoundationVapor
+import Server_Vapor
+import Vapor
 
 extension Identity.Route {
     /// Handles routing for standalone identity management using feature-based routing.

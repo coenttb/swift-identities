@@ -5,16 +5,19 @@
 //  Created by Coen ten Thije Boonkkamp on 13/02/2025.
 //
 
+import Dependencies
+import Foundation
 import IdentitiesTypes
 import Identity_Shared
-import ServerFoundationVapor
+import Server_Vapor
+import Vapor
 
 extension Identity.Consumer.API.Router {
     package static func configureAuthentication(
         baseRouter: some URLRouting.Router<Identity.Consumer.API>,
         route: Identity.Consumer.API
     ) throws -> any ParserPrinter<URLRequestData, Identity.Consumer.API> {
-        @Dependency(\.request) var request
+        @Dependency(\.vapor.request) var request
         guard let request else { throw Abort.requestUnavailable }
 
         @Dependency(\.identityConsumerConfiguration) var configuration

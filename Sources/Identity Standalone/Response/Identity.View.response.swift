@@ -6,12 +6,14 @@
 //
 
 import Dependencies
+import Foundation
 import HTML
 import IdentitiesTypes
 import Identity_Backend
 import Identity_Frontend
 import Identity_Views
-import ServerFoundationVapor
+import Server_Vapor
+import Vapor
 
 extension Identity.View {
     /// Handles view rendering for standalone identity management.
@@ -202,7 +204,7 @@ extension Identity.View {
                         .marginBottom(.rem(2))
 
                         div {
-                            a(href: .url(configuration.navigation.home)) {
+                            a(href: .init(configuration.navigation.home.absoluteString)) {
                                 "Continue to Dashboard"
                             }
                             .class("btn btn-primary")
@@ -297,7 +299,7 @@ extension Identity.View {
                         .marginBottom(.rem(2))
 
                         div {
-                            a(href: .url(router.url(for: .view(.mfa(.totp(.setup)))))) {
+                            a(href: .init(router.url(for: .view(.mfa(.totp(.setup)))).relativePath)) {
                                 "Enable Two-Factor Authentication"
                             }
                             .class("btn btn-success")

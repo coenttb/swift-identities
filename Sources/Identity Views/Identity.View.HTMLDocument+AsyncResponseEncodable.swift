@@ -7,7 +7,8 @@
 
 import HTML
 import IdentitiesTypes
-import ServerFoundationVapor
+import Server_Vapor
+import Vapor
 
 extension Identity.View.HTMLDocument: AsyncResponseEncodable {
     public func encodeResponse(

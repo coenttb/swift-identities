@@ -2,7 +2,7 @@ import Crypto
 import Dependencies
 import Foundation
 import JWT
-import ServerFoundation
+import Server
 
 extension Identity.Token {
     /// Client for managing JWT tokens with support for both old and new formats

@@ -5,15 +5,18 @@
 //  Created by Coen ten Thije Boonkkamp on 16/10/2024.
 //
 
+import Dependencies
 import IdentitiesTypes
 import Identity_Frontend
 import Identity_Shared
-import ServerFoundationVapor
+import Server_Vapor
+import Vapor
+import enum Server.Server
 
 extension Identity.API {
     public static func response(
         api: Identity.API
-    ) async throws -> Response {
+    ) async throws -> Server.Response {
 
         @Dependency(\.identity) var identity
         @Dependency(\.identityConsumerConfiguration) var config
@@ -43,8 +46,8 @@ extension Identity.API {
             if case .logout = api {
                 try await identity.logout.client.current()
 
-                let response = Response.success(true)
-                response.expire(cookies: .identity)
+                let response = try Server.Response.json(success: true)
+                    .expiringIdentityCookies()
 
                 await rateLimitClient.recordSuccess()
                 return response
@@ -56,10 +59,12 @@ extension Identity.API {
                     password: reauthorize.password
                 )
 
-                let response = Response.success(true)
-                response.cookies.reauthorizationToken = try .init(
-                    string: data.compactSerialization()
-                )
+                let response = try Server.Response.json(success: true)
+                    .setting(
+                        cookie: Identity.Cookies.Names.reauthorizationToken,
+                        token: try data.compactSerialization(),
+                        configuration: configuration.cookies.reauthorizationToken
+                    )
 
                 await rateLimitClient.recordSuccess()
                 return response
@@ -84,13 +89,7 @@ extension Identity.API {
 
             await rateLimitClient.recordSuccess()
 
-            // Convert AsyncResponseEncodable to Response if needed
-            if let response = response as? Response {
-                return response
-            } else {
-                // This shouldn't happen since Frontend returns Response
-                return Response.success(true)
-            }
+            return response
         } catch {
             await rateLimitClient.recordFailure()
             throw error

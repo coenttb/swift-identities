@@ -9,7 +9,8 @@ import Dependencies
 import IdentitiesTypes
 import Identity_Shared
 import JWT
-import ServerFoundationVapor
+import Server_Vapor
+import Vapor
 
 extension Identity.Consumer {
     /// Token authenticator middleware for JWT-based authentication in Consumer deployments.
@@ -23,7 +24,7 @@ extension Identity.Consumer {
             -> Vapor.Response
         {
             return try await withDependencies {
-                $0.request = request
+                $0.vapor.request = request
             } operation: {
                 @Dependency(\.tokenClient) var tokenClient
 

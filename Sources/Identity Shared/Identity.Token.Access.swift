@@ -2,7 +2,7 @@ import Dependencies
 import EmailAddress
 import Foundation
 import JWT
-import ServerFoundation
+import Server
 
 extension Identity.Token {
     /// Access token for short-lived authentication

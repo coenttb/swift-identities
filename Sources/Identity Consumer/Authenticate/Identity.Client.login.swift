@@ -9,10 +9,12 @@
 // Token-based authentication logic has been moved to Identity.Authentication.Token.Client.
 
 /*
+import Foundation
 import Identity_Shared
-import ServerFoundationVapor
+import Server_Vapor
 import Dependencies
 import IdentitiesTypes
+import Vapor
 
 extension Identity.Client {
     /// Authenticates a user using available tokens or refreshes them if needed.
@@ -35,7 +37,7 @@ extension Identity.Client {
         expirationBuffer: TimeInterval = 300
     ) async throws -> Identity.Authentication.Response {
 
-        @Dependency(\.request) var request
+        @Dependency(\.vapor.request) var request
         guard let request else { throw Abort.requestUnavailable }
 
         @Dependency(\.date) var date

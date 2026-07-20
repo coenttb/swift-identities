@@ -10,7 +10,7 @@ import Foundation
 import IdentitiesTypes
 import Identity_Backend
 import Records
-import ServerFoundationVapor
+import Server_Vapor
 import Vapor
 
 extension Identity.API.Profile {

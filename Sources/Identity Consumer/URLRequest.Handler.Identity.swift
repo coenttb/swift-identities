@@ -6,7 +6,8 @@
 //
 
 import Foundation
-import ServerFoundation
+import Server
+import URLRequestHandler
 
 extension URLRequest.Handler {
     package enum Identity {}

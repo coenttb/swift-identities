@@ -30,22 +30,23 @@ extension Target.Dependency {
         .product(name: "Logger Dependencies", package: "swift-logger-dependencies")
     }
     static var logging: Self { .product(name: "Logging", package: "swift-log") }
-    static var uri: Self { .product(name: "URI", package: "swift-uri") }
-    static var throttling: Self { .product(name: "Throttling", package: "swift-throttling") }
+    static var passwordValidation: Self { .product(name: "PasswordValidation", package: "swift-password") }
     static var server: Self { .product(name: "Server", package: "swift-server") }
-    static var httpCookies: Self { .product(name: "HTTP Cookies", package: "swift-http-cookies") }
+    static var serverHTML: Self { .product(name: "Server HTML", package: "swift-server") }
+    static var environment: Self { .product(name: "Environment Dependencies", package: "swift-environment-dependencies") }
+    static var serverVapor: Self { .product(name: "Server Vapor", package: "swift-server-vapor") }
     static var vapor: Self { .product(name: "Vapor", package: "vapor") }
-    static var serverFoundation: Self { .product(name: "ServerFoundation", package: "swift-server-foundation") }
-    static var serverFoundationVapor: Self {
-        .product(
-            name: "Server Vapor",
-            package: "swift-server-vapor",
-            condition: .when(traits: ["Vapor"])
-        )
-    }
+    static var httpCookies: Self { .product(name: "HTTP Cookies", package: "swift-http-cookies") }
+    static var httpRedirect: Self { .product(name: "HTTP Redirect", package: "swift-http-redirect") }
+    static var httpHost: Self { .product(name: "HTTP Host", package: "swift-http-host") }
+    static var httpSession: Self { .product(name: "HTTP Session", package: "swift-http-session") }
+    static var throttling: Self { .product(name: "Throttling", package: "swift-throttling") }
+    static var uri: Self { .product(name: "URI", package: "swift-uri") }
+    static var urlRequestHandler: Self { .product(name: "URLRequestHandler", package: "swift-urlrequest-handler") }
     static var totp: Self { .product(name: "TOTP", package: "swift-time-based-one-time-password") }
     static var dependenciesTestSupport: Self { .product(name: "Dependencies Test Support", package: "swift-dependencies") }
 
+    static var dateExtensions: Self { .product(name: "DateExtensions", package: "swift-foundation-extensions") }
     static var records: Self { .product(name: "Records", package: "swift-records") }
     // Identity Backend's MFA configuration files use `Tagged` directly (re-pointed off the
     // dissolving TypesFoundation umbrella, decomposition W2 2026-07-13):
@@ -120,13 +121,18 @@ let package = Package(
         ),
     ],
     dependencies: [
-        .package(url: "https://github.com/swift-foundations/swift-server-foundation.git", branch: "main"),
-        .package(url: "https://github.com/swift-foundations/swift-server-vapor.git", branch: "main"),
         .package(url: "https://github.com/swift-foundations/swift-server.git", branch: "main"),
-        .package(url: "https://github.com/swift-foundations/swift-http-cookies.git", branch: "main"),
-        .package(url: "https://github.com/swift-foundations/swift-uri.git", branch: "main"),
-        .package(url: "https://github.com/swift-foundations/swift-throttling.git", branch: "main"),
+        .package(url: "https://github.com/swift-foundations/swift-environment-dependencies.git", branch: "main"),
+        .package(url: "https://github.com/swift-foundations/swift-server-vapor.git", branch: "main"),
+        .package(url: "https://github.com/swift-foundations/swift-password.git", branch: "main"),
         .package(url: "https://github.com/vapor/vapor.git", from: "4.102.1"),
+        .package(url: "https://github.com/swift-foundations/swift-http-cookies.git", branch: "main"),
+        .package(url: "https://github.com/swift-foundations/swift-http-redirect.git", branch: "main"),
+        .package(url: "https://github.com/swift-foundations/swift-http-host.git", branch: "main"),
+        .package(url: "https://github.com/swift-foundations/swift-http-session.git", branch: "main"),
+        .package(url: "https://github.com/swift-foundations/swift-throttling.git", branch: "main"),
+        .package(url: "https://github.com/swift-foundations/swift-uri.git", branch: "main"),
+        .package(url: "https://github.com/swift-foundations/swift-urlrequest-handler.git", branch: "main"),
         .package(url: "https://github.com/swift-foundations/swift-identities-types.git", branch: "main"),
         .package(url: "https://github.com/swift-foundations/swift-time-based-one-time-password.git", branch: "main"),
         .package(url: "https://github.com/swift-foundations/swift-dependencies.git", branch: "main"),
@@ -134,6 +140,7 @@ let package = Package(
         .package(url: "https://github.com/apple/swift-log.git", from: "1.0.0"),
 
         .package(url: "https://github.com/swift-standards/swift-postgresql-standard.git", branch: "main"),
+        .package(url: "https://github.com/swift-foundations/swift-foundation-extensions.git", branch: "main"),
         .package(url: "https://github.com/swift-foundations/swift-records.git", branch: "main"),
         .package(url: "https://github.com/swift-primitives/swift-tagged-primitives.git", branch: "main"),
         .package(url: "https://github.com/swift-foundations/swift-translating.git", branch: "main"),
@@ -159,9 +166,16 @@ let package = Package(
                 .identitiesTypes,
                 .loggerDependencies,
                 .logging,
-                .serverFoundation,
-                .serverFoundationVapor,
+                .server,
+                .environment,
+                .serverVapor,
                 .vapor,
+                .httpCookies,
+                .httpRedirect,
+                .httpHost,
+                .httpSession,
+                .throttling,
+                .uri,
                 .totp
             ]
         ),
@@ -178,13 +192,22 @@ let package = Package(
         .target(
             name: .identityBackend,
             dependencies: [
+                .dateExtensions,
                 .dependencies,
                 .identityShared,
                 .loggerDependencies,
                 .logging,
-                .serverFoundation,
-                .serverFoundationVapor,
+                .passwordValidation,
+                .server,
+                .environment,
+                .serverVapor,
                 .vapor,
+                .httpCookies,
+                .httpRedirect,
+                .httpHost,
+                .httpSession,
+                .throttling,
+                .uri,
                 .records,
                 .product(name: "PostgreSQL Standard Macros", package: "swift-postgresql-standard"),
                 .tagged
@@ -199,13 +222,16 @@ let package = Package(
                 .identityBackend,
                 .loggerDependencies,
                 .logging,
-                .serverFoundation,
-                .serverFoundationVapor,
                 .server,
-                .httpCookies,
-                .uri,
-                .throttling,
+                .environment,
+                .serverVapor,
                 .vapor,
+                .httpCookies,
+                .httpRedirect,
+                .httpHost,
+                .httpSession,
+                .throttling,
+                .uri
             ]
         ),
 
@@ -222,8 +248,16 @@ let package = Package(
                 .webpage,
                 .translating,
                 .language,
-                .serverFoundation,
-                .serverFoundationVapor
+                .server,
+                .environment,
+                .serverVapor,
+                .vapor,
+                .httpCookies,
+                .httpRedirect,
+                .httpHost,
+                .httpSession,
+                .throttling,
+                .uri
             ]
         ),
 
@@ -235,13 +269,23 @@ let package = Package(
                 .identityShared,
                 .identityViews,
                 .language,
-                .serverFoundation,
-                .serverFoundationVapor
+                .server,
+                .serverHTML,
+                .environment,
+                .serverVapor,
+                .vapor,
+                .httpCookies,
+                .httpRedirect,
+                .httpHost,
+                .httpSession,
+                .throttling,
+                .uri
             ]
         ),
         .target(
             name: .identityConsumer,
             dependencies: [
+                .urlRequestHandler,
                 .dependencies,
                 .identitiesTypes,
                 .identityShared,
@@ -250,8 +294,16 @@ let package = Package(
                 .language,
                 .loggerDependencies,
                 .logging,
-                .serverFoundation,
-                .serverFoundationVapor
+                .server,
+                .environment,
+                .serverVapor,
+                .vapor,
+                .httpCookies,
+                .httpRedirect,
+                .httpHost,
+                .httpSession,
+                .throttling,
+                .uri
             ]
         ),
         // ================= STILL RED (HTML-tower W2 — held, see WAVE2-DRIFT.md) =================
@@ -270,8 +322,8 @@ let package = Package(
         //         .identityBackend,
         //         .identityViews,
         //         .identityFrontend,
-        //         .serverFoundation,
-        //         .serverFoundationVapor
+        //         .server,
+        //         .environment
         //     ]
         // ),
 

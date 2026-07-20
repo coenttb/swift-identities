@@ -10,13 +10,15 @@ import HTML
 import IdentitiesTypes
 import Identity_Views
 import Language
-import ServerFoundationVapor
+import enum Server.Server
+import Server_Vapor
+import Vapor
 
 // MARK: - Response Dispatcher
 
 extension Identity.Deletion {
     /// Dispatches delete view requests to appropriate handlers.
-    public static func response() async throws -> any AsyncResponseEncodable {
+    public static func response() async throws -> Server.Response {
         // Delete only has one view (request), no subviews
         return try await handleRequest()
     }
@@ -26,7 +28,7 @@ extension Identity.Deletion {
     // MARK: - Delete Handlers
 
     /// Handles the account deletion request view.
-    public static func handleRequest() async throws -> any AsyncResponseEncodable {
+    public static func handleRequest() async throws -> Server.Response {
         @Dependency(\.identityFrontendConfiguration) var configuration
         @Dependency(\.identity.router) var router
 

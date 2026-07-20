@@ -9,7 +9,7 @@ import Dependencies
 import Foundation
 import IdentitiesTypes
 import Records
-import ServerFoundation
+import Server
 
 extension Identity.Deletion.Client {
     /// Represents the current status of an identity deletion request.

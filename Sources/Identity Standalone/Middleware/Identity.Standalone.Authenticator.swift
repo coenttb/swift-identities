@@ -10,7 +10,7 @@ import IdentitiesTypes
 import Identity_Backend
 import Identity_Frontend
 import JWT
-import ServerFoundationVapor
+import Server_Vapor
 
 extension Identity.Standalone {
     /// Unified authenticator that combines authentication methods for standalone deployments.

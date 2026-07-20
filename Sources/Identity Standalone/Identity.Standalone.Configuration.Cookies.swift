@@ -9,7 +9,7 @@ import Foundation
 import IdentitiesTypes
 import Identity_Frontend
 import Identity_Shared
-import ServerFoundationVapor
+import Server_Vapor
 import URLRouting
 
 /// Cookie presets for Standalone identity systems

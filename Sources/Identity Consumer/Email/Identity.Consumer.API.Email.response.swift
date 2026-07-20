@@ -5,13 +5,16 @@
 //  Created by Coen ten Thije Boonkkamp on 20/02/2025.
 //
 
+import Dependencies
 import IdentitiesTypes
-import ServerFoundationVapor
+import Server_Vapor
+import Vapor
+import enum Server.Server
 
 extension Identity.Email.API {
     public static func response(
         email: Identity.Email.API
-    ) async throws -> Response {
+    ) async throws -> Server.Response {
         @Dependency(\.identity) var identity
         let client = identity.email.change.client
 
@@ -23,10 +26,10 @@ extension Identity.Email.API {
                     let data = try await client.request(request)
                     switch data {
                     case .success:
-                        return Response.success(true)
+                        return try Server.Response.json(success: true)
 
                     case .requiresReauthentication:
-                        return Response.success(false, message: "Requires reauthorization")
+                        return try Server.Response.json(success: false, message: "Requires reauthorization")
                     }
                 } catch {
                     throw Abort(.internalServerError, reason: "Failed to request email change")
@@ -36,7 +39,7 @@ extension Identity.Email.API {
                 do {
                     let identityEmailChangeConfirmResponse = try await client.confirm(confirm)
 
-                    return Response.success(true)
+                    return try Server.Response.json(success: true)
                         .withTokens(for: identityEmailChangeConfirmResponse)
                 } catch {
                     throw Abort(.internalServerError, reason: "Failed to confirm email change")

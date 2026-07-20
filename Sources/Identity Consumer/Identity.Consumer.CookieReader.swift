@@ -8,7 +8,7 @@
 import Foundation
 import IdentitiesTypes
 import Identity_Shared
-import ServerFoundationVapor
+import Server_Vapor
 import Vapor
 
 extension Identity.Consumer {

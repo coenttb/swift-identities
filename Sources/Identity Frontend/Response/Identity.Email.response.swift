@@ -10,7 +10,8 @@ import HTML
 import IdentitiesTypes
 import Identity_Views
 import Language
-import ServerFoundationVapor
+import enum Server.Server
+import Server_Vapor
 import Vapor
 
 // MARK: - Response Dispatcher
@@ -19,7 +20,7 @@ extension Identity.Email {
     /// Dispatches email view requests to appropriate handlers.
     public static func response(
         view: Identity.Email.View,
-    ) async throws -> any AsyncResponseEncodable {
+    ) async throws -> Server.Response {
         switch view {
         case .change(let change):
             switch change {
@@ -38,7 +39,7 @@ extension Identity.Email {
     // MARK: - Email Change Handlers
 
     /// Handles the email change request view.
-    public static func handleChangeRequest() async throws -> any AsyncResponseEncodable {
+    public static func handleChangeRequest() async throws -> Server.Response {
         @Dependency(\.identityFrontendConfiguration) var configuration
         @Dependency(\.identity.router) var router
         let homeHref = configuration.navigation.home
@@ -53,7 +54,7 @@ extension Identity.Email {
     }
 
     /// Handles the email change confirmation view.
-    public static func handleChangeConfirm() async throws -> any AsyncResponseEncodable {
+    public static func handleChangeConfirm() async throws -> Server.Response {
         @Dependency(\.identityFrontendConfiguration) var configuration
         let redirect = configuration.redirect
 
@@ -65,11 +66,11 @@ extension Identity.Email {
     }
 
     /// Handles the email change reauthorization view.
-    public static func handleChangeReauthorization() async throws -> any AsyncResponseEncodable {
+    public static func handleChangeReauthorization() async throws -> Server.Response {
         @Dependency(\.identityFrontendConfiguration) var configuration
         @Dependency(\.identity.router) var router
 
-        @Dependency(\.request) var request
+        @Dependency(\.vapor.request) var request
         guard let request else { throw Abort.requestUnavailable }
 
         // Get current user from authentication

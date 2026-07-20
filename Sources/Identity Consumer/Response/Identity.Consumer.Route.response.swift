@@ -8,13 +8,15 @@
 import Dependencies
 import IdentitiesTypes
 import Identity_Frontend
-import ServerFoundationVapor
+import Server_Vapor
+import Vapor
+import enum Server.Server
 
 extension Identity.Route {
     /// Handles route requests for Consumer deployments using feature-based routing.
     public static func consumerResponse(
         route: Identity.Route
-    ) async throws -> any AsyncResponseEncodable {
+    ) async throws -> Server.Response {
 
         @Dependency(\.identityConsumerConfiguration) var config
         let configuration = config.consumer
@@ -59,7 +61,7 @@ extension Identity.Route {
     private static func handleCreate(
         _ route: Identity.Creation.Route,
         configuration: Identity.Consumer.Configuration.Consumer
-    ) async throws -> any AsyncResponseEncodable {
+    ) async throws -> Server.Response {
         switch route {
         case .api(let api):
             return try await Identity.API.response(api: .create(api))
@@ -71,7 +73,7 @@ extension Identity.Route {
     private static func handleAuthenticate(
         _ route: Identity.Authentication.Route,
         configuration: Identity.Consumer.Configuration.Consumer
-    ) async throws -> any AsyncResponseEncodable {
+    ) async throws -> Server.Response {
         switch route {
         case .api(let api):
             return try await Identity.API.response(api: .authenticate(api))
@@ -83,7 +85,7 @@ extension Identity.Route {
     private static func handleDelete(
         _ route: Identity.Deletion.Route,
         configuration: Identity.Consumer.Configuration.Consumer
-    ) async throws -> any AsyncResponseEncodable {
+    ) async throws -> Server.Response {
         switch route {
         case .api(let api):
             return try await Identity.API.response(api: .delete(api))
@@ -95,7 +97,7 @@ extension Identity.Route {
     private static func handleEmail(
         _ route: Identity.Email.Route,
         configuration: Identity.Consumer.Configuration.Consumer
-    ) async throws -> any AsyncResponseEncodable {
+    ) async throws -> Server.Response {
         switch route {
         case .api(let api):
             return try await Identity.API.response(api: .email(api))
@@ -107,7 +109,7 @@ extension Identity.Route {
     private static func handlePassword(
         _ route: Identity.Password.Route,
         configuration: Identity.Consumer.Configuration.Consumer
-    ) async throws -> any AsyncResponseEncodable {
+    ) async throws -> Server.Response {
         switch route {
         case .api(let api):
             return try await Identity.API.response(api: .password(api))
@@ -119,7 +121,7 @@ extension Identity.Route {
     private static func handleMFA(
         _ route: Identity.MFA.Route,
         configuration: Identity.Consumer.Configuration.Consumer
-    ) async throws -> any AsyncResponseEncodable {
+    ) async throws -> Server.Response {
         switch route {
         case .api(let api):
             return try await Identity.API.response(api: .mfa(api))

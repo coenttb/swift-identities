@@ -6,7 +6,8 @@
 //
 
 import IdentitiesTypes
-import ServerFoundationVapor
+import Server_Vapor
+import Vapor
 
 extension Identity.Frontend {
     /// Protects views based on authentication requirements.
@@ -17,7 +18,7 @@ extension Identity.Frontend {
         view: Identity.View,
         router: any ParserPrinter<URLRequestData, Identity.Route>
     ) async throws {
-        @Dependency(\.request) var request
+        @Dependency(\.vapor.request) var request
         guard let request else { throw Abort.requestUnavailable }
 
         let isAuthenticated = request.auth.has(Identity.Token.Access.self)

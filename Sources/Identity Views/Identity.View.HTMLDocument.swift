@@ -5,11 +5,12 @@
 //  Created by Coen ten Thije Boonkkamp on 16/08/2024.
 //
 
+import Foundation
 import HTML
 import IdentitiesTypes
 import Identity_Shared
 import Language
-import ServerFoundation
+import Server
 import Translating
 import Webpage
 

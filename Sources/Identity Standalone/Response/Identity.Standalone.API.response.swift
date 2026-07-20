@@ -9,7 +9,7 @@ import Dependencies
 import IdentitiesTypes
 import Identity_Frontend
 import Identity_Shared
-import ServerFoundationVapor
+import Server_Vapor
 import Vapor
 
 extension Identity.Standalone.API {

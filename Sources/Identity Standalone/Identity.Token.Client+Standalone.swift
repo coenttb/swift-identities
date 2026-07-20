@@ -13,7 +13,7 @@ import Identity_Backend
 import Identity_Shared
 import JWT
 import Records
-import ServerFoundation
+import Server
 
 extension Identity.Token.Client: Dependency.Key {
     /// Default JWT token client configuration for Standalone deployments.

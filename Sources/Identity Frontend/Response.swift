@@ -7,33 +7,30 @@
 
 import Dependencies
 import Foundation
-import ServerFoundationVapor
+import HTTP_Cookies
+import IdentitiesTypes
+import enum Server.Server
+import Server_Vapor
 
-extension Vapor.Response {
-    public func withTokens(
+extension Server.Response {
+    /// A copy of this response carrying `Set-Cookie` lines for the
+    /// authentication token pair, under the frontend cookie configuration.
+    package func withTokens(
         for response: Identity.Authentication.Response
-    ) -> Vapor.Response {
-
-        self.cookies.setTokens(for: response)
-
-        return self
-    }
-}
-
-extension HTTPCookies {
-    fileprivate mutating func setTokens(for response: Identity.Authentication.Response) {
+    ) -> Server.Response {
         @Dependency(\.identityFrontendConfiguration) var configuration
 
-        let accessTokenConfiguration = configuration.cookies.accessToken
-        let refreshTokenConfiguration = configuration.cookies.refreshToken
-
-        self.accessToken = .init(
-            token: response.accessToken,
-            configuration: accessTokenConfiguration
-        )
-        self.refreshToken = .init(
-            token: response.refreshToken,
-            configuration: refreshTokenConfiguration
-        )
+        return
+            self
+            .setting(
+                cookie: Identity.Cookies.Names.accessToken,
+                token: response.accessToken,
+                configuration: configuration.cookies.accessToken
+            )
+            .setting(
+                cookie: Identity.Cookies.Names.refreshToken,
+                token: response.refreshToken,
+                configuration: configuration.cookies.refreshToken
+            )
     }
 }

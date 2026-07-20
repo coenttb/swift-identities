@@ -10,7 +10,9 @@ import HTML
 import IdentitiesTypes
 import Identity_Views
 import Language
-import ServerFoundationVapor
+import enum Server.Server
+import Server_Vapor
+import Vapor
 
 // MARK: - Response Dispatcher
 
@@ -19,7 +21,7 @@ extension Identity.Password {
     public static func response(
         view: Identity.Password.View,
 
-    ) async throws -> any AsyncResponseEncodable {
+    ) async throws -> Server.Response {
         @Dependency(\.identityFrontendConfiguration) var configuration
         @Dependency(\.identity.router) var router
 
@@ -55,11 +57,11 @@ extension Identity.Password {
     /// Handles password reset confirmation view.
     public static func handleResetConfirm(
 
-        ) async throws -> any AsyncResponseEncodable
+        ) async throws -> Server.Response
     {
         @Dependency(\.identityFrontendConfiguration) var configuration
 
-        @Dependency(\.request) var req
+        @Dependency(\.vapor.request) var req
 
         let token = req?.parameters.get("token") ?? ""
         @Dependency(\.identity.router) var router
@@ -118,7 +120,7 @@ extension Identity.Password {
     /// Handles password change request view.
     public static func handleChangeRequest(
 
-        ) async throws -> any AsyncResponseEncodable
+        ) async throws -> Server.Response
     {
         @Dependency(\.identityFrontendConfiguration) var configuration
         @Dependency(\.identity.router) var router

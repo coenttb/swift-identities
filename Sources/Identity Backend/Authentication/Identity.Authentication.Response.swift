@@ -5,7 +5,7 @@
 //  Created by Coen ten Thije Boonkkamp on 11/09/2025.
 //
 
-import ServerFoundation
+import Server
 
 extension Identity.Authentication.Response {
     /**

@@ -8,7 +8,7 @@
 import Foundation
 import HTML
 import IdentitiesTypes
-import ServerFoundationVapor
+import Server_Vapor
 import Webpage
 
 extension Identity.Authentication.Credentials {

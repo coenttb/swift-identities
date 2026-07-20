@@ -13,7 +13,7 @@ import JWT
 import Logger_Dependencies
 import Logging
 import Records
-import ServerFoundation
+import Server
 import Server_Vapor
 
 extension Identity.OAuth.ProviderRegistry: Dependency.Key {

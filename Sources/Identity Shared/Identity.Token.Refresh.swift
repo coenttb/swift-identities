@@ -1,7 +1,7 @@
 import Dependencies
 import Foundation
 import JWT
-import ServerFoundation
+import Server
 
 extension Identity.Token {
     /// Refresh token for long-lived authentication and token renewal

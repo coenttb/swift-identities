@@ -9,8 +9,9 @@ import Dependencies
 import EmailAddress
 import IdentitiesTypes
 import Logger_Dependencies
+import PasswordValidation
 import Records
-import ServerFoundation
+import Server
 
 extension Identity.Password.Client {
     public static func live(

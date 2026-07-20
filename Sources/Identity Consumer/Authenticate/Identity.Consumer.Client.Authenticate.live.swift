@@ -7,13 +7,16 @@
 
 import Dependencies
 import EmailAddress
+import Foundation
+import URLRequestHandler
 import IdentitiesTypes
 import Identity_Shared
 import JWT
 import Logger_Dependencies
 import Logging
-import ServerFoundationVapor
+import Server_Vapor
 import Throttling
+import Vapor
 
 extension Identity.Authentication.Client {
     package static func live(
@@ -32,7 +35,7 @@ extension Identity.Authentication.Client {
                         decodingTo: Identity.Authentication.Response.self
                     )
 
-                    @Dependency(\.request) var request
+                    @Dependency(\.vapor.request) var request
                     guard let request else { throw Abort.requestUnavailable }
 
                     let accessToken = try await tokenClient.verifyAccess(response.accessToken)
@@ -69,7 +72,7 @@ extension Identity.Authentication.Token.Client {
                 @Dependency(\.tokenClient) var tokenClient
                 let currentToken = try await tokenClient.verifyAccess(token)
 
-                @Dependency(\.request) var request
+                @Dependency(\.vapor.request) var request
                 guard let request else { throw Abort.requestUnavailable }
                 request.auth.login(currentToken)
             },
@@ -80,7 +83,7 @@ extension Identity.Authentication.Token.Client {
                         decodingTo: Identity.Authentication.Response.self
                     )
 
-                    @Dependency(\.request) var request
+                    @Dependency(\.vapor.request) var request
                     guard let request else { throw Abort.requestUnavailable }
                     @Dependency(\.tokenClient) var tokenClient
 
