@@ -4,8 +4,9 @@ import Foundation
 import IdentitiesTypes
 import Identity_Provider
 import Identity_Shared
-import ServerFoundationVapor
+import Server_Vapor
 import Testing
+import Throttling
 
 // MARK: - Test Fixtures
 

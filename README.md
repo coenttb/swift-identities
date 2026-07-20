@@ -220,7 +220,6 @@ func testAuthentication() async throws {
 - [swift-identities-types](https://github.com/coenttb/swift-identities-types): A Swift package with foundational types for authentication.
 - [swift-one-time-password](https://github.com/coenttb/swift-one-time-password): A Swift package for TOTP and HOTP two-factor authentication.
 - [swift-records](https://github.com/coenttb/swift-records): The Swift library for PostgreSQL database operations.
-- [swift-server-foundation-vapor](https://github.com/coenttb/swift-server-foundation-vapor): A Swift package integrating swift-server-foundation with Vapor.
 
 ### Used By
 

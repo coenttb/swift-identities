@@ -1,5 +1,5 @@
 import Foundation
-import ServerFoundation
+import Server
 
 extension EnvironmentVariables {
     /// Development environment configuration that loads from .env.development file

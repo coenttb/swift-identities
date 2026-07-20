@@ -13,6 +13,7 @@ import RecordsTestSupport
 import Testing
 import URLRouting
 import Vapor
+import Throttling
 
 // MARK: - Test Fixtures
 

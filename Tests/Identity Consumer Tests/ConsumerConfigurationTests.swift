@@ -12,7 +12,7 @@ import IdentitiesTypes
 import Identity_Consumer
 import Identity_Frontend
 import Identity_Shared
-import ServerFoundation
+import Server
 import Testing
 import URLRouting
 

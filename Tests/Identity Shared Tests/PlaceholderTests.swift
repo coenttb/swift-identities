@@ -4,7 +4,7 @@ import EmailAddress
 import Foundation
 import Identity_Shared
 import JWT
-import ServerFoundation
+import Server
 import Testing
 
 // MARK: - Access Token Tests
