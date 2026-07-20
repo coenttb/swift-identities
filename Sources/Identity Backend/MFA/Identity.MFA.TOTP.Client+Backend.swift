@@ -68,15 +68,8 @@ extension Identity.MFA.TOTP.Client {
     ) -> Self {
         Self(
             generateSecret: {
-                // Generate a secret that's compatible with all authenticator apps
-                // Use 20 bytes (160 bits) for SHA1 compatibility - RFC recommended
-                var randomBytes = [UInt8](repeating: 0, count: 20)
-                _ = SecRandomCopyBytes(kSecRandomDefault, 20, &randomBytes)
-                let secretData = Data(randomBytes)
-
-                // Convert to Base32 - this should work with all authenticators
-                let secret = secretData.base32EncodedString()
-                    .replacingOccurrences(of: "=", with: "")  // Remove padding
+                // 20 bytes (160 bits) for SHA1 compatibility - RFC recommended
+                let secret = TOTP.generateSecret(length: 20)
 
                 @Dependency(\.logger) var logger
 
