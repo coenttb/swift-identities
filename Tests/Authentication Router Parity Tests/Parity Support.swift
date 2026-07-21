@@ -3,7 +3,7 @@
 //  swift-authentication
 //
 //  Batch-0 wire-shape parity corpus support (url-routing-stack migration).
-//  Pattern: swift-stripe-types Tests/Router Parity Tests/Parity Support.swift.
+//  Pattern: swift-stripe-types Tests/Stripe Router Parity Tests/Parity Support.swift.
 //
 
 import Foundation
