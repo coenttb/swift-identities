@@ -1,60 +1,84 @@
 == api.authenticate.credentials ==
 method: Method(rawValue: "POST", isSafe: false, isIdempotent: false, isCacheable: true)
+scheme: https
+host: identity.example.com
 path: /api/authenticate
 body(utf8): password=correct+horse+battery+staple&username=parity%40example.com
 
 == api.create.request ==
 method: Method(rawValue: "POST", isSafe: false, isIdempotent: false, isCacheable: true)
+scheme: https
+host: identity.example.com
 path: /api/create/request
 body(utf8): email=parity%40example.com&password=correct+horse+battery+staple
 
 == api.delete.request ==
 method: Method(rawValue: "POST", isSafe: false, isIdempotent: false, isCacheable: true)
+scheme: https
+host: identity.example.com
 path: /api/delete/request
 body(utf8): reauthToken=fixed-reauth-token
 
 == api.email.change.request ==
 method: Method(rawValue: "POST", isSafe: false, isIdempotent: false, isCacheable: true)
+scheme: https
+host: identity.example.com
 path: /api/email/request
 body(utf8): newEmail=parity-new%40example.com
 
 == api.password.reset.request ==
 method: Method(rawValue: "POST", isSafe: false, isIdempotent: false, isCacheable: true)
+scheme: https
+host: identity.example.com
 path: /api/password/reset/request
 body(utf8): email=parity%40example.com
 
 == api.mfa.verify ==
 method: Method(rawValue: "POST", isSafe: false, isIdempotent: false, isCacheable: true)
+scheme: https
+host: identity.example.com
 path: /api/mfa/verify
 body(utf8): code=123456&method=totp&sessionToken=fixed-session-token
 
 == api.logout.current ==
 method: Method(rawValue: "POST", isSafe: false, isIdempotent: false, isCacheable: true)
+scheme: https
+host: identity.example.com
 path: /logout
 body: <nil>
 
 == api.reauthorize ==
 method: Method(rawValue: "POST", isSafe: false, isIdempotent: false, isCacheable: true)
+scheme: https
+host: identity.example.com
 path: /api/reauthorize
 body(utf8): password=correct+horse+battery+staple
 
 == api.oauth.providers ==
 method: Method(rawValue: "GET", isSafe: true, isIdempotent: true, isCacheable: true)
+scheme: https
+host: identity.example.com
 path: /api/oauth/providers
 body: <nil>
 
 == view.authenticate.credentials ==
 method: <nil>
+scheme: https
+host: identity.example.com
 path: /login
 body: <nil>
 
 == view.create.request ==
 method: <nil>
+scheme: https
+host: identity.example.com
 path: /create/request
 body: <nil>
 
 == view.create.verify ==
 method: <nil>
+scheme: https
+host: identity.example.com
 path: /create/verify
 query: token=fixed-token-0123456789abcdef
 query: email=parity@example.com
@@ -62,88 +86,122 @@ body: <nil>
 
 == view.delete.request ==
 method: <nil>
+scheme: https
+host: identity.example.com
 path: /delete
 body: <nil>
 
 == view.logout ==
 method: <nil>
+scheme: https
+host: identity.example.com
 path: /logout
 body: <nil>
 
 == view.email.change.request ==
 method: <nil>
+scheme: https
+host: identity.example.com
 path: /email/change/request
 body: <nil>
 
 == view.email.change.confirm ==
 method: Method(rawValue: "POST", isSafe: false, isIdempotent: false, isCacheable: true)
+scheme: https
+host: identity.example.com
 path: /email/change/confirm/confirm
 body(utf8): token=fixed-token-0123456789abcdef
 
 == view.email.change.reauthorization ==
 method: <nil>
+scheme: https
+host: identity.example.com
 path: /email/change
 body: <nil>
 
 == view.password.reset.request ==
 method: <nil>
+scheme: https
+host: identity.example.com
 path: /password/reset/request
 body: <nil>
 
 == view.password.reset.confirm ==
 method: Method(rawValue: "POST", isSafe: false, isIdempotent: false, isCacheable: true)
+scheme: https
+host: identity.example.com
 path: /password/reset/confirm/confirm
 body(utf8): newPassword=correct+horse+battery+staple&token=fixed-token-0123456789abcdef
 
 == view.password.change.request ==
 method: <nil>
+scheme: https
+host: identity.example.com
 path: /password/change/request
 body: <nil>
 
 == view.mfa.verify ==
 method: <nil>
+scheme: https
+host: identity.example.com
 path: /mfa/verify
 query: sessionToken=fixed-session-token
 body: <nil>
 
 == view.mfa.manage ==
 method: <nil>
+scheme: https
+host: identity.example.com
 path: /mfa/manage
 body: <nil>
 
 == view.mfa.totp.setup ==
 method: <nil>
+scheme: https
+host: identity.example.com
 path: /mfa/totp/setup
 body: <nil>
 
 == view.mfa.totp.confirmSetup ==
 method: <nil>
+scheme: https
+host: identity.example.com
 path: /mfa/totp/confirm-setup
 body: <nil>
 
 == view.mfa.totp.manage ==
 method: <nil>
+scheme: https
+host: identity.example.com
 path: /mfa/totp/manage
 body: <nil>
 
 == view.mfa.backupCodes.display ==
 method: <nil>
+scheme: https
+host: identity.example.com
 path: /mfa/backup-codes/display
 body: <nil>
 
 == view.mfa.backupCodes.verify ==
 method: <nil>
+scheme: https
+host: identity.example.com
 path: /mfa/backup-codes/verify
 query: sessionToken=fixed-session-token
 body: <nil>
 
 == view.oauth.login ==
 method: Method(rawValue: "GET", isSafe: true, isIdempotent: true, isCacheable: true)
+scheme: https
+host: identity.example.com
 path: /oauth/login
 body: <nil>
 
 == view.oauth.callback ==
 method: Method(rawValue: "GET", isSafe: true, isIdempotent: true, isCacheable: true)
+scheme: https
+host: identity.example.com
 path: /oauth/callback
 query: code=123456
 query: state=fixed-state
@@ -151,11 +209,15 @@ body: <nil>
 
 == view.oauth.connections ==
 method: Method(rawValue: "GET", isSafe: true, isIdempotent: true, isCacheable: true)
+scheme: https
+host: identity.example.com
 path: /oauth/connections
 body: <nil>
 
 == view.oauth.error ==
 method: Method(rawValue: "GET", isSafe: true, isIdempotent: true, isCacheable: true)
+scheme: https
+host: identity.example.com
 path: /oauth/error
 query: message=access_denied
 body: <nil>
