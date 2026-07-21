@@ -1,0 +1,5 @@
+== basic.fixed-credentials ==
+method: <nil>
+path: /
+header: authorization: Basic cGFyaXR5QGV4YW1wbGUuY29tOmNvcnJlY3QgaG9yc2UgYmF0dGVyeSBzdGFwbGU=
+body: <nil>

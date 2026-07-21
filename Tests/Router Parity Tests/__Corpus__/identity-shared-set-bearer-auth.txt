@@ -1,0 +1,11 @@
+== logout.current+bearer ==
+method: Method(rawValue: "POST", isSafe: false, isIdempotent: false, isCacheable: true)
+path: /logout
+header: authorization: Bearer fixed-token-0123456789abcdef
+body: <nil>
+
+== delete.confirm+bearer ==
+method: Method(rawValue: "POST", isSafe: false, isIdempotent: false, isCacheable: true)
+path: /delete/confirm
+header: authorization: Bearer fixed-token-0123456789abcdef
+body: <nil>

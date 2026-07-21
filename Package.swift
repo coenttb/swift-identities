@@ -134,6 +134,8 @@ let package = Package(
         .package(url: "https://github.com/swift-foundations/swift-uri.git", branch: "main"),
         .package(url: "https://github.com/swift-foundations/swift-urlrequest-handler.git", branch: "main"),
         .package(url: "https://github.com/swift-foundations/swift-identities-types.git", branch: "main"),
+        // Batch-0 parity corpus: test-support product only (Router Parity Tests).
+        .package(url: "https://github.com/swift-foundations/swift-url-routing.git", branch: "main"),
         .package(url: "https://github.com/swift-foundations/swift-time-based-one-time-password.git", branch: "main"),
         .package(url: "https://github.com/swift-foundations/swift-dependencies.git", branch: "main"),
         .package(url: "https://github.com/swift-foundations/swift-logger-dependencies.git", branch: "main"),
@@ -178,6 +180,19 @@ let package = Package(
                 .uri,
                 .totp
             ]
+        ),
+        // Batch-0 wire-shape parity corpus (url-routing-stack migration).
+        .testTarget(
+            name: "Router Parity Tests",
+            dependencies: [
+                .identityShared,
+                .identityProvider,
+                .identityConsumer,
+                .identitiesTypes,
+                .product(name: "URL Routing Test Support", package: "swift-url-routing")
+            ],
+            path: "Tests/Router Parity Tests",
+            exclude: ["__Corpus__"]
         ),
         .testTarget(
             name: .identityShared.tests,
