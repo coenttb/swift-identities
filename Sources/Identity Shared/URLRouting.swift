@@ -96,6 +96,7 @@ extension ParserPrinter where Input == URLRequestData {
 public struct HeaderTransform<Upstream: ParserPrinter>: ParserPrinter
 where Upstream.Input == URLRequestData {
     public typealias Input = URLRequestData
+    public typealias Buffer = URLRequestData
     public typealias Output = Upstream.Output
     public typealias Body = Never
 
@@ -120,6 +121,15 @@ where Upstream.Input == URLRequestData {
     public func print(_ output: Upstream.Output, into input: inout URLRequestData) throws(RFC_3986.URI.Routing.Error) {
         try upstream.print(output, into: &input)
         input = transform(input)
+    }
+
+    @inlinable
+    public borrowing func serialize(
+        _ output: Upstream.Output,
+        into buffer: inout URLRequestData
+    ) throws(RFC_3986.URI.Routing.Error) {
+        try upstream.serialize(output, into: &buffer)
+        buffer = transform(buffer)
     }
 }
 
