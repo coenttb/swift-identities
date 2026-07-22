@@ -1,5 +1,6 @@
 == reauthorize+token ==
 method: Method(rawValue: "POST", isSafe: false, isIdempotent: false, isCacheable: true)
 path: /reauthorize
+header: content-type: application/x-www-form-urlencoded
 header: authorization: Bearer fixed-reauth-token
 body(utf8): password=correct+horse+battery+staple
