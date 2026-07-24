@@ -1,5 +1,5 @@
 == reauthorize+token ==
-method: Method(rawValue: "POST", isSafe: false, isIdempotent: false, isCacheable: true)
+method: POST
 path: /reauthorize
 header: content-type: application/x-www-form-urlencoded
 header: authorization: Bearer fixed-reauth-token

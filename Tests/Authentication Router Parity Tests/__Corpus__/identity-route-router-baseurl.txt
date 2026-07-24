@@ -1,5 +1,5 @@
 == api.authenticate.credentials ==
-method: Method(rawValue: "POST", isSafe: false, isIdempotent: false, isCacheable: true)
+method: POST
 scheme: https
 host: identity.example.com
 path: /api/authenticate
@@ -7,7 +7,7 @@ header: content-type: application/x-www-form-urlencoded
 body(utf8): password=correct+horse+battery+staple&username=parity%40example.com
 
 == api.create.request ==
-method: Method(rawValue: "POST", isSafe: false, isIdempotent: false, isCacheable: true)
+method: POST
 scheme: https
 host: identity.example.com
 path: /api/create/request
@@ -15,7 +15,7 @@ header: content-type: application/x-www-form-urlencoded
 body(utf8): email=parity%40example.com&password=correct+horse+battery+staple
 
 == api.delete.request ==
-method: Method(rawValue: "POST", isSafe: false, isIdempotent: false, isCacheable: true)
+method: POST
 scheme: https
 host: identity.example.com
 path: /api/delete/request
@@ -23,7 +23,7 @@ header: content-type: application/x-www-form-urlencoded
 body(utf8): reauthToken=fixed-reauth-token
 
 == api.email.change.request ==
-method: Method(rawValue: "POST", isSafe: false, isIdempotent: false, isCacheable: true)
+method: POST
 scheme: https
 host: identity.example.com
 path: /api/email/request
@@ -31,7 +31,7 @@ header: content-type: application/x-www-form-urlencoded
 body(utf8): newEmail=parity-new%40example.com
 
 == api.password.reset.request ==
-method: Method(rawValue: "POST", isSafe: false, isIdempotent: false, isCacheable: true)
+method: POST
 scheme: https
 host: identity.example.com
 path: /api/password/reset/request
@@ -39,7 +39,7 @@ header: content-type: application/x-www-form-urlencoded
 body(utf8): email=parity%40example.com
 
 == api.mfa.verify ==
-method: Method(rawValue: "POST", isSafe: false, isIdempotent: false, isCacheable: true)
+method: POST
 scheme: https
 host: identity.example.com
 path: /api/mfa/verify
@@ -47,14 +47,14 @@ header: content-type: application/x-www-form-urlencoded
 body(utf8): code=123456&method=totp&sessionToken=fixed-session-token
 
 == api.logout.current ==
-method: Method(rawValue: "POST", isSafe: false, isIdempotent: false, isCacheable: true)
+method: POST
 scheme: https
 host: identity.example.com
 path: /logout
 body: <nil>
 
 == api.reauthorize ==
-method: Method(rawValue: "POST", isSafe: false, isIdempotent: false, isCacheable: true)
+method: POST
 scheme: https
 host: identity.example.com
 path: /api/reauthorize
@@ -62,7 +62,7 @@ header: content-type: application/x-www-form-urlencoded
 body(utf8): password=correct+horse+battery+staple
 
 == api.oauth.providers ==
-method: Method(rawValue: "GET", isSafe: true, isIdempotent: true, isCacheable: true)
+method: GET
 scheme: https
 host: identity.example.com
 path: /api/oauth/providers
@@ -113,7 +113,7 @@ path: /email/change/request
 body: <nil>
 
 == view.email.change.confirm ==
-method: Method(rawValue: "POST", isSafe: false, isIdempotent: false, isCacheable: true)
+method: POST
 scheme: https
 host: identity.example.com
 path: /email/change/confirm/confirm
@@ -135,7 +135,7 @@ path: /password/reset/request
 body: <nil>
 
 == view.password.reset.confirm ==
-method: Method(rawValue: "POST", isSafe: false, isIdempotent: false, isCacheable: true)
+method: POST
 scheme: https
 host: identity.example.com
 path: /password/reset/confirm/confirm
@@ -201,14 +201,14 @@ query: sessionToken=fixed-session-token
 body: <nil>
 
 == view.oauth.login ==
-method: Method(rawValue: "GET", isSafe: true, isIdempotent: true, isCacheable: true)
+method: GET
 scheme: https
 host: identity.example.com
 path: /oauth/login
 body: <nil>
 
 == view.oauth.callback ==
-method: Method(rawValue: "GET", isSafe: true, isIdempotent: true, isCacheable: true)
+method: GET
 scheme: https
 host: identity.example.com
 path: /oauth/callback
@@ -217,14 +217,14 @@ query: state=fixed-state
 body: <nil>
 
 == view.oauth.connections ==
-method: Method(rawValue: "GET", isSafe: true, isIdempotent: true, isCacheable: true)
+method: GET
 scheme: https
 host: identity.example.com
 path: /oauth/connections
 body: <nil>
 
 == view.oauth.error ==
-method: Method(rawValue: "GET", isSafe: true, isIdempotent: true, isCacheable: true)
+method: GET
 scheme: https
 host: identity.example.com
 path: /oauth/error
