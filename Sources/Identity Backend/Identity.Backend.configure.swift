@@ -62,7 +62,7 @@ extension Identity.Backend {
         if runMigrations {
             logger.trace("Running Identity database migrations")
 
-            let migrator = Identity.Backend.migrator()
+            let migrator = Identity.Backend.migrator(logger: logger)
             try await migrator.migrate(database)
 
             logger.trace("Identity database migrations complete")

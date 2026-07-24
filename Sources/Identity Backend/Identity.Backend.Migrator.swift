@@ -18,12 +18,17 @@ extension Identity.Backend {
     ///
     /// Usage:
     /// ```swift
-    /// let migrator = Identity.Backend.migrator()
+    /// let migrator = Identity.Backend.migrator(logger: logger)
     /// try await migrator.migrate(database)
     /// ```
-    public static func migrator() -> Records.Database.Migrator {
+    ///
+    /// The logger is a parameter rather than an ambient `@Dependency` read because
+    /// migrations run before the composition root exists: a `\.logger` read there
+    /// resolves no registration, and the key is deliberately test-only, so it trips
+    /// the live-context tripwire. Code that runs before every scope states its
+    /// dependencies in its signature.
+    public static func migrator(logger: Logger) -> Records.Database.Migrator {
         var migrator = Records.Database.Migrator()
-        @Dependency(\.logger) var logger
 
         // Core identity table
         migrator.registerMigration("create_identities_table") { db in
@@ -255,10 +260,10 @@ extension Identity.Backend {
 
         // Development test user
         #if DEBUG
-            @Sendable func createTestUser(using db: any Records.Database.Connection.`Protocol`)
-                async throws
-            {
-                @Dependency(\.logger) var logger
+            @Sendable func createTestUser(
+                using db: any Records.Database.Connection.`Protocol`,
+                logger: Logger
+            ) async throws {
                 @Dependency(\.passwordHasher) var passwordHasher
                 @Dependency(\.envVars) var envVars
 
@@ -310,7 +315,7 @@ extension Identity.Backend {
             }
 
             migrator.registerMigration("create_test_user") { db in
-                try await createTestUser(using: db)
+                try await createTestUser(using: db, logger: logger)
             }
         #endif
 
@@ -375,8 +380,6 @@ extension Identity.Backend {
 
         // Performance optimization indexes
         migrator.registerMigration("add_performance_indexes") { db in
-            @Dependency(\.logger) var logger
-
             logger.info(
                 "Adding performance indexes for Identity tables",
                 metadata: [
@@ -466,8 +469,6 @@ extension Identity.Backend {
 
         // Additional performance optimization indexes
         migrator.registerMigration("add_performance_indexes_v2") { db in
-            @Dependency(\.logger) var logger
-
             logger.info(
                 "Adding additional performance indexes for Identity tables",
                 metadata: [
