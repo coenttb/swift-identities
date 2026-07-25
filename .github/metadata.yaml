@@ -1,0 +1,9 @@
+# .github/metadata.yaml
+description: "Production-ready identity authentication and management for Swift server applications."
+topics:
+  - foundations
+  - authentication
+  - identity
+homepage: "https://swift-institute.org"
+readme:
+  family: E
