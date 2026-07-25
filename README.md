@@ -19,12 +19,23 @@ A complete, production-ready identity authentication and management system for S
 
 ## Installation
 
-Add to your `Package.swift`:
+Add the package to your `Package.swift` dependencies:
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/coenttb/swift-identities", from: "0.1.0")
+    .package(url: "https://github.com/swift-foundations/swift-authentication.git", from: "0.2.1")
 ]
+```
+
+Then add the product to your target:
+
+```swift
+.target(
+    name: "YourTarget",
+    dependencies: [
+        .product(name: "Identity Shared", package: "swift-authentication")
+    ]
+)
 ```
 
 ## Quick Start
