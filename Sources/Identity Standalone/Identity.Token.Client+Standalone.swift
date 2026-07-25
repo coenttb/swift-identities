@@ -39,9 +39,8 @@ extension Identity.Token.Client {
     /// Development configuration using the unified approach from Backend
     /// Automatically uses environment variables when available
     public static var development: Self {
-        let configuration = StandaloneConfiguration.development()
         // Return the base client as-is for now, since we can't easily wrap it
-        return configuration
+        return StandaloneConfiguration.development()
     }
 
     /// Test configuration with very short expiry times

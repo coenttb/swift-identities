@@ -35,11 +35,10 @@ extension Identity.Provider {
                 $0.vapor.request = request
             } operation: {
                 do {
-                    let tokenResponse = try await tokenAuthenticator.respond(
+                    return try await tokenAuthenticator.respond(
                         to: request,
                         chainingTo: next
                     )
-                    return tokenResponse
                 } catch {
 
                 }

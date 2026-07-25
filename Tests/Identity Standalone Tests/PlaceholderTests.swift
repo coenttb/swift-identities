@@ -39,7 +39,7 @@ enum TestFixtures {
     ) async throws -> Identity.Record {
         let passwordHash = try Bcrypt.hash(password)
 
-        let identity = try await Identity.Record
+        return try await Identity.Record
             .insert {
                 Identity.Record.Draft(
                     email: email,
@@ -50,8 +50,6 @@ enum TestFixtures {
             }
             .returning(\.self)
             .fetchOne(db)!
-
-        return identity
     }
 
     /// Creates a test identity with unique email for test isolation

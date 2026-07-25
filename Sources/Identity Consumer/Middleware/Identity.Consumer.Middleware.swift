@@ -29,11 +29,10 @@ extension Identity.Consumer {
             -> Response
         {
             do {
-                let tokenResponse = try await tokenAuthenticator.respond(
+                return try await tokenAuthenticator.respond(
                     to: request,
                     chainingTo: next
                 )
-                return tokenResponse
             } catch {
 
             }
