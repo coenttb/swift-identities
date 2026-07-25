@@ -2,9 +2,9 @@
 //  Credential Router Parity Tests.swift
 //  swift-authentication
 //
-//  Batch-0 corpus for the swift-url-routing-authentication credential routers
-//  this package consumes (compat spellings `BasicAuth`/`BearerAuth` carry live
-//  API traffic), plus the `Authorization`-header print-time transforms that
+//  Batch-0 corpus for the swift-url-routing credential routers this package
+//  consumes (`RFC_7617.Basic`/`RFC_6750.Bearer` carry live API traffic),
+//  plus the `Authorization`-header print-time transforms that
 //  Identity Shared declares (`setBearerAuth`, `setReauthorizationToken`).
 //
 
@@ -17,21 +17,21 @@ import URL_Routing_Test_Support
 @Suite("Credential Router Parity")
 struct CredentialRouterParityTests {
 
-    @Test("BearerAuth.Router Authorization header emission")
+    @Test("RFC_6750.Bearer.Router Authorization header emission")
     func bearerAuthCorpus() throws {
-        let router = BearerAuth.Router()
+        let router = RFC_6750.Bearer.Router()
         let corpus = try Parity.corpus(
-            of: [("bearer.fixed-token", try BearerAuth(token: Fixed.token))],
+            of: [("bearer.fixed-token", try RFC_6750.Bearer(token: Fixed.token))],
             via: router
         )
         try assertParity(corpus, fixture: "bearer-auth-router")
-        #expect(try Parity.roundTrips(try BearerAuth(token: Fixed.token), via: router))
+        #expect(try Parity.roundTrips(try RFC_6750.Bearer(token: Fixed.token), via: router))
     }
 
-    @Test("BasicAuth.Router Authorization header emission")
+    @Test("RFC_7617.Basic.Router Authorization header emission")
     func basicAuthCorpus() throws {
-        let router = BasicAuth.Router()
-        let credentials = try BasicAuth(username: Fixed.email, password: Fixed.password)
+        let router = RFC_7617.Basic.Router()
+        let credentials = try RFC_7617.Basic(userID: Fixed.email, password: Fixed.password)
         let corpus = try Parity.corpus(
             of: [("basic.fixed-credentials", credentials)],
             via: router
@@ -48,7 +48,7 @@ struct CredentialRouterParityTests {
         let corpus = try Parity.corpus(
             of: [
                 ("logout.current+bearer", Identity.API.logout(.current)),
-                ("delete.confirm+bearer", Identity.API.delete(.confirm))
+                ("delete.confirm+bearer", Identity.API.delete(.confirm)),
             ],
             via: router
         )
