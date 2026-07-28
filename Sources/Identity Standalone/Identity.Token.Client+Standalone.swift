@@ -50,8 +50,8 @@ extension Identity.Token.Client {
 
     /// Creates a Standalone-specific token client that enriches tokens with profile data
     private static func standaloneClient(configuration: Configuration) -> Self {
-        let signingKey = SigningKey(configuration.secretKey.data(using: .utf8)!)
-        let verificationKey = VerificationKey(configuration.secretKey.data(using: .utf8)!)
+        let signingKey = SigningKey.symmetric(string: configuration.secretKey)
+        let verificationKey = VerificationKey.symmetric(string: configuration.secretKey)
 
         return Self(
             generateAccess: { identityId, email, sessionVersion in

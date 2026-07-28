@@ -15,7 +15,7 @@ struct `Access Token Tests` {
     func `Access token creation with valid parameters`() async throws {
         let identityId = Identity.ID(UUID())
         let email = try EmailAddress("test@example.com")
-        let signingKey = SigningKey("test-secret-key")
+        let signingKey = SigningKey.symmetric(string: "test-secret-key")
 
         let token = try Identity.Token.Access(
             identityId: identityId,
@@ -35,7 +35,7 @@ struct `Access Token Tests` {
     func `Access token extracts identity ID from subject`() async throws {
         let identityId = Identity.ID(UUID())
         let email = try EmailAddress("user@example.com")
-        let signingKey = SigningKey("test-secret")
+        let signingKey = SigningKey.symmetric(string: "test-secret")
 
         let token = try Identity.Token.Access(
             identityId: identityId,
@@ -53,7 +53,7 @@ struct `Access Token Tests` {
     func `Access token extracts email from subject`() async throws {
         let identityId = Identity.ID(UUID())
         let email = try EmailAddress("extract@example.com")
-        let signingKey = SigningKey("test-secret")
+        let signingKey = SigningKey.symmetric(string: "test-secret")
 
         let token = try Identity.Token.Access(
             identityId: identityId,
@@ -71,7 +71,7 @@ struct `Access Token Tests` {
     func `Access token validates expiry correctly`() async throws {
         let identityId = Identity.ID(UUID())
         let email = try EmailAddress("expiry@example.com")
-        let signingKey = SigningKey("test-secret")
+        let signingKey = SigningKey.symmetric(string: "test-secret")
 
         // Create token that expires in 1 second
         let token = try Identity.Token.Access(
@@ -95,7 +95,7 @@ struct `Access Token Tests` {
     func `Access token should refresh when expiry is near`() async throws {
         let identityId = Identity.ID(UUID())
         let email = try EmailAddress("refresh@example.com")
-        let signingKey = SigningKey("test-secret")
+        let signingKey = SigningKey.symmetric(string: "test-secret")
 
         // Create token that expires in 4 minutes (less than 5 minute threshold)
         let token = try Identity.Token.Access(
@@ -114,7 +114,7 @@ struct `Access Token Tests` {
     func `Access token with additional claims`() async throws {
         let identityId = Identity.ID(UUID())
         let email = try EmailAddress("claims@example.com")
-        let signingKey = SigningKey("test-secret")
+        let signingKey = SigningKey.symmetric(string: "test-secret")
 
         let token = try Identity.Token.Access(
             identityId: identityId,
@@ -153,7 +153,7 @@ struct `Refresh Token Tests` {
     @Test
     func `Refresh token creation with valid parameters`() async throws {
         let identityId = Identity.ID(UUID())
-        let signingKey = SigningKey("test-secret-key")
+        let signingKey = SigningKey.symmetric(string: "test-secret-key")
 
         let token = try withDependencies {
             $0.uuid = { UUID(uuidString: "00000000-0000-0000-0000-000000000000")! }
@@ -175,7 +175,7 @@ struct `Refresh Token Tests` {
     @Test
     func `Refresh token extracts identity ID from subject`() async throws {
         let identityId = Identity.ID(UUID())
-        let signingKey = SigningKey("test-secret")
+        let signingKey = SigningKey.symmetric(string: "test-secret")
 
         let token = try withDependencies {
             $0.uuid = { UUID(uuidString: "00000000-0000-0000-0000-000000000000")! }
@@ -195,7 +195,7 @@ struct `Refresh Token Tests` {
     @Test
     func `Refresh token has unique token ID`() async throws {
         let identityId = Identity.ID(UUID())
-        let signingKey = SigningKey("test-secret")
+        let signingKey = SigningKey.symmetric(string: "test-secret")
 
         let token = try withDependencies {
             $0.uuid = { UUID(uuidString: "00000000-0000-0000-0000-000000000000")! }
@@ -216,7 +216,7 @@ struct `Refresh Token Tests` {
     @Test
     func `Refresh token validates expiry correctly`() async throws {
         let identityId = Identity.ID(UUID())
-        let signingKey = SigningKey("test-secret")
+        let signingKey = SigningKey.symmetric(string: "test-secret")
 
         let token = try withDependencies {
             $0.uuid = { UUID(uuidString: "00000000-0000-0000-0000-000000000000")! }
@@ -278,7 +278,7 @@ struct `Reauthorization Token Tests` {
     @Test
     func `Reauthorization token creation with purpose`() async throws {
         let identityId = Identity.ID(UUID())
-        let signingKey = SigningKey("test-secret")
+        let signingKey = SigningKey.symmetric(string: "test-secret")
 
         let token = try withDependencies {
             $0.uuid = { UUID(uuidString: "00000000-0000-0000-0000-000000000000")! }
@@ -301,7 +301,7 @@ struct `Reauthorization Token Tests` {
     @Test
     func `Reauthorization token with allowed operations`() async throws {
         let identityId = Identity.ID(UUID())
-        let signingKey = SigningKey("test-secret")
+        let signingKey = SigningKey.symmetric(string: "test-secret")
         let operations = ["change_password", "update_email"]
 
         let token = try withDependencies {
@@ -324,7 +324,7 @@ struct `Reauthorization Token Tests` {
     @Test
     func `Reauthorization token checks allowed operations`() async throws {
         let identityId = Identity.ID(UUID())
-        let signingKey = SigningKey("test-secret")
+        let signingKey = SigningKey.symmetric(string: "test-secret")
 
         let token = try withDependencies {
             $0.uuid = { UUID(uuidString: "00000000-0000-0000-0000-000000000000")! }
@@ -348,7 +348,7 @@ struct `Reauthorization Token Tests` {
     @Test
     func `Reauthorization token with empty operations allows all`() async throws {
         let identityId = Identity.ID(UUID())
-        let signingKey = SigningKey("test-secret")
+        let signingKey = SigningKey.symmetric(string: "test-secret")
 
         let token = try withDependencies {
             $0.uuid = { UUID(uuidString: "00000000-0000-0000-0000-000000000000")! }
@@ -370,7 +370,7 @@ struct `Reauthorization Token Tests` {
     @Test
     func `Reauthorization token validates expiry`() async throws {
         let identityId = Identity.ID(UUID())
-        let signingKey = SigningKey("test-secret")
+        let signingKey = SigningKey.symmetric(string: "test-secret")
 
         let token = try withDependencies {
             $0.uuid = { UUID(uuidString: "00000000-0000-0000-0000-000000000000")! }
@@ -400,7 +400,7 @@ struct `MFA Challenge Token Tests` {
     @Test
     func `MFA challenge token creation`() async throws {
         let identityId = Identity.ID(UUID())
-        let signingKey = SigningKey("test-secret")
+        let signingKey = SigningKey.symmetric(string: "test-secret")
 
         let token = try Identity.MFA.Challenge.Token(
             identityId: identityId,
@@ -419,7 +419,7 @@ struct `MFA Challenge Token Tests` {
     @Test
     func `MFA challenge token with available methods`() async throws {
         let identityId = Identity.ID(UUID())
-        let signingKey = SigningKey("test-secret")
+        let signingKey = SigningKey.symmetric(string: "test-secret")
 
         let token = try Identity.MFA.Challenge.Token(
             identityId: identityId,
@@ -437,7 +437,7 @@ struct `MFA Challenge Token Tests` {
     @Test
     func `MFA challenge token validates expiry`() async throws {
         let identityId = Identity.ID(UUID())
-        let signingKey = SigningKey("test-secret")
+        let signingKey = SigningKey.symmetric(string: "test-secret")
 
         let token = try Identity.MFA.Challenge.Token(
             identityId: identityId,
@@ -579,7 +579,7 @@ struct `Cookie Tests` {
 struct `JWT Extensions Tests` {
     @Test
     func `JWT creation with issuer and subject`() throws {
-        let key = SigningKey("test-secret")
+        let key = SigningKey.symmetric(string: "test-secret")
 
         let jwt = try JWT.signed(
             algorithm: .hmacSHA256,
@@ -598,7 +598,7 @@ struct `JWT Extensions Tests` {
 
     @Test
     func `JWT creation with custom claims`() throws {
-        let key = SigningKey("test-secret")
+        let key = SigningKey.symmetric(string: "test-secret")
 
         let jwt = try JWT.signed(
             algorithm: .hmacSHA256,
@@ -614,7 +614,7 @@ struct `JWT Extensions Tests` {
 
     @Test
     func `JWT creation with token ID`() throws {
-        let key = SigningKey("test-secret")
+        let key = SigningKey.symmetric(string: "test-secret")
         let tokenId = UUID().uuidString
 
         let jwt = try JWT.signed(
@@ -628,7 +628,7 @@ struct `JWT Extensions Tests` {
 
     @Test
     func `JWT expiration calculation`() throws {
-        let key = SigningKey("test-secret")
+        let key = SigningKey.symmetric(string: "test-secret")
         let expiresIn: TimeInterval = 3600
 
         let jwt = try JWT.signed(

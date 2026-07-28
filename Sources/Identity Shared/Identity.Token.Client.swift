@@ -104,8 +104,8 @@ extension Identity.Token {
 extension Identity.Token.Client {
     /// Creates a live client using the new swift-jwt implementation
     public static func live(configuration: Configuration) -> Self {
-        let signingKey = SigningKey(configuration.secretKey.data(using: .utf8)!)
-        let verificationKey = VerificationKey.init(configuration.secretKey.data(using: .utf8)!)
+        let signingKey = SigningKey.symmetric(string: configuration.secretKey)
+        let verificationKey = VerificationKey.symmetric(string: configuration.secretKey)
 
         return Self(
             generateAccess: { identityId, email, sessionVersion in
