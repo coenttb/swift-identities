@@ -425,7 +425,7 @@ func assertQuery<T>(
 func testQuerySQL() async {
     await assertQuery(
         Identity.Record
-            .where { $0.email.eq(try! EmailAddress("test@example.com")) }
+            .where { $0.email.eq(EmailAddress(rawValue: "test@example.com")!) }
             .asSelect(),
         sql: {
             """
@@ -458,7 +458,7 @@ extension TestFixtures {
     /// Generate unique email for test isolation
     static func uniqueEmail(prefix: String = "test") -> EmailAddress {
         let uuid = UUID().uuidString.prefix(8)
-        return try! EmailAddress("\(prefix)-\(uuid)@example.com")
+        return EmailAddress(rawValue: "\(prefix)!-\(uuid)@example.com")
     }
 
     /// Generate unique test identity

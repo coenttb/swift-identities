@@ -36,7 +36,7 @@ extension Identity.Token {
             else {
                 // Return placeholder email for invalid tokens
                 // This allows the token to fail validation downstream rather than crashing
-                return try! EmailAddress("invalid@token.invalid")
+                return EmailAddress(rawValue: "invalid@token.invalid")!
             }
             return emailAddress
         }
