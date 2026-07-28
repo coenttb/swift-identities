@@ -136,6 +136,12 @@ struct `Token Signing Tests` {
     }
 
     @Test
+    func `Signs with a signature distinct from the signing input`() throws {
+        let token = try Self.accessToken()
+        #expect(try token.jwt.signature != token.jwt.signingInput())
+    }
+
+    @Test
     func `Produces a different signature for a different subject`() throws {
         let first = try Self.accessToken(identityId: Identity.ID(UUID()))
         let second = try Self.accessToken(identityId: Identity.ID(UUID()))
