@@ -96,7 +96,9 @@ extension Identity.Route {
         }
     }
 
-    private static func mapAuthView(_ view: Identity.Authentication.View)
+    private static func mapAuthView(
+        _ view: Identity.Authentication.View
+    )
         -> Identity.Authentication.View
     {
         switch view {

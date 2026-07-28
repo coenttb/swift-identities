@@ -61,7 +61,7 @@ extension Identity.Consumer.API.Router {
                 router
                 .setBearerAuth(request.cookies.accessToken?.string)
 
-        case .mfa(_):
+        case .mfa:
             break
         case .oauth(let oauth):
             // OAuth views generally don't require authentication
@@ -83,7 +83,9 @@ extension Identity.Consumer.API.Router {
 }
 
 extension ParserPrinter<URLRequestData, Identity.API> {
-    package func configureAuthentication(for route: Identity.API) throws -> any ParserPrinter<
+    package func configureAuthentication(
+        for route: Identity.API
+    ) throws -> any ParserPrinter<
         URLRequestData, Identity.API
     > {
         try Identity.Consumer.API.Router.configureAuthentication(baseRouter: self, route: route)

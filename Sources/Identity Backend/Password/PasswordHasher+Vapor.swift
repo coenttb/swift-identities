@@ -1,4 +1,5 @@
 import Vapor
+
 //
 //  PasswordHasher+Vapor.swift
 //  swift-identities

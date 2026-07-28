@@ -1,8 +1,8 @@
 import Dependencies
 import Foundation
 import IdentitiesTypes
-import Records
 private import PostgreSQL_Standard_Macros
+import Records
 
 extension Identity.Authentication {
     public enum ApiKey {}
@@ -94,7 +94,9 @@ extension Identity.Authentication.ApiKey.Record {
         Self.where { $0.key.eq(key) }
     }
 
-    package static func findByIdentity(_ identityId: Identity.ID) -> Where<
+    package static func findByIdentity(
+        _ identityId: Identity.ID
+    ) -> Where<
         Identity.Authentication.ApiKey.Record
     > {
         Self.where { $0.identityId.eq(identityId) }
@@ -191,7 +193,9 @@ extension Identity.Authentication.ApiKey.Record {
     }
 
     /// Batch deactivate API keys
-    package static func deactivateMultiple(ids: [Identity.Authentication.ApiKey.Record.ID])
+    package static func deactivateMultiple(
+        ids: [Identity.Authentication.ApiKey.Record.ID]
+    )
         async throws
     {
         @Dependency(\.defaultDatabase) var db

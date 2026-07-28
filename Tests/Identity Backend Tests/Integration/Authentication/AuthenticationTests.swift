@@ -157,7 +157,7 @@ struct Test {
             try await Identity.Record
                 .where { $0.id.eq(initialIdentity.id) }
                 .update { record in
-                    record.sessionVersion = record.sessionVersion + 1
+                    record.sessionVersion += 1
                 }
                 .execute(db)
         }

@@ -1,9 +1,9 @@
 import Dependencies
 import EmailAddress
-import Foundation
-import Records
-private import PostgreSQL_Standard_Macros
 import Environment_Dependencies
+import Foundation
+private import PostgreSQL_Standard_Macros
+import Records
 
 extension Identity {
     @Table("identities")
@@ -120,7 +120,9 @@ extension Identity.Record {
 }
 
 extension Identity.Record {
-    package static func update(from identity: Identity.Record) -> (inout Updates<Identity.Record>)
+    package static func update(
+        from identity: Identity.Record
+    ) -> (inout Updates<Identity.Record>)
         ->
         Void
     {

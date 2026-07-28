@@ -6,9 +6,8 @@
 //
 
 @_exported import HTML
-@_exported import Webpage
 @_exported import IdentitiesTypes
-
+@_exported import Webpage
 
 // MARK: - Component disambiguation
 //

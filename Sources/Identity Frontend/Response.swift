@@ -9,8 +9,9 @@ import Dependencies
 import Foundation
 import HTTP_Cookies
 import IdentitiesTypes
-import enum Server.Server
 import Server_Vapor
+
+import enum Server.Server
 
 extension Server.Response {
     /// A copy of this response carrying `Set-Cookie` lines for the

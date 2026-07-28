@@ -6,12 +6,12 @@
 //
 
 import Foundation
+import HTTP_Cookies
 import IdentitiesTypes
 import Identity_Frontend
 import Identity_Shared
 import Server_Vapor
 import URLRouting
-import HTTP_Cookies
 
 extension Identity.Frontend.Configuration.Cookies {
     /// Configuration for Consumer applications that connect to an Identity Provider.

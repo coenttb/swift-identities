@@ -7,8 +7,9 @@
 
 import Dependencies
 import IdentitiesTypes
-import enum Server.Server
 import Server_Vapor
+
+import enum Server.Server
 
 // MARK: - Response Handler
 

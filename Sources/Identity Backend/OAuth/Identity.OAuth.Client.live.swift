@@ -288,33 +288,32 @@ private func prepareTokensForStorage(
 }
 
 // MARK: - Get Connection
-private let connectionImplementation:
-    @Sendable (String) async throws -> Identity.OAuth.Connection? = { provider in
-        // Get current authenticated identity
-        @Dependency(\.defaultDatabase) var database
+private let connectionImplementation: @Sendable (String) async throws -> Identity.OAuth.Connection? = { provider in
+    // Get current authenticated identity
+    @Dependency(\.defaultDatabase) var database
 
-        do {
-            let identity = try await Identity.Record.get(by: .auth)
+    do {
+        let identity = try await Identity.Record.get(by: .auth)
 
-            // Find connection for this provider
-            @Dependency(\.defaultDatabase) var db
+        // Find connection for this provider
+        @Dependency(\.defaultDatabase) var db
 
-            guard
-                let dbConnection = try await db.read({ db in
-                    try await Identity.OAuth.Connection.Record
-                        .findByIdentityProvider(identity.id, provider)
-                        .fetchOne(db)
-                })
-            else {
-                return nil
-            }
-
-            return Identity.OAuth.Connection(from: dbConnection)
-        } catch {
-            // Not authenticated or no connection found
+        guard
+            let dbConnection = try await db.read({ db in
+                try await Identity.OAuth.Connection.Record
+                    .findByIdentityProvider(identity.id, provider)
+                    .fetchOne(db)
+            })
+        else {
             return nil
         }
+
+        return Identity.OAuth.Connection(from: dbConnection)
+    } catch {
+        // Not authenticated or no connection found
+        return nil
     }
+}
 
 // MARK: - Disconnect Provider
 private let disconnectImplementation: @Sendable (String) async throws -> Void = { provider in
@@ -523,34 +522,33 @@ private func getValidTokenImplementation(
 }
 
 // MARK: - Get All Connections
-private let getAllConnectionsImplementation:
-    @Sendable () async throws -> [Identity.OAuth.Connection] = {
-        @Dependency(\.defaultDatabase) var database
-        @Dependency(\.logger) var logger
+private let getAllConnectionsImplementation: @Sendable () async throws -> [Identity.OAuth.Connection] = {
+    @Dependency(\.defaultDatabase) var database
+    @Dependency(\.logger) var logger
 
-        do {
-            let identity = try await Identity.Record.get(by: .auth)
+    do {
+        let identity = try await Identity.Record.get(by: .auth)
 
-            // Get all connections for this identity
-            let dbConnections = try await database.read { db in
-                try await Identity.OAuth.Connection.Record
-                    .findByIdentity(identity.id)
-                    .fetchAll(db)
-            }
-
-            return dbConnections.map { dbConnection in
-                Identity.OAuth.Connection(from: dbConnection)
-            }
-        } catch {
-            logger.error(
-                "Failed to get OAuth connections",
-                metadata: [
-                    "error": "\(error)"
-                ]
-            )
-            return []
+        // Get all connections for this identity
+        let dbConnections = try await database.read { db in
+            try await Identity.OAuth.Connection.Record
+                .findByIdentity(identity.id)
+                .fetchAll(db)
         }
+
+        return dbConnections.map { dbConnection in
+            Identity.OAuth.Connection(from: dbConnection)
+        }
+    } catch {
+        logger.error(
+            "Failed to get OAuth connections",
+            metadata: [
+                "error": "\(error)"
+            ]
+        )
+        return []
     }
+}
 
 extension Identity.OAuth.Connection.Record.Draft {
     /// Convenience initializer that creates a Draft from OAuth response objects

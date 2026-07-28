@@ -53,3 +53,6 @@ CLAUDE.MD
 test_output.txt
 *_output.txt
 Packages/
+
+# SwiftLint Remote Config Cache
+.swiftlint/RemoteConfigCache

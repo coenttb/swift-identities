@@ -31,7 +31,7 @@ struct Test {
             $0[Identity.Provider.Configuration.self] = .testValue
             $0.date = .constant(Date())  // Rate limiter needs date dependency
             // No request needed - OAuth providers is a public endpoint
-        } operation: { () async throws -> Void in
+        } operation: { () async throws in
             let api = Identity.Provider.API.oauth(.providers)
 
             do {

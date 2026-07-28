@@ -140,7 +140,7 @@ struct Test {
                 .update { record in
                     record.email = newEmail
                     record.emailVerificationStatus = .verified
-                    record.sessionVersion = record.sessionVersion + 1
+                    record.sessionVersion += 1
                 }
                 .execute(db)
         }

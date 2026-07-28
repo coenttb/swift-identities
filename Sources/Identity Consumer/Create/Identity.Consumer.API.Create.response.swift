@@ -9,6 +9,7 @@ import Dependencies
 import IdentitiesTypes
 import Server_Vapor
 import Vapor
+
 import enum Server.Server
 
 extension Identity.Creation.API {
