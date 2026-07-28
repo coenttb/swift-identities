@@ -1,6 +1,7 @@
 import Dependencies
 import Foundation
 import JWT
+import RFC_7519
 import Server
 
 extension Identity.MFA.Challenge {
@@ -66,7 +67,7 @@ extension Identity.MFA.Challenge {
             issuer: String,
             expiresIn: TimeInterval = 300,  // 5 minutes default
             signingKey: SigningKey
-        ) throws {
+        ) throws(RFC_7519.Error) {
             let claims: [String: Any] = [
                 "type": "mfa_session",
                 "sev": sessionVersion,
@@ -75,7 +76,7 @@ extension Identity.MFA.Challenge {
             ]
 
             self.jwt = try JWT.signed(
-                algorithm: .hmacSHA256,
+                algorithm: Identity.Token.Signing.algorithm,
                 key: signingKey,
                 issuer: issuer,
                 subject: identityId.underlying.uuidString,
@@ -86,7 +87,7 @@ extension Identity.MFA.Challenge {
         }
 
         /// Creates an MFA session token from a JWT string
-        public init(jwt: JWT) throws {
+        public init(jwt: JWT) throws(TokenError) {
             // Validate token type
             let type = jwt.payload.additionalClaim("type", as: String.self)
             guard type == "mfa_session" else {
@@ -98,14 +99,14 @@ extension Identity.MFA.Challenge {
 
         /// Get the encoded token string
         public var token: String {
-            get throws {
+            get throws(RFC_7519.Error) {
                 try jwt.compactSerialization()
             }
         }
 
         /// Verify the token with a verification key
-        public func verify(with key: VerificationKey) throws -> Bool {
-            try jwt.verifyAndValidate(with: key)
+        public func verify(with key: VerificationKey) throws(RFC_7519.Error) -> Bool {
+            try Identity.Token.Signing.verify(jwt, with: key)
         }
     }
 }
