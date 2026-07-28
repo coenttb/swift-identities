@@ -1,6 +1,7 @@
 import Dependencies
 import Foundation
 import JWT
+import RFC_7519
 import Server
 
 extension Identity.Token {
@@ -61,14 +62,14 @@ extension Identity.Token {
             issuer: String,
             expiresIn: TimeInterval = 300,  // 5 minutes default
             signingKey: SigningKey
-        ) throws {
+        ) throws(RFC_7519.Error) {
             @Dependency(\.uuid) var uuid
 
             // Generate unique token ID
             let tokenId = uuid().uuidString
 
             self.jwt = try JWT.signed(
-                algorithm: .hmacSHA256,
+                algorithm: Identity.Token.Signing.algorithm,
                 key: signingKey,
                 issuer: issuer,
                 subject: identityId.underlying.uuidString,
@@ -84,7 +85,7 @@ extension Identity.Token {
         }
 
         /// Creates a reauthorization token from an existing JWT
-        public init(jwt: JWT) throws {
+        public init(jwt: JWT) throws(TokenError) {
             // Validate it's a reauthorization token
             guard jwt.payload.additionalClaim("type", as: String.self) == "reauth" else {
                 throw TokenError.invalidTokenType
@@ -125,13 +126,13 @@ extension Identity.Token.Reauthorization {
 
 extension Identity.Token.Reauthorization {
     /// Verifies the token signature and validity
-    public func verify(with key: VerificationKey) throws -> Bool {
-        try jwt.verifyAndValidate(with: key)
+    public func verify(with key: VerificationKey) throws(RFC_7519.Error) -> Bool {
+        try Identity.Token.Signing.verify(jwt, with: key)
     }
 
     /// Gets the compact serialization for transmission
     public var token: String {
-        get throws {
+        get throws(RFC_7519.Error) {
             try jwt.compactSerialization()
         }
     }
