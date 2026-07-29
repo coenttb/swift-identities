@@ -11,15 +11,15 @@ import JWT
 import Records
 import RecordsTestSupport
 import Testing
+import Throttling
 import URLRouting
 import Vapor
-import Throttling
 
 // MARK: - Test Fixtures
 
 enum TestFixtures {
     /// Default test email
-    static let testEmail = try! EmailAddress("test@example.com")
+    static let testEmail = EmailAddress(rawValue: "test@example.com")!
 
     /// Default test password
     static let testPassword = "SecurePassword123!"
@@ -27,7 +27,7 @@ enum TestFixtures {
     /// Generate unique email for test isolation
     static func uniqueEmail(prefix: String = "test") -> EmailAddress {
         let uuid = UUID().uuidString.prefix(8)
-        return try! EmailAddress("\(prefix)-\(uuid)@example.com")
+        return EmailAddress(rawValue: "\(prefix)-\(uuid)@example.com")
     }
 
     /// Creates a test identity in the database

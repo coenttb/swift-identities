@@ -9,7 +9,7 @@ import Dependencies
 import Foundation
 import IdentitiesTypes
 
-//extension Identity.Standalone.Client {
+// extension Identity.Standalone.Client {
 //    /// Profile management client for standalone deployments.
 //    ///
 //    /// Provides methods to get and update user profiles with display name management.
@@ -30,4 +30,4 @@ import IdentitiesTypes
 //            self.updateDisplayName = updateDisplayName
 //        }
 //    }
-//}
+// }

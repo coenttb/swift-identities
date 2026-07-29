@@ -11,6 +11,7 @@ import Logger_Dependencies
 import Logging
 import Server_Vapor
 import Vapor
+
 import enum Server.Server
 
 extension Identity.Authentication.API {

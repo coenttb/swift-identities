@@ -2,8 +2,8 @@ import Crypto
 import Dependencies
 import Foundation
 import IdentitiesTypes
-import Records
 private import PostgreSQL_Standard_Macros
+import Records
 
 extension Identity.Token {
     @Table("identity_tokens")
@@ -109,7 +109,10 @@ extension Identity.Token.Record {
         Self.where { $0.type.eq(type) }
     }
 
-    package static func findByIdentityAndType(_ identityId: Identity.ID, _ type: TokenType)
+    package static func findByIdentityAndType(
+        _ identityId: Identity.ID,
+        _ type: TokenType
+    )
         -> Where<
             Identity.Token.Record
         >
@@ -177,7 +180,10 @@ extension Identity.Token.Record {
 
     /// Validate token and get associated identity in single query
     /// Replaces: findValid + separate identity lookup
-    package static func validateWithIdentity(value: String, type: TokenType) async throws
+    package static func validateWithIdentity(
+        value: String,
+        type: TokenType
+    ) async throws
         -> TokenWithIdentity?
     {
         @Dependency(\.defaultDatabase) var db

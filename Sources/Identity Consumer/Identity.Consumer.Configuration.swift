@@ -8,17 +8,17 @@
 import Dependencies
 import Foundation
 import HTML
+import HTTP_Cookies
 import IdentitiesTypes
 import Identity_Frontend
 import Identity_Shared
 import Identity_Views
 import Server
 import Server_Vapor
+import Throttling
+import URI
 import URLRouting
 import Vapor
-import HTTP_Cookies
-import URI
-import Throttling
 
 extension Identity.Consumer {
     public struct Configuration: Sendable {
@@ -84,16 +84,23 @@ extension Identity.Consumer.Configuration {
 
         public init(
             baseURL: URL,
-            domain: String?,
+            domain: String? = nil,
             cookies: Identity.Frontend.Configuration.Cookies,
             router: AnyParserPrinter<URLRequestData, Identity.Route>,
             currentUserName: @Sendable @escaping () -> String?,
-            canonicalHref: @Sendable @escaping (Identity.Consumer.View) -> URL?,
-            hreflang: @Sendable @escaping (Identity.Consumer.View, Translating.Language) -> URL,
+            canonicalHref: @Sendable @escaping (Identity.Consumer.View) -> URL? = { _ in
+                nil
+            },
+            hreflang: @Sendable @escaping (Identity.Consumer.View, Translating.Language) -> URL = {
+                _,
+                _ in
+                @Dependency(\.identityConsumerConfiguration) var configuration
+                return configuration.consumer.baseURL
+            },
             branding: Branding,
             navigation: Navigation,
             redirect: Identity.Consumer.Configuration.Redirect,
-            rateLimiters: RateLimiters
+            rateLimiters: RateLimiters = .init()
         ) {
             self.baseURL = baseURL
             self.domain = domain
@@ -111,40 +118,12 @@ extension Identity.Consumer.Configuration {
 }
 
 extension Identity.Consumer.Configuration.Consumer {
-    public static func live(
-        baseURL: URL,
-        domain: String? = nil,
-        cookies: Identity.Frontend.Configuration.Cookies,
-        router: AnyParserPrinter<URLRequestData, Identity.Route>,
-        currentUserName: @escaping @Sendable () -> String?,
-        canonicalHref: @escaping @Sendable (Identity.Consumer.View) -> URL? = { view in
-            // Return nil - canonical URLs should be set by the application
-            return nil
-        },
-        hreflang: @escaping @Sendable (Identity.Consumer.View, Translating.Language) -> URL = {
-            view,
-            _ in
-            @Dependency(\.identityConsumerConfiguration) var config
-            return config.consumer.baseURL
-        },
-        branding: Identity.Consumer.Configuration.Branding,
-        navigation: Identity.Consumer.Configuration.Navigation,
-        redirect: Identity.Consumer.Configuration.Redirect,
-        rateLimiters: RateLimiters = .init()
-    ) -> Self {
-        .init(
-            baseURL: baseURL,
-            domain: domain,
-            cookies: cookies,
-            router: router,
-            currentUserName: currentUserName,
-            canonicalHref: canonicalHref,
-            hreflang: hreflang,
-            branding: branding,
-            navigation: navigation,
-            redirect: redirect,
-            rateLimiters: rateLimiters
-        )
+    /// The live configuration constructor.
+    ///
+    /// This metatype preserves the established `Consumer.live(...)` spelling
+    /// while routing construction through ``init(baseURL:domain:cookies:router:currentUserName:canonicalHref:hreflang:branding:navigation:redirect:rateLimiters:)``.
+    public static var live: Self.Type {
+        Self.self
     }
 }
 

@@ -1,7 +1,7 @@
 import Foundation
 import IdentitiesTypes
-import Records
 private import PostgreSQL_Standard_Macros
+import Records
 
 extension Identity.MFA.BackupCodes {
     @Table("identity_backup_codes")
@@ -37,7 +37,9 @@ extension Identity.MFA.BackupCodes.Record.Draft {
 // MARK: - Query Helpers
 
 extension Identity.MFA.BackupCodes.Record {
-    package static func findByIdentity(_ identityId: Identity.ID) -> Where<
+    package static func findByIdentity(
+        _ identityId: Identity.ID
+    ) -> Where<
         Identity.MFA.BackupCodes.Record
     > {
         Self.where { $0.identityId.eq(identityId) }
@@ -51,7 +53,9 @@ extension Identity.MFA.BackupCodes.Record {
         Self.where { $0.isUsed.eq(true) }
     }
 
-    package static func findUnusedByIdentity(_ identityId: Identity.ID) -> Where<
+    package static func findUnusedByIdentity(
+        _ identityId: Identity.ID
+    ) -> Where<
         Identity.MFA.BackupCodes.Record
     > {
         Self.where {

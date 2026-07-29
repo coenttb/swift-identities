@@ -7,8 +7,9 @@
 
 import Dependencies
 import IdentitiesTypes
-import enum Server.Server
 import Server_Vapor
+
+import enum Server.Server
 
 // MARK: - Response Handler
 
@@ -20,7 +21,7 @@ extension Identity.Logout {
     ) async throws -> Server.Response {
         try? await client.current()
 
-        return Server.Response.redirect(to: try await redirect.logoutSuccess().absoluteString)
+        return try Server.Response.redirect(to: try await redirect.logoutSuccess().absoluteString)
             .expiringIdentityCookies()
     }
 }

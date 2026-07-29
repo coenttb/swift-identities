@@ -53,7 +53,7 @@ extension PasswordHasher: Dependency.Key.Test {
 #if !canImport(Vapor)
     extension PasswordHasher: Dependency.Key {
         public static let liveValue: PasswordHasher = Self(
-            hash: { password, cost in
+            hash: { _, _ in
                 // When Vapor is not available, you must provide your own implementation
                 // This could be Argon2, pure Swift bcrypt, or another hashing algorithm
                 fatalError(
@@ -65,7 +65,7 @@ extension PasswordHasher: Dependency.Key.Test {
                     """
                 )
             },
-            verify: { password, hash in
+            verify: { _, _ in
                 fatalError(
                     """
                     PasswordHasher.liveValue not implemented without Vapor trait.

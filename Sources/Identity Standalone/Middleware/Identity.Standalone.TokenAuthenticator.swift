@@ -147,7 +147,7 @@ extension Identity.Standalone {
                                 // Process request and add new tokens to response
                                 let httpResponse = try await next.respond(to: request)
 
-                                return httpResponse.withTokens(for: response)
+                                return try httpResponse.withTokens(for: response)
                             } catch {
                                 logger.debug(
                                     "Proactive refresh failed, continuing with existing token",
@@ -212,7 +212,7 @@ extension Identity.Standalone {
                             // Now process the authenticated request
                             let httpResponse = try await next.respond(to: request)
 
-                            return httpResponse.withTokens(for: response)
+                            return try httpResponse.withTokens(for: response)
                         } catch {
                             logger.debug(
                                 "Authentication failed, continuing as unauthenticated",

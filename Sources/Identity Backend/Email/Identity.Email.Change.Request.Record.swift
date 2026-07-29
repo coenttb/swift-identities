@@ -2,8 +2,8 @@ import Crypto
 import Dependencies
 import EmailAddress
 import Foundation
-import Records
 private import PostgreSQL_Standard_Macros
+import Records
 
 extension Identity.Email.Change.Request {
     @Table("identity_email_change_requests")
@@ -148,7 +148,9 @@ extension Identity.Email.Change.Request.Record {
 
     /// Find email change request by token with identity data
     /// Replaces: findByToken + separate identity lookup
-    package static func findByTokenWithIdentity(_ token: String) async throws
+    package static func findByTokenWithIdentity(
+        _ token: String
+    ) async throws
         -> EmailChangeRequestWithIdentity?
     {
         @Dependency(\.defaultDatabase) var db

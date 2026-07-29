@@ -42,8 +42,7 @@ extension Identity.OAuth {
         public var onOAuthSuccess: (@Sendable (Identity.OAuth.UserInfo) async throws -> Void)?
 
         /// Called when linking OAuth account to existing identity
-        public var onOAuthLink:
-            (@Sendable (Identity.ID, Identity.OAuth.Connection) async throws -> Void)?
+        public var onOAuthLink: (@Sendable (Identity.ID, Identity.OAuth.Connection) async throws -> Void)?
 
         /// Called when OAuth authentication fails
         public var onOAuthFailure: (@Sendable (Error) async throws -> Void)?

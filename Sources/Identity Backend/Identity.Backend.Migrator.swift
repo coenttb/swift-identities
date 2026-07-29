@@ -157,14 +157,14 @@ extension Identity.Backend {
 
             try await db.execute(
                 """
-                    CREATE INDEX IF NOT EXISTS identity_email_change_requests_token_idx 
+                    CREATE INDEX IF NOT EXISTS identity_email_change_requests_token_idx
                     ON identity_email_change_requests("verificationToken")
                 """
             )
 
             try await db.execute(
                 """
-                    CREATE INDEX IF NOT EXISTS identity_email_change_requests_identityId_idx 
+                    CREATE INDEX IF NOT EXISTS identity_email_change_requests_identityId_idx
                     ON identity_email_change_requests("identityId")
                 """
             )
@@ -172,8 +172,8 @@ extension Identity.Backend {
             // Add partial unique index to ensure only one pending email change per identity
             try await db.execute(
                 """
-                    CREATE UNIQUE INDEX IF NOT EXISTS identity_email_change_requests_identityId_pending_idx 
-                    ON identity_email_change_requests("identityId") 
+                    CREATE UNIQUE INDEX IF NOT EXISTS identity_email_change_requests_identityId_pending_idx
+                    ON identity_email_change_requests("identityId")
                     WHERE "confirmedAt" IS NULL AND "cancelledAt" IS NULL
                 """
             )
@@ -244,15 +244,15 @@ extension Identity.Backend {
 
             try await db.execute(
                 """
-                    CREATE INDEX IF NOT EXISTS identity_backup_codes_identityId_idx 
+                    CREATE INDEX IF NOT EXISTS identity_backup_codes_identityId_idx
                     ON identity_backup_codes("identityId")
                 """
             )
 
             try await db.execute(
                 """
-                    CREATE INDEX IF NOT EXISTS identity_backup_codes_unused_idx 
-                    ON identity_backup_codes("identityId", "isUsed") 
+                    CREATE INDEX IF NOT EXISTS identity_backup_codes_unused_idx
+                    ON identity_backup_codes("identityId", "isUsed")
                     WHERE "isUsed" = false
                 """
             )
@@ -267,7 +267,7 @@ extension Identity.Backend {
                 @Dependency(\.passwordHasher) var passwordHasher
                 @Dependency(\.envVars) var envVars
 
-                let testEmail: EmailAddress = try! .init("test@test.com")
+                let testEmail: EmailAddress = EmailAddress(rawValue: "test@test.com")!
                 let testPassword = "test"
 
                 // Check if test user already exists
@@ -391,7 +391,7 @@ extension Identity.Backend {
             // Composite index for authentication queries
             try await db.execute(
                 """
-                    CREATE INDEX IF NOT EXISTS idx_identities_email_verification 
+                    CREATE INDEX IF NOT EXISTS idx_identities_email_verification
                     ON identities(email, "emailVerificationStatus");
                 """
             )
@@ -399,8 +399,8 @@ extension Identity.Backend {
             // Index for TOTP lookups - composite index for identity + confirmed status
             try await db.execute(
                 """
-                    CREATE INDEX IF NOT EXISTS idx_identity_totp_confirmed 
-                    ON identity_totp("identityId", "isConfirmed") 
+                    CREATE INDEX IF NOT EXISTS idx_identity_totp_confirmed
+                    ON identity_totp("identityId", "isConfirmed")
                     WHERE "isConfirmed" = true;
                 """
             )
@@ -408,8 +408,8 @@ extension Identity.Backend {
             // Index for unused backup codes lookup
             try await db.execute(
                 """
-                    CREATE INDEX IF NOT EXISTS idx_backup_codes_unused 
-                    ON identity_backup_codes("identityId", "isUsed") 
+                    CREATE INDEX IF NOT EXISTS idx_backup_codes_unused
+                    ON identity_backup_codes("identityId", "isUsed")
                     WHERE "isUsed" = false;
                 """
             )
@@ -417,8 +417,8 @@ extension Identity.Backend {
             // Index for active API keys
             try await db.execute(
                 """
-                    CREATE INDEX IF NOT EXISTS idx_api_keys_active 
-                    ON identity_api_keys("identityId", "isActive") 
+                    CREATE INDEX IF NOT EXISTS idx_api_keys_active
+                    ON identity_api_keys("identityId", "isActive")
                     WHERE "isActive" = true;
                 """
             )
@@ -426,8 +426,8 @@ extension Identity.Backend {
             // Index for API key lookups by key hash
             try await db.execute(
                 """
-                    CREATE INDEX IF NOT EXISTS idx_api_keys_hash 
-                    ON identity_api_keys(key) 
+                    CREATE INDEX IF NOT EXISTS idx_api_keys_hash
+                    ON identity_api_keys(key)
                     WHERE "isActive" = true;
                 """
             )
@@ -435,8 +435,8 @@ extension Identity.Backend {
             // Index for email change requests
             try await db.execute(
                 """
-                    CREATE INDEX IF NOT EXISTS idx_email_change_requests_identity 
-                    ON identity_email_change_requests("identityId") 
+                    CREATE INDEX IF NOT EXISTS idx_email_change_requests_identity
+                    ON identity_email_change_requests("identityId")
                     WHERE "confirmedAt" IS NULL;
                 """
             )
@@ -444,7 +444,7 @@ extension Identity.Backend {
             // Index for profile lookups
             try await db.execute(
                 """
-                    CREATE INDEX IF NOT EXISTS idx_profiles_identity 
+                    CREATE INDEX IF NOT EXISTS idx_profiles_identity
                     ON identity_profiles("identityId");
                 """
             )
@@ -452,8 +452,8 @@ extension Identity.Backend {
             // Index for deletion requests
             try await db.execute(
                 """
-                    CREATE INDEX IF NOT EXISTS idx_deletions_identity_pending 
-                    ON identity_deletions("identityId") 
+                    CREATE INDEX IF NOT EXISTS idx_deletions_identity_pending
+                    ON identity_deletions("identityId")
                     WHERE "confirmedAt" IS NULL;
                 """
             )
@@ -480,8 +480,8 @@ extension Identity.Backend {
             // Partial index for verified email lookups (common in authentication)
             try await db.execute(
                 """
-                    CREATE INDEX IF NOT EXISTS idx_identities_email_verified 
-                    ON identities(email) 
+                    CREATE INDEX IF NOT EXISTS idx_identities_email_verified
+                    ON identities(email)
                     WHERE "emailVerificationStatus" = 'verified'
                 """
             )
@@ -491,7 +491,7 @@ extension Identity.Backend {
             // because CURRENT_TIMESTAMP is not immutable for partial indexes
             try await db.execute(
                 """
-                    CREATE INDEX IF NOT EXISTS idx_tokens_type_valid 
+                    CREATE INDEX IF NOT EXISTS idx_tokens_type_valid
                     ON identity_tokens(value, type, "validUntil")
                 """
             )
@@ -499,7 +499,7 @@ extension Identity.Backend {
             // Composite index for OAuth connection lookups
             try await db.execute(
                 """
-                    CREATE INDEX IF NOT EXISTS idx_oauth_connections_provider_identity 
+                    CREATE INDEX IF NOT EXISTS idx_oauth_connections_provider_identity
                     ON oauth_connections(provider, identity_id)
                 """
             )
@@ -507,8 +507,8 @@ extension Identity.Backend {
             // Index for email change request token lookups
             try await db.execute(
                 """
-                    CREATE INDEX IF NOT EXISTS idx_email_change_token 
-                    ON identity_email_change_requests("verificationToken") 
+                    CREATE INDEX IF NOT EXISTS idx_email_change_token
+                    ON identity_email_change_requests("verificationToken")
                     WHERE "confirmedAt" IS NULL
                 """
             )
@@ -518,7 +518,7 @@ extension Identity.Backend {
             // because CURRENT_TIMESTAMP is not immutable for partial indexes
             try await db.execute(
                 """
-                    CREATE INDEX IF NOT EXISTS idx_tokens_identity_active 
+                    CREATE INDEX IF NOT EXISTS idx_tokens_identity_active
                     ON identity_tokens("identityId", type, "validUntil")
                 """
             )

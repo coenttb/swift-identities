@@ -5,10 +5,10 @@
 //  Created by Coen ten Thije Boonkkamp on 29/01/2025.
 //
 
+import HTTP_Cookies
 import IdentitiesTypes
 import Server_Vapor
 import Vapor
-import HTTP_Cookies
 
 extension Identity.Standalone {
     /// Credentials authenticator for username/password authentication in standalone deployments.

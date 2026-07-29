@@ -32,6 +32,6 @@ extension EnvironmentVariables {
             }
         }
 
-        return try! Self(dictionary: dictionary, requiredKeys: [])
+        return Self(dictionary)
     }
 }

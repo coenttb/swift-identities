@@ -21,7 +21,6 @@ extension Identity.Backend {
         public var jwt: Identity.Token.Client
 
         /// Router for generating authentication URLs
-        //        public var router: Identity.Authentication.Route.Router
         public var router: any URLRouting.Router<Identity.Authentication.Route>
 
         /// Email configuration with all email callbacks
@@ -131,16 +130,12 @@ extension Identity.Backend.Configuration {
         public var sendVerificationEmail: @Sendable (EmailAddress, String) async throws -> Void
         public var sendPasswordResetEmail: @Sendable (EmailAddress, String) async throws -> Void
         public var sendPasswordChangeNotification: @Sendable (EmailAddress) async throws -> Void
-        public var sendEmailChangeConfirmation:
-            @Sendable (EmailAddress, EmailAddress, String) async throws -> Void
-        public var sendEmailChangeRequestNotification:
-            @Sendable (EmailAddress, EmailAddress) async throws -> Void
+        public var sendEmailChangeConfirmation: @Sendable (EmailAddress, EmailAddress, String) async throws -> Void
+        public var sendEmailChangeRequestNotification: @Sendable (EmailAddress, EmailAddress) async throws -> Void
         public var onEmailChangeSuccess: @Sendable (EmailAddress, EmailAddress) async throws -> Void
         public var sendDeletionRequestNotification: @Sendable (EmailAddress) async throws -> Void
-        public var sendDeletionConfirmationNotification:
-            @Sendable (EmailAddress) async throws -> Void
-        public var onIdentityCreationSuccess:
-            @Sendable ((id: Identity.ID, email: EmailAddress)) async throws -> Void
+        public var sendDeletionConfirmationNotification: @Sendable (EmailAddress) async throws -> Void
+        public var onIdentityCreationSuccess: @Sendable ((id: Identity.ID, email: EmailAddress)) async throws -> Void
 
         public init(
             sendVerificationEmail: @escaping @Sendable (EmailAddress, String) async throws -> Void,

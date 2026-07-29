@@ -95,7 +95,9 @@ extension Identity.Record {
     ///
     /// - Performance: O(1) database query regardless of number of emails
     /// - Complexity: Single query: `SELECT email FROM identities WHERE email IN (...)`
-    package static func emailsExistOptimized(_ emails: [EmailAddress]) async throws -> Set<
+    package static func emailsExistOptimized(
+        _ emails: [EmailAddress]
+    ) async throws -> Set<
         EmailAddress
     > {
         @Dependency(\.defaultDatabase) var db

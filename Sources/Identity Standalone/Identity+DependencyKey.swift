@@ -33,7 +33,7 @@ extension Identity: @retroactive Dependency.Key {
                 router: router.authentication,
                 token: .live()
             ),
-            logout: Logout.init(
+            logout: Logout(
                 client: .init(
                     current: {
                         @Dependency(\.request) var request
@@ -49,7 +49,7 @@ extension Identity: @retroactive Dependency.Key {
                                 try await Identity.Record
                                     .where { $0.id.eq(identity.id) }
                                     .update { record in
-                                        record.sessionVersion = record.sessionVersion + 1
+                                        record.sessionVersion += 1
                                         record.updatedAt = date()
                                     }
                                     .execute(db)
@@ -74,7 +74,7 @@ extension Identity: @retroactive Dependency.Key {
                                 try await Identity.Record
                                     .where { $0.id.eq(identity.id) }
                                     .update { record in
-                                        record.sessionVersion = record.sessionVersion + 1
+                                        record.sessionVersion += 1
                                         record.updatedAt = date()
                                     }
                                     .execute(db)

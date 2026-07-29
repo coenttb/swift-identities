@@ -9,8 +9,8 @@ import Dependencies
 import Logger_Dependencies
 import Logging
 import Server
-import Vapor
 import Throttling
+import Vapor
 
 extension RateLimiter {
     public struct Client {

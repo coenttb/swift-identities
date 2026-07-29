@@ -10,6 +10,7 @@ import Foundation
 import IdentitiesTypes
 import Server
 import Server_Vapor
+
 import struct Vapor.Abort
 
 extension Identity.Provider.API {

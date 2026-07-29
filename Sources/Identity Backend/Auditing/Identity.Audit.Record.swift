@@ -1,6 +1,6 @@
 import Foundation
-import Records
 private import PostgreSQL_Standard_Macros
+import Records
 
 extension Identity {
     /// Audit log for tracking changes to identity-related tables

@@ -13,8 +13,8 @@ import Identity_Backend
 import Identity_Shared
 import Language
 import Server
-import URLRouting
 import Throttling
+import URLRouting
 
 extension Identity.Standalone {
     /// Standalone configuration that includes both Frontend and Backend configurations

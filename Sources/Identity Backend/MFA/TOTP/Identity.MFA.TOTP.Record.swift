@@ -1,8 +1,8 @@
 import Foundation
 import IdentitiesTypes
+private import PostgreSQL_Standard_Macros
 import RFC_6238
 import Records
-private import PostgreSQL_Standard_Macros
 import TOTP
 
 extension Identity.MFA.TOTP {
@@ -55,8 +55,7 @@ extension RFC_6238.TOTP.Algorithm: @retroactive QueryBindable {}
 // MARK: - Query Helpers
 
 extension Identity.MFA.TOTP.Record {
-    package static func findByIdentity(_ identityId: Identity.ID) -> Where<Identity.MFA.TOTP.Record>
-    {
+    package static func findByIdentity(_ identityId: Identity.ID) -> Where<Identity.MFA.TOTP.Record> {
         Self.where { $0.identityId.eq(identityId) }
     }
 
@@ -68,7 +67,9 @@ extension Identity.MFA.TOTP.Record {
         Self.where { $0.isConfirmed.eq(false) }
     }
 
-    package static func findConfirmedByIdentity(_ identityId: Identity.ID) -> Where<
+    package static func findConfirmedByIdentity(
+        _ identityId: Identity.ID
+    ) -> Where<
         Identity.MFA.TOTP.Record
     > {
         Self.where {

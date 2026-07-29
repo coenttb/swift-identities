@@ -15,7 +15,8 @@ private func rateLimitAbort(
     nextAllowedAttempt: Date? = nil,
     defaultDelay: TimeInterval = 60
 ) -> Abort {
-    let delay = nextAllowedAttempt.map { max(1, Int($0.timeIntervalSinceNow)) }
+    let delay =
+        nextAllowedAttempt.map { max(1, Int($0.timeIntervalSinceNow)) }
         ?? Int(defaultDelay)
     return Abort(.tooManyRequests, headers: ["Retry-After": "\(delay)"])
 }
@@ -192,7 +193,7 @@ extension Identity.API {
 
                 guard rateLimit.isAllowed
                 else {
-                        throw rateLimitAbort(nextAllowedAttempt: rateLimit.nextAllowedAttempt)
+                    throw rateLimitAbort(nextAllowedAttempt: rateLimit.nextAllowedAttempt)
                 }
 
                 return .init(limiter: rateLimiter.deleteRequest, key: key)
@@ -202,7 +203,7 @@ extension Identity.API {
 
                 guard rateLimit.isAllowed
                 else {
-                        throw rateLimitAbort(nextAllowedAttempt: rateLimit.nextAllowedAttempt)
+                    throw rateLimitAbort(nextAllowedAttempt: rateLimit.nextAllowedAttempt)
                 }
 
                 return .init(limiter: rateLimiter.deleteConfirm, key: key)
@@ -212,7 +213,7 @@ extension Identity.API {
 
                 guard rateLimit.isAllowed
                 else {
-                        throw rateLimitAbort(nextAllowedAttempt: rateLimit.nextAllowedAttempt)
+                    throw rateLimitAbort(nextAllowedAttempt: rateLimit.nextAllowedAttempt)
                 }
 
                 return .init(limiter: rateLimiter.deleteCancel, key: key)

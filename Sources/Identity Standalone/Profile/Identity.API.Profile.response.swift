@@ -117,7 +117,7 @@ extension Identity.API.Profile {
                 response.expire(cookies: .identity)
 
                 return
-                    response
+                    try response
                     .withTokens(
                         for: .init(accessToken: newAccessToken, refreshToken: newRefreshToken)
                     )
