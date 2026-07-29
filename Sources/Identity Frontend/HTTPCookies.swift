@@ -25,16 +25,17 @@ extension Server.Response {
         cookie name: String,
         token: String,
         configuration: HTTP_Cookies.HTTPCookies.Configuration
-    ) -> Server.Response {
+    ) throws(HTTP_Cookies.HTTPCookies.EncodingPolicy.Error) -> Server.Response {
         var copy = self
+        let value = try HTTP_Cookies.HTTPCookies.SetCookie(
+            name: name,
+            value: .init(token: token),
+            configuration: configuration
+        ).headerValue()
         copy.headers.append(
-            try! HTTP.Header.Field(
-                name: "Set-Cookie",
-                value: try! HTTP_Cookies.HTTPCookies.SetCookie(
-                    name: name,
-                    value: .init(token: token),
-                    configuration: configuration
-                ).headerValue()
+            HTTP.Header.Field(
+                name: .init("Set-Cookie"),
+                value: .init(unchecked: value)
             )
         )
         return copy
@@ -42,14 +43,14 @@ extension Server.Response {
 
     /// A copy of this response with expired `Set-Cookie` lines for every
     /// identity cookie, deleting them client-side (logout).
-    package func expiringIdentityCookies() -> Server.Response {
+    package func expiringIdentityCookies() throws(HTTP_Cookies.HTTPCookies.EncodingPolicy.Error) -> Server.Response {
         var copy = self
         for name in [
             Identity.Cookies.Names.accessToken,
             Identity.Cookies.Names.refreshToken,
             Identity.Cookies.Names.reauthorizationToken,
         ] {
-            copy = copy.setting(
+            copy = try copy.setting(
                 cookie: name,
                 token: "",
                 configuration: .init(

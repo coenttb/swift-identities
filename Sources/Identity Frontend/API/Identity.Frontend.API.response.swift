@@ -213,7 +213,7 @@ extension Identity.Frontend {
                 case .requiresReauthentication:
                     return Server.Response(
                         status: .unauthorized,
-                        headers: HTTP.Headers([try! .init(name: "X-Requires-Reauth", value: "true")]),
+                        headers: HTTP.Headers([try .init(name: "X-Requires-Reauth", value: "true")]),
                         body: Array("Reauthorization required".utf8)
                     )
                 }
@@ -280,7 +280,7 @@ extension Identity.Frontend {
                 )
         } else {
             // For regular form submissions, redirect to the email change page
-            return Server.Response.redirect(
+            return try Server.Response.redirect(
                 to: router.url(for: .email(.view(.change(.request)))).absoluteString
             )
             .setting(
@@ -337,7 +337,7 @@ extension Identity.Frontend {
             let accessToken = try Identity.Token.Access(jwt: jwt)
             let identityId = accessToken.identityId
 
-            return Server.Response.redirect(
+            return try Server.Response.redirect(
                 to: "\(try await config.redirect.loginSuccess(identityId))"
             )
             .withTokens(for: authResponse)

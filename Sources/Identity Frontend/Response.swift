@@ -18,11 +18,11 @@ extension Server.Response {
     /// authentication token pair, under the frontend cookie configuration.
     package func withTokens(
         for response: Identity.Authentication.Response
-    ) -> Server.Response {
+    ) throws(HTTP_Cookies.HTTPCookies.EncodingPolicy.Error) -> Server.Response {
         @Dependency(\.identityFrontendConfiguration) var configuration
 
         return
-            self
+            try self
             .setting(
                 cookie: Identity.Cookies.Names.accessToken,
                 token: response.accessToken,

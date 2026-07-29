@@ -347,7 +347,7 @@ extension Identity.API {
                 )
 
                 // Return success with authentication tokens
-                return Response.success(true)
+                return try Response.success(true)
                     .withTokens(for: authResponse)
 
             case .disable(let disable):
@@ -414,10 +414,10 @@ extension Identity.API {
                         ]
                     )
                     // Set authentication cookies
-                    return response.withTokens(for: authResponse)
+                    return try response.withTokens(for: authResponse)
                 } else {
                     // API request - return JSON with tokens
-                    return Response.success(true)
+                    return try Response.success(true)
                         .withTokens(for: authResponse)
                 }
 

@@ -21,7 +21,7 @@ extension Identity.Logout {
     ) async throws -> Server.Response {
         try? await client.current()
 
-        return Server.Response.redirect(to: try await redirect.logoutSuccess().absoluteString)
+        return try Server.Response.redirect(to: try await redirect.logoutSuccess().absoluteString)
             .expiringIdentityCookies()
     }
 }
