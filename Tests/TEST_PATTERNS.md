@@ -458,7 +458,7 @@ extension TestFixtures {
     /// Generate unique email for test isolation
     static func uniqueEmail(prefix: String = "test") -> EmailAddress {
         let uuid = UUID().uuidString.prefix(8)
-        return EmailAddress(rawValue: "\(prefix)!-\(uuid)@example.com")
+        return EmailAddress(rawValue: "\(prefix)-\(uuid)@example.com")
     }
 
     /// Generate unique test identity

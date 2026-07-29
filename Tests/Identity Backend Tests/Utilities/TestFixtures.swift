@@ -21,7 +21,7 @@ enum TestFixtures {
     /// - Returns: Unique email address with UUID suffix
     static func uniqueEmail(prefix: String = "test") -> EmailAddress {
         let uuid = UUID().uuidString.prefix(8)
-        return EmailAddress(rawValue: "\(prefix)!-\(uuid)@example.com")
+        return EmailAddress(rawValue: "\(prefix)-\(uuid)@example.com")
     }
 
     /// Creates a test identity in the database
