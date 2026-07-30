@@ -12,8 +12,8 @@ import IdentitiesTypes
 import Logger_Dependencies
 import Logging
 import PasswordValidation
-import Records
 private import PostgreSQL_Standard_Macros
+import Records
 import Server
 
 extension Identity.Password.Reset.Client {
@@ -148,7 +148,10 @@ extension Identity.Password.Reset.Client {
                             .where { $0.id.eq(data.identity.id) }
                             .update { identity in
                                 identity.passwordHash = passwordHash
-                                identity.sessionVersion = SQLQueryExpression("\(identity.sessionVersion) + 1", as: Int.self)
+                                identity.sessionVersion = SQLQueryExpression(
+                                    "\(identity.sessionVersion) + 1",
+                                    as: Int.self
+                                )
                                 identity.updatedAt = date()
                             }
                             .execute(db)

@@ -159,9 +159,10 @@ extension Identity.MFA {
                     client: Identity.MFA.TOTP.Client.unimplemented(),  // Default/empty client
                     router: Identity.MFA.TOTP.API.Router().eraseToAnyParserPrinter()
                 ),
-            sms: config.sms.map { smsConfig in
+            sms: config.sms.map { _ in
                 Identity.MFA.SMS(
-                    client: Identity.MFA.SMS.Client.unimplemented(),  // TODO: Add .live(configuration:) when implemented
+                    // TODO: Add .live(configuration:) when implemented
+                    client: Identity.MFA.SMS.Client.unimplemented(),
                     router: Identity.MFA.SMS.API.Router().eraseToAnyParserPrinter()
                 )
             }
@@ -169,9 +170,10 @@ extension Identity.MFA {
                     client: Identity.MFA.SMS.Client.unimplemented(),  // Default/empty client
                     router: Identity.MFA.SMS.API.Router().eraseToAnyParserPrinter()
                 ),
-            email: config.email.map { emailConfig in
+            email: config.email.map { _ in
                 Identity.MFA.Email(
-                    client: Identity.MFA.Email.Client.unimplemented(),  // TODO: Add .live(configuration:) when implemented
+                    // TODO: Add .live(configuration:) when implemented
+                    client: Identity.MFA.Email.Client.unimplemented(),
                     router: Identity.MFA.Email.API.Router().eraseToAnyParserPrinter()
                 )
             }
@@ -179,9 +181,10 @@ extension Identity.MFA {
                     client: Identity.MFA.Email.Client.unimplemented(),  // Default/empty client
                     router: Identity.MFA.Email.API.Router().eraseToAnyParserPrinter()
                 ),
-            webauthn: config.webauthn.map { webauthnConfig in
+            webauthn: config.webauthn.map { _ in
                 Identity.MFA.WebAuthn(
-                    client: Identity.MFA.WebAuthn.Client.unimplemented(),  // TODO: Add .live(configuration:) when implemented
+                    // TODO: Add .live(configuration:) when implemented
+                    client: Identity.MFA.WebAuthn.Client.unimplemented(),
                     router: Identity.MFA.WebAuthn.API.Router().eraseToAnyParserPrinter()
                 )
             }
@@ -189,14 +192,16 @@ extension Identity.MFA {
                     client: Identity.MFA.WebAuthn.Client.unimplemented(),  // Default/empty client
                     router: Identity.MFA.WebAuthn.API.Router().eraseToAnyParserPrinter()
                 ),
-            backupCodes: config.backupCodes.map { backupConfig in
+            backupCodes: config.backupCodes.map { _ in
                 Identity.MFA.BackupCodes(
-                    client: Identity.MFA.BackupCodes.Client.unimplemented(),  // TODO: Add .live(configuration:) when implemented
+                    // TODO: Add .live(configuration:) when implemented
+                    client: Identity.MFA.BackupCodes.Client.unimplemented(),
                     router: Identity.MFA.BackupCodes.API.Router().eraseToAnyParserPrinter()
                 )
             }
                 ?? Identity.MFA.BackupCodes(
-                    client: Identity.MFA.BackupCodes.Client.unimplemented(),  // Default/empty client
+                    // Default/empty client
+                    client: Identity.MFA.BackupCodes.Client.unimplemented(),
                     router: Identity.MFA.BackupCodes.API.Router().eraseToAnyParserPrinter()
                 ),
             status: Identity.MFA.Status(

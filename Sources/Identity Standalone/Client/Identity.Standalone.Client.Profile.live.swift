@@ -11,7 +11,7 @@ import IdentitiesTypes
 import Identity_Backend
 import Records
 
-//extension Identity.Standalone.Client.Profile {
+// extension Identity.Standalone.Client.Profile {
 //    /// Live implementation of the profile client for standalone deployments.
 //    ///
 //    /// This implementation directly accesses the database to manage user profiles.
@@ -85,4 +85,4 @@ import Records
 //            }
 //        )
 //    }
-//}
+// }

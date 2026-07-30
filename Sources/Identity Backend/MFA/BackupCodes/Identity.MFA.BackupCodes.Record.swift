@@ -1,7 +1,7 @@
 import Foundation
 import IdentitiesTypes
-import Records
 private import PostgreSQL_Standard_Macros
+import Records
 
 extension Identity.MFA.BackupCodes {
     @Table("identity_backup_codes")

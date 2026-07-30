@@ -1,8 +1,8 @@
 import Dependencies
 import Foundation
 import IdentitiesTypes
-import Records
 private import PostgreSQL_Standard_Macros
+import Records
 
 extension Identity.Authentication {
     public enum ApiKey {}
@@ -65,7 +65,8 @@ extension Identity.Authentication.ApiKey {
             self.scopes = scopes
             self.isActive = true
             self.rateLimit = rateLimit
-            self.validUntil = validUntil ?? date().addingTimeInterval(365 * 24 * 3600)  // Default 1 year
+            // Default 1 year
+            self.validUntil = validUntil ?? date().addingTimeInterval(365 * 24 * 3600)
             self.createdAt = date()
             self.lastUsedAt = nil
         }

@@ -7,8 +7,8 @@
 
 import Dependencies
 import Foundation
-import IdentitiesTypes
 import HTTP_Cookies
+import IdentitiesTypes
 import Server_Vapor
 
 extension Identity.Frontend.Configuration {

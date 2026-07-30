@@ -10,8 +10,6 @@ import Identity_Shared
 import JWT
 import Server_Vapor
 import Vapor
-@preconcurrency import Vapor
-
 extension Identity.Consumer {
     public struct Middleware: AsyncMiddleware {
         private let tokenAuthenticator: TokenAuthenticator

@@ -12,12 +12,10 @@ import JWT
 import Server_Vapor
 
 extension Identity.Token.Access {
-    /**
-       * Creates an access token from an Identity
-       *
-       * IMPORTANT: The subject claim will contain both the identity ID and email
-       * in the format "ID:email" to ensure both pieces of information are preserved.
-       */
+    /// Creates an access token from an Identity
+    ///
+    /// IMPORTANT: The subject claim will contain both the identity ID and email
+    /// in the format "ID:email" to ensure both pieces of information are preserved.
     package init(identity: Identity.Record) async throws {
         @Dependency(\.tokenClient) var tokenClient
 
@@ -34,9 +32,7 @@ extension Identity.Token.Access {
 }
 
 extension Identity.Token.Refresh {
-    /**
-       * Creates a refresh token from an Identity
-       */
+    /// Creates a refresh token from an Identity
     package init(identity: Identity.Record) async throws {
         @Dependency(\.tokenClient) var tokenClient
 
@@ -52,12 +48,10 @@ extension Identity.Token.Refresh {
 }
 
 extension Identity.Token.Reauthorization {
-    /**
-       * Creates a reauthorization token from an Identity
-       *
-       * IMPORTANT: This now uses the same "ID:email" format for subject
-       * to be consistent with access tokens.
-       */
+    /// Creates a reauthorization token from an Identity
+    ///
+    /// IMPORTANT: This now uses the same "ID:email" format for subject
+    /// to be consistent with access tokens.
     package init(
         identity: Identity.Record,
         purpose: String = "general",

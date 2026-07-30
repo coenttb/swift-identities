@@ -11,9 +11,9 @@ import JWT
 import Records
 import RecordsTestSupport
 import Testing
+import Throttling
 import URLRouting
 import Vapor
-import Throttling
 
 // MARK: - Test Fixtures
 

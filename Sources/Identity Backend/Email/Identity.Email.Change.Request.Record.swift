@@ -2,8 +2,8 @@ import Crypto
 import Dependencies
 import EmailAddress
 import Foundation
-import Records
 private import PostgreSQL_Standard_Macros
+import Records
 
 extension Identity.Email.Change.Request {
     @Table("identity_email_change_requests")

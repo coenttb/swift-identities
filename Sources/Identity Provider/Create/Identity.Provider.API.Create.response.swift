@@ -11,6 +11,7 @@ import IdentitiesTypes
 import Logger_Dependencies
 import Server
 import Server_Vapor
+
 import struct Vapor.Abort
 
 extension Identity.Creation.API {

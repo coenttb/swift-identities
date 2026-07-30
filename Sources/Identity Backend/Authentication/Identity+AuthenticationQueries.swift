@@ -1,8 +1,8 @@
 import Dependencies
 import EmailAddress
 import Foundation
-import Records
 private import PostgreSQL_Standard_Macros
+import Records
 
 // MARK: - Selection Types for Combined Queries
 
@@ -162,7 +162,10 @@ extension Identity.Record {
                 try await Identity.Record
                     .where { $0.id.eq(identityId) }
                     .update { identity in
-                        identity.sessionVersion = SQLQueryExpression("\(identity.sessionVersion) + 1", as: Int.self)
+                        identity.sessionVersion = SQLQueryExpression(
+                            "\(identity.sessionVersion) + 1",
+                            as: Int.self
+                        )
                         identity.updatedAt = date()
                     }
                     .execute(db)

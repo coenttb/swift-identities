@@ -8,10 +8,8 @@
 import Server
 
 extension Identity.Authentication.Response {
-    /**
-       * Creates an authentication response with access and refresh tokens
-       * for the given identity
-       */
+    /// Creates an authentication response with access and refresh tokens
+    /// for the given identity
     package init(_ identity: Identity.Record) async throws {
         @Dependency(\.tokenClient) var tokenClient
 

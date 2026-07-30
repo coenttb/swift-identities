@@ -61,7 +61,7 @@ extension Identity.Consumer.API.Router {
                 router
                 .setBearerAuth(request.cookies.accessToken?.string)
 
-        case .mfa(_):
+        case .mfa:
             break
         case .oauth(let oauth):
             // OAuth views generally don't require authentication

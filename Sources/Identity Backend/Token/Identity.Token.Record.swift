@@ -2,8 +2,8 @@ import Crypto
 import Dependencies
 import Foundation
 import IdentitiesTypes
-import Records
 private import PostgreSQL_Standard_Macros
+import Records
 
 extension Identity.Token {
     @Table("identity_tokens")

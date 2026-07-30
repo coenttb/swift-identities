@@ -8,17 +8,17 @@
 import Dependencies
 import Foundation
 import HTML
+import HTTP_Cookies
 import IdentitiesTypes
 import Identity_Frontend
 import Identity_Shared
 import Identity_Views
 import Server
 import Server_Vapor
+import Throttling
+import URI
 import URLRouting
 import Vapor
-import HTTP_Cookies
-import URI
-import Throttling
 
 extension Identity.Consumer {
     public struct Configuration: Sendable {
@@ -69,7 +69,10 @@ extension Identity.Consumer.Configuration {
         public var cookies: Identity.Frontend.Configuration.Cookies
         public var router: AnyParserPrinter<URLRequestData, Identity.Route> {
             didSet {
-                self.router = BaseURLRouter(baseURLString: self.baseURL.absoluteString, upstream: router).eraseToAnyParserPrinter()
+                self.router = BaseURLRouter(
+                    baseURLString: self.baseURL.absoluteString,
+                    upstream: router
+                ).eraseToAnyParserPrinter()
             }
         }
 
@@ -117,12 +120,12 @@ extension Identity.Consumer.Configuration.Consumer {
         cookies: Identity.Frontend.Configuration.Cookies,
         router: AnyParserPrinter<URLRequestData, Identity.Route>,
         currentUserName: @escaping @Sendable () -> String?,
-        canonicalHref: @escaping @Sendable (Identity.Consumer.View) -> URL? = { view in
+        canonicalHref: @escaping @Sendable (Identity.Consumer.View) -> URL? = { _ in
             // Return nil - canonical URLs should be set by the application
             return nil
         },
         hreflang: @escaping @Sendable (Identity.Consumer.View, Translating.Language) -> URL = {
-            view,
+            _,
             _ in
             @Dependency(\.identityConsumerConfiguration) var config
             return config.consumer.baseURL
@@ -275,7 +278,8 @@ extension Identity.Consumer.Configuration {
         ) {
             self.baseURL = baseURL
             self.domain = domain
-            self.router = BaseURLRouter(baseURLString: baseURL.absoluteString, upstream: router).eraseToAnyParserPrinter()
+            self.router = BaseURLRouter(baseURLString: baseURL.absoluteString, upstream: router)
+                .eraseToAnyParserPrinter()
         }
     }
 }

@@ -325,7 +325,10 @@ private func performEmailChangeConfirmation(
             .where { $0.id.eq(data.identity.id) }
             .update { record in
                 record.email = newEmailAddress
-                record.sessionVersion = SQLQueryExpression("\(record.sessionVersion) + 1", as: Int.self)
+                record.sessionVersion = SQLQueryExpression(
+                    "\(record.sessionVersion) + 1",
+                    as: Int.self
+                )
                 record.updatedAt = date
             }
             .execute(db)

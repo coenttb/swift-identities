@@ -8,12 +8,12 @@
 import Dependencies
 import EmailAddress
 import Foundation
-import URLRequestHandler
 import IdentitiesTypes
 import Identity_Shared
 import JWT
 import Server_Vapor
 import Throttling
+import URLRequestHandler
 import Vapor
 
 extension Identity.Creation.Client {

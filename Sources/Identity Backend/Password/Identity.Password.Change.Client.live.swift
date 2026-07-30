@@ -47,7 +47,10 @@ extension Identity.Password.Change.Client {
                         .where { $0.id.eq(identity.id) }
                         .update { record in
                             record.passwordHash = passwordHash
-                            record.sessionVersion = SQLQueryExpression("\(record.sessionVersion) + 1", as: Int.self)
+                            record.sessionVersion = SQLQueryExpression(
+                                "\(record.sessionVersion) + 1",
+                                as: Int.self
+                            )
                             record.updatedAt = date()
                         }
                         .execute(db)

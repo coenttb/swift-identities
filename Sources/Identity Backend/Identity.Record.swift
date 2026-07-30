@@ -1,9 +1,9 @@
 import Dependencies
 import EmailAddress
-import Foundation
-import Records
-private import PostgreSQL_Standard_Macros
 import Environment_Dependencies
+import Foundation
+private import PostgreSQL_Standard_Macros
+import Records
 
 extension Identity {
     @Table("identities")

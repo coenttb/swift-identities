@@ -113,12 +113,16 @@ where Upstream.Input == URLRequestData {
     }
 
     @inlinable
-    public func parse(_ input: inout URLRequestData) throws(RFC_3986.URI.Routing.Error) -> Upstream.Output {
+    public func parse(_ input: inout URLRequestData) throws(RFC_3986.URI.Routing.Error)
+        -> Upstream.Output
+    {
         try upstream.parse(&input)
     }
 
     @inlinable
-    public func print(_ output: Upstream.Output, into input: inout URLRequestData) throws(RFC_3986.URI.Routing.Error) {
+    public func print(_ output: Upstream.Output, into input: inout URLRequestData) throws(RFC_3986
+        .URI.Routing.Error)
+    {
         try upstream.print(output, into: &input)
         input = transform(input)
     }

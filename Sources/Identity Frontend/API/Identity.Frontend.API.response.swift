@@ -10,9 +10,10 @@ import Foundation
 import HTTP_Cookies
 import HTTP_Standard
 import IdentitiesTypes
-import enum Server.Server
 import Server_Vapor
 import Vapor
+
+import enum Server.Server
 
 extension Identity.Frontend {
     package static func response(
@@ -212,7 +213,8 @@ extension Identity.Frontend {
                 case .requiresReauthentication:
                     return Server.Response(
                         status: .unauthorized,
-                        headers: HTTP.Headers([try! .init(name: "X-Requires-Reauth", value: "true")]),
+                        headers: HTTP.Headers([try! .init(name: "X-Requires-Reauth", value: "true")]
+                        ),
                         body: Array("Reauthorization required".utf8)
                     )
                 }

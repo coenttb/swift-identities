@@ -15,7 +15,7 @@ import Throttling
 // - Identity.Email.Client.live
 // - Identity.Password.Client.live
 
-//extension Identity.Consumer.Client {
+// extension Identity.Consumer.Client {
 //    public static func live(
 //        makeRequest: @escaping @Sendable (_ route: Identity.API) throws -> URLRequest
 //    ) -> Self {
@@ -48,4 +48,4 @@ import Throttling
 //            password: .live { try makeRequest(.password($0)) }
 //        )
 //    }
-//}
+// }

@@ -10,9 +10,10 @@ import HTML
 import IdentitiesTypes
 import Identity_Views
 import Language
-import enum Server.Server
 import Server_Vapor
 import Vapor
+
+import enum Server.Server
 
 // MARK: - Response Dispatcher
 

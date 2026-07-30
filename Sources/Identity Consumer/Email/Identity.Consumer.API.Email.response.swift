@@ -9,6 +9,7 @@ import Dependencies
 import IdentitiesTypes
 import Server_Vapor
 import Vapor
+
 import enum Server.Server
 
 extension Identity.Email.API {
@@ -29,7 +30,10 @@ extension Identity.Email.API {
                         return try Server.Response.json(success: true)
 
                     case .requiresReauthentication:
-                        return try Server.Response.json(success: false, message: "Requires reauthorization")
+                        return try Server.Response.json(
+                            success: false,
+                            message: "Requires reauthorization"
+                        )
                     }
                 } catch {
                     throw Abort(.internalServerError, reason: "Failed to request email change")

@@ -11,9 +11,10 @@ import HTML
 import IdentitiesTypes
 import Identity_Views
 import Language
-import enum Server.Server
 import Server_HTML
 import Server_Vapor
+
+import enum Server.Server
 
 extension Identity.Frontend {
     /// Creates an HTML document wrapper for identity views.
@@ -45,35 +46,35 @@ extension Identity.Frontend {
     ) async throws -> Server.Response {
         return try Server.Response.html(
             await Identity.View.HTMLDocument(
-            view: view,
-            title: { view in
-                switch view {
-                case .authenticate: return "Sign In"
-                case .create: return "Create Account"
-                case .delete: return "Delete Account"
-                case .logout: return "Sign Out"
-                case .email: return "Change Email"
-                case .password: return "Password"
-                case .mfa: return "MFA"
-                case .oauth: return "OAuth"
-                }
-            },
-            description: { view in
-                switch view {
-                case .authenticate: return "Sign in to your account"
-                case .create: return "Create a new account"
-                case .delete: return "Delete your account"
-                case .logout: return "Sign out of your account"
-                case .email: return "Change your email address"
-                case .password: return "Manage your password"
-                case .mfa: return "MFA"
-                case .oauth: return "OAuth"
-                }
-            },
-            //            favicons: branding.favicons,
-            canonicalHref: canonicalHref,
-            hreflang: hreflang,
-            footer_links: footer_links
+                view: view,
+                title: { view in
+                    switch view {
+                    case .authenticate: return "Sign In"
+                    case .create: return "Create Account"
+                    case .delete: return "Delete Account"
+                    case .logout: return "Sign Out"
+                    case .email: return "Change Email"
+                    case .password: return "Password"
+                    case .mfa: return "MFA"
+                    case .oauth: return "OAuth"
+                    }
+                },
+                description: { view in
+                    switch view {
+                    case .authenticate: return "Sign in to your account"
+                    case .create: return "Create a new account"
+                    case .delete: return "Delete your account"
+                    case .logout: return "Sign out of your account"
+                    case .email: return "Change your email address"
+                    case .password: return "Manage your password"
+                    case .mfa: return "MFA"
+                    case .oauth: return "OAuth"
+                    }
+                },
+                //            favicons: branding.favicons,
+                canonicalHref: canonicalHref,
+                hreflang: hreflang,
+                footer_links: footer_links
             ) {
                 try await content()
             }
@@ -92,17 +93,16 @@ extension Identity.Frontend {
 
         return try Server.Response.html(
             await Identity.View.HTMLDocument(
-            view: view,
-            title: { _ in title },
-            description: { _ in description },
-            //            favicons: configuration.branding.favicons,
-            canonicalHref: configuration.canonicalHref,
-            hreflang: configuration.hreflang,
-            footer_links: configuration.branding.footer_links
+                view: view,
+                title: { _ in title },
+                description: { _ in description },
+                //            favicons: configuration.branding.favicons,
+                canonicalHref: configuration.canonicalHref,
+                hreflang: configuration.hreflang,
+                footer_links: configuration.branding.footer_links
             ) {
                 try await content()
             }
         )
     }
 }
-
