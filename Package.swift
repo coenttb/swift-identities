@@ -188,7 +188,12 @@ let package = Package(
                 .identityShared,
                 .identityProvider,
                 .identityConsumer,
+                .identityFrontend,
                 .identitiesTypes,
+                .dependencies,
+                .server,
+                .serverVapor,
+                .httpCookies,
                 .product(name: "URL Routing Test Support", package: "swift-url-routing")
             ],
             path: "Tests/Authentication Router Parity Tests",
