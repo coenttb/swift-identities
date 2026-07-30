@@ -122,43 +122,55 @@ extension Identity.MFA.TOTP {
 extension Identity.MFA.TOTP.Configuration {
     /// Standard TOTP configuration compatible with most authenticator apps
     public static func standard(issuer: String) -> Self {
-        try! Self(
-            issuer: issuer,
-            algorithm: .sha1,
-            digits: 6,
-            timeStep: 30,
-            verificationWindow: 1,
-            backupCodeLength: 8,
-            backupCodeCount: 10,
-            qrCodeSize: 200
-        )
+        do {
+            return try Self(
+                issuer: issuer,
+                algorithm: .sha1,
+                digits: 6,
+                timeStep: 30,
+                verificationWindow: 1,
+                backupCodeLength: 8,
+                backupCodeCount: 10,
+                qrCodeSize: 200
+            )
+        } catch {
+            preconditionFailure("Invalid standard TOTP configuration: \(error)")
+        }
     }
 
     /// More secure configuration with SHA256
     public static func secure(issuer: String) -> Self {
-        try! Self(
-            issuer: issuer,
-            algorithm: .sha256,
-            digits: 8,
-            timeStep: 30,
-            verificationWindow: 1,
-            backupCodeLength: 10,
-            backupCodeCount: 12,
-            qrCodeSize: 200
-        )
+        do {
+            return try Self(
+                issuer: issuer,
+                algorithm: .sha256,
+                digits: 8,
+                timeStep: 30,
+                verificationWindow: 1,
+                backupCodeLength: 10,
+                backupCodeCount: 12,
+                qrCodeSize: 200
+            )
+        } catch {
+            preconditionFailure("Invalid secure TOTP configuration: \(error)")
+        }
     }
 
     /// Test configuration with shorter periods
     public static var test: Self {
-        try! Self(
-            issuer: "Test",
-            algorithm: .sha1,
-            digits: 6,
-            timeStep: 10,  // Shorter period for testing
-            verificationWindow: 2,  // More lenient for tests
-            backupCodeLength: 6,
-            backupCodeCount: 5,
-            qrCodeSize: 100
-        )
+        do {
+            return try Self(
+                issuer: "Test",
+                algorithm: .sha1,
+                digits: 6,
+                timeStep: 10,  // Shorter period for testing
+                verificationWindow: 2,  // More lenient for tests
+                backupCodeLength: 6,
+                backupCodeCount: 5,
+                qrCodeSize: 100
+            )
+        } catch {
+            preconditionFailure("Invalid test TOTP configuration: \(error)")
+        }
     }
 }

@@ -213,8 +213,7 @@ extension Identity.Frontend {
                 case .requiresReauthentication:
                     return Server.Response(
                         status: .unauthorized,
-                        headers: HTTP.Headers([try! .init(name: "X-Requires-Reauth", value: "true")]
-                        ),
+                        headers: HTTP.Headers([try .init(name: "X-Requires-Reauth", value: "true")]),
                         body: Array("Reauthorization required".utf8)
                     )
                 }

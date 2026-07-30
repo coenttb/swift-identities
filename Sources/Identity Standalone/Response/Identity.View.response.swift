@@ -299,8 +299,7 @@ extension Identity.View {
                         .marginBottom(.rem(2))
 
                         div {
-                            a(href: .init(router.url(for: .view(.mfa(.totp(.setup)))).relativePath))
-                            {
+                            a(href: .init(router.url(for: .view(.mfa(.totp(.setup)))).relativePath)) {
                                 "Enable Two-Factor Authentication"
                             }
                             .class("btn btn-success")

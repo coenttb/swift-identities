@@ -267,7 +267,7 @@ extension Identity.Backend {
                 @Dependency(\.passwordHasher) var passwordHasher
                 @Dependency(\.envVars) var envVars
 
-                let testEmail: EmailAddress = try! .init("test@test.com")
+                let testEmail: EmailAddress = EmailAddress(rawValue: "test@test.com")!
                 let testPassword = "test"
 
                 // Check if test user already exists

@@ -74,10 +74,9 @@ extension Identity.Frontend {
                 //            favicons: branding.favicons,
                 canonicalHref: canonicalHref,
                 hreflang: hreflang,
-                footer_links: footer_links
-            ) {
-                try await content()
-            }
+                footer_links: footer_links,
+                body: { try await content() }
+            )
         )
     }
 
@@ -99,10 +98,9 @@ extension Identity.Frontend {
                 //            favicons: configuration.branding.favicons,
                 canonicalHref: configuration.canonicalHref,
                 hreflang: configuration.hreflang,
-                footer_links: configuration.branding.footer_links
-            ) {
-                try await content()
-            }
+                footer_links: configuration.branding.footer_links,
+                body: { try await content() }
+            )
         )
     }
 }

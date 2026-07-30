@@ -26,7 +26,9 @@ extension Identity.Record {
 
     /// Single query to get identity with TOTP status for authentication
     /// Replaces: findByEmail + separate TOTP check
-    package static func findForAuthentication(email: EmailAddress) async throws
+    package static func findForAuthentication(
+        email: EmailAddress
+    ) async throws
         -> AuthenticationData?
     {
         @Dependency(\.defaultDatabase) var db
@@ -50,7 +52,9 @@ extension Identity.Record {
 
     /// Single query to get identity with full MFA status
     /// Useful for MFA management endpoints
-    package static func findWithMFAStatus(identityId: Identity.ID) async throws
+    package static func findWithMFAStatus(
+        identityId: Identity.ID
+    ) async throws
         -> IdentityWithMFAStatus?
     {
         @Dependency(\.defaultDatabase) var db
@@ -103,7 +107,10 @@ extension Identity.Record {
     ///
     /// SECURITY: This function prevents timing attacks by always running bcrypt,
     /// even when the email doesn't exist. This prevents email enumeration.
-    package static func verifyPasswordOptimized(email: EmailAddress, password: String) async throws
+    package static func verifyPasswordOptimized(
+        email: EmailAddress,
+        password: String
+    ) async throws
         -> AuthenticationData?
     {
         @Dependency(\.defaultDatabase) var db

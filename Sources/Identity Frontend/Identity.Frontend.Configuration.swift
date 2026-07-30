@@ -215,8 +215,7 @@ extension Identity.Frontend.Configuration: Dependency.Key.Test {
 }
 
 extension Identity.Frontend.Configuration.Redirect {
-    public static func `default`(router: any ParserPrinter<URLRequestData, Identity.Route>) -> Self
-    {
+    public static func `default`(router: any ParserPrinter<URLRequestData, Identity.Route>) -> Self {
         let home = URL(string: "/")!
         let loginURL = router.url(for: .authenticate(.view(.credentials)))
         return .init(

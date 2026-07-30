@@ -207,8 +207,7 @@ struct Test {
     }
 
     @Test
-    func `INSERT invalid email verification status throws check constraint violation`() async throws
-    {
+    func `INSERT invalid email verification status throws check constraint violation`() async throws {
         await #expect(throws: (any Error).self) {
             try await database.write { db in
                 try await db.execute(

@@ -59,8 +59,7 @@ extension Identity.Deletion.Record.Draft {
 
 extension Identity.Deletion.Record {
     // No change needed
-    public static func findByIdentity(_ identityId: Identity.ID) -> Where<Identity.Deletion.Record>
-    {
+    public static func findByIdentity(_ identityId: Identity.ID) -> Where<Identity.Deletion.Record> {
         Self.where { $0.identityId.eq(identityId) }
     }
 

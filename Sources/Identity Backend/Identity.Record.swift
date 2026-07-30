@@ -120,7 +120,9 @@ extension Identity.Record {
 }
 
 extension Identity.Record {
-    package static func update(from identity: Identity.Record) -> (inout Updates<Identity.Record>)
+    package static func update(
+        from identity: Identity.Record
+    ) -> (inout Updates<Identity.Record>)
         ->
         Void
     {

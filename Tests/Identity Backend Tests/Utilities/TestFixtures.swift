@@ -8,20 +8,20 @@ import Vapor
 /// Test fixtures for creating test data
 enum TestFixtures {
     /// Default test email
-    static let testEmail = try! EmailAddress("test@example.com")
+    static let testEmail = EmailAddress(rawValue: "test@example.com")!
 
     /// Default test password
     static let testPassword = "SecurePassword123!"
 
     /// Default admin email
-    static let adminEmail = try! EmailAddress("admin@example.com")
+    static let adminEmail = EmailAddress(rawValue: "admin@example.com")!
 
     /// Generate unique email for test isolation
     /// - Parameter prefix: Email prefix (default: "test")
     /// - Returns: Unique email address with UUID suffix
     static func uniqueEmail(prefix: String = "test") -> EmailAddress {
         let uuid = UUID().uuidString.prefix(8)
-        return try! EmailAddress("\(prefix)-\(uuid)@example.com")
+        return EmailAddress(rawValue: "\(prefix)-\(uuid)@example.com")!
     }
 
     /// Creates a test identity in the database

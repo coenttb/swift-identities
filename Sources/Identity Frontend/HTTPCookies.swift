@@ -27,15 +27,18 @@ extension Server.Response {
         configuration: HTTP_Cookies.HTTPCookies.Configuration
     ) -> Server.Response {
         var copy = self
+        let headerValue: String
+        do {
+            headerValue = try HTTP_Cookies.HTTPCookies.SetCookie(
+                name: name,
+                value: .init(token: token),
+                configuration: configuration
+            ).headerValue()
+        } catch {
+            preconditionFailure("Set-Cookie rendering failed for a JWT cookie value: \(error)")
+        }
         copy.headers.append(
-            try! HTTP.Header.Field(
-                name: "Set-Cookie",
-                value: try! HTTP_Cookies.HTTPCookies.SetCookie(
-                    name: name,
-                    value: .init(token: token),
-                    configuration: configuration
-                ).headerValue()
-            )
+            HTTP.Header.Field(name: .init("Set-Cookie"), value: .init(unchecked: headerValue))
         )
         return copy
     }

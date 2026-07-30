@@ -10,6 +10,7 @@ import Identity_Shared
 import JWT
 import Server_Vapor
 import Vapor
+
 extension Identity.Consumer {
     public struct Middleware: AsyncMiddleware {
         private let tokenAuthenticator: TokenAuthenticator
@@ -23,7 +24,10 @@ extension Identity.Consumer {
             self.credentialsAuthenticator = credentialsAuthenticator
         }
 
-        public func respond(to request: Request, chainingTo next: AsyncResponder) async throws
+        public func respond(
+            to request: Request,
+            chainingTo next: AsyncResponder
+        ) async throws
             -> Response
         {
             do {

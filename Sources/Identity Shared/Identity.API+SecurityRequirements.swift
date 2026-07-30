@@ -15,7 +15,7 @@ package enum SecurityRequirement: Equatable, Sendable {
     /// Requires valid authentication
     case authenticated
 
-    /// Future: Requires specific permission
+    // Future: Requires specific permission
     // case authorized(Permission)
 }
 

@@ -83,7 +83,9 @@ extension Identity.Consumer.API.Router {
 }
 
 extension ParserPrinter<URLRequestData, Identity.API> {
-    package func configureAuthentication(for route: Identity.API) throws -> any ParserPrinter<
+    package func configureAuthentication(
+        for route: Identity.API
+    ) throws -> any ParserPrinter<
         URLRequestData, Identity.API
     > {
         try Identity.Consumer.API.Router.configureAuthentication(baseRouter: self, route: route)

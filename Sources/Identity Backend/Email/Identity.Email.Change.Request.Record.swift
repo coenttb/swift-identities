@@ -148,7 +148,9 @@ extension Identity.Email.Change.Request.Record {
 
     /// Find email change request by token with identity data
     /// Replaces: findByToken + separate identity lookup
-    package static func findByTokenWithIdentity(_ token: String) async throws
+    package static func findByTokenWithIdentity(
+        _ token: String
+    ) async throws
         -> EmailChangeRequestWithIdentity?
     {
         @Dependency(\.defaultDatabase) var db

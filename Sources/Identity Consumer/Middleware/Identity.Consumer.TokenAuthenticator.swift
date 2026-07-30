@@ -20,7 +20,10 @@ extension Identity.Consumer {
     public struct TokenAuthenticator: AsyncMiddleware {
         public init() {}
 
-        public func respond(to request: Request, chainingTo next: AsyncResponder) async throws
+        public func respond(
+            to request: Request,
+            chainingTo next: AsyncResponder
+        ) async throws
             -> Vapor.Response
         {
             return try await withDependencies {
