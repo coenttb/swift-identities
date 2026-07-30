@@ -16,13 +16,13 @@ implemented verification logic — see the Multi-Factor Authentication section b
 - **Email Workflows**: Verification, password reset, email change with proper confirmation flows
 - **Multi-Factor Authentication**: TOTP (Google Authenticator) and backup codes - production ready. SMS, Email, WebAuthn in development.
 - **Token Management**: Secure token generation, validation, and lifecycle management
-- **Database Integration**: Ready-to-use PostgreSQL implementation
-- **Email Integration**: Pluggable email system (see [swift-identities-mailgun](https://github.com/coenttb/swift-identities-mailgun))
+- **Database Integration**: Ready-to-use PostgreSQL implementation (via [swift-records](https://github.com/swift-foundations/swift-records))
+- **Email Integration**: A closure-based `Identity.Backend.Configuration.Email` you wire to any provider
 - **API & Web Support**: Both JSON API and HTML form handling
 
 ## Installation
 
-Add the package to your `Package.swift` dependencies:
+`swift-authentication` is pre-release; pin to `branch: "main"` until the first tag:
 
 ```swift
 dependencies: [
@@ -30,70 +30,54 @@ dependencies: [
 ]
 ```
 
-Then add the product to your target:
+Then add the product(s) you need to your target. The currently vended products are `Identity
+Shared`, `Identity Backend`, `Identity Provider`, `Identity Views`, `Identity Consumer`, and
+`Identity Frontend` — each imports under its underscored module name (for example `Identity
+Provider` imports as `Identity_Provider`):
 
 ```swift
 .target(
     name: "YourTarget",
     dependencies: [
-        .product(name: "Identity Shared", package: "swift-authentication")
+        .product(name: "Identity Provider", package: "swift-authentication")
     ]
 )
 ```
 
+> `Identity Standalone` exists in `Sources/` but its target is currently commented out of
+> `Package.swift` — it does not compile against the institute-only dependency graph yet and is
+> held for a ruling. Do not depend on it until it is re-enabled as a product.
+
 ## Quick Start
 
-### Standalone Identity Server
-
-The simplest way to get started is with the standalone identity server:
+Every request runs against an injected `Identity.Provider.Configuration` (and, for the backend
+storage layer, `Identity.Backend.Configuration`). `.testValue` gives you a working in-memory
+configuration to explore the API immediately:
 
 ```swift
-import Vapor
-import IdentitiesStandalone
-import Records
 import Dependencies
+import Identity_Provider
 
-// Configure your Vapor app
-let app = Application()
-
-// Set up database and identity configuration
 try await withDependencies {
-    // Configure database
-    $0.defaultDatabase = try Database.pool(configuration: databaseConfig)
-
-    // Configure identity
-    $0[Identity.Standalone.Configuration.self] = .init(
-        baseURL: URL(string: "https://identity.example.com")!,
-        router: Identity.Route.Router(),
-        jwt: .live(signingKey: jwtSigningKey),
-        cookies: .default,
-        branding: .init(appName: "My App", logoURL: nil),
-        navigation: .default,
-        redirect: .default,
-        rateLimiters: nil,
-        email: .mailgun(/* email configuration */)
-    )
+    $0[Identity.Provider.Configuration.self] = .testValue
 } operation: {
-    // Run migrations and configure
-    try await Identity.Standalone.configure(app, runMigrations: true)
-
-    // Start the server
-    try app.run()
+    // Your app code (Vapor routes, migrations, middleware) runs here with
+    // Identity Provider configured.
 }
 ```
 
-### With Email Integration
-
-For production email support, use [swift-identities-mailgun](https://github.com/coenttb/swift-identities-mailgun):
+For production, replace `.testValue` with your own `Identity.Provider.Configuration` (base URL,
+token lifetimes, and the Identity Provider's own API router) and `Identity.Backend.Configuration`
+(a JWT `Identity.Token.Client`, a database-backed router, and the `Email` callbacks that send your
+verification, password-reset, and change-notification messages):
 
 ```swift
-import IdentitiesMailgun
+import Identity_Backend
 
-let emailConfig = Identity.Backend.Configuration.Email.mailgun(
-    domain: "mg.example.com",
-    apiKey: mailgunApiKey,
-    fromEmail: "noreply@example.com",
-    fromName: "My App"
+let backendConfiguration = Identity.Backend.Configuration(
+    jwt: .test(),                                  // or `.live(signingKey:)` in production
+    router: Identity.Authentication.Route.Router(),
+    email: .noop                                    // supply real callbacks in production
 )
 ```
 
@@ -127,12 +111,18 @@ let emailConfig = Identity.Backend.Configuration.Email.mailgun(
 
 ## Architecture
 
-The package is organized into modular components:
+The package is organized into modular products:
 
-- **IdentitiesTypes**: Core types and protocols (from [swift-identities-types](https://github.com/coenttb/swift-identities-types))
-- **IdentitiesBackend**: Database models and operations
-- **IdentitiesStandalone**: Complete standalone implementation
-- **IdentitiesSupport**: Shared utilities and helpers
+- **Identity Shared** (`Identity_Shared`): Core session, token, and cookie primitives shared by every other product.
+- **Identity Backend** (`Identity_Backend`): Database-backed storage, password hashing, MFA, and email-workflow implementation.
+- **Identity Provider** (`Identity_Provider`): The HTTP API surface that exposes Identity Backend to clients.
+- **Identity Views** (`Identity_Views`): The HTML view layer, built on `swift-html` and `swift-webpage`.
+- **Identity Frontend** (`Identity_Frontend`): A session-aware frontend surface built on Identity Views.
+- **Identity Consumer** (`Identity_Consumer`): Client-side integration for apps that authenticate against a remote Identity Provider.
+
+Foundational types (`Identity`, `Identity.ID`, and related protocols) come from
+[swift-identities-types](https://github.com/swift-foundations/swift-identities-types), imported as
+`IdentitiesTypes`.
 
 ## Database Schema
 
@@ -147,107 +137,74 @@ Includes migrations for:
 
 ### With Vapor
 
-For a complete standalone identity server with Vapor:
-
 ```swift
+import Dependencies
+import Identity_Backend
+import Identity_Provider
 import Vapor
-import IdentitiesStandalone
-import Records
 
 func configure(_ app: Application) async throws {
-    // Set up dependencies (database, configuration, etc.)
-    // See Quick Start section for full configuration
-
-    // Configure Identity Standalone (runs migrations, registers middleware)
-    try await Identity.Standalone.configure(app, runMigrations: true)
-
-    // Add your application routes
-    // Identity handles authentication at /identity/*
+    try await withDependencies {
+        $0[Identity.Backend.Configuration.self] = backendConfiguration
+        $0[Identity.Provider.Configuration.self] = providerConfiguration
+    } operation: {
+        // Register Identity Provider's routes and middleware on `app`.
+    }
 }
 ```
 
-For integrating identity into an existing app (Consumer mode):
-
-```swift
-import IdentitiesConsumer
-
-// Configure consumer to talk to identity server
-$0[Identity.Consumer.Configuration.self] = .init(
-    identityServerURL: URL(string: "https://identity.example.com")!,
-    apiKey: identityAPIKey,
-    router: Identity.Route.Router()
-)
-
-// Add consumer middleware for local authentication checking
-app.middleware.use(Identity.Consumer.Authenticator())
-```
+For integrating identity into an existing app (Consumer mode), depend on `Identity Consumer`
+(`import Identity_Consumer`) and configure it against your Identity Provider's base URL the same
+way, via `withDependencies`.
 
 ### With Dependencies
 
-Uses [swift-dependencies](https://github.com/pointfreeco/swift-dependencies) for dependency injection:
-
-```swift
-@Dependency(\.identity) var identity
-@Dependency(\.defaultDatabase) var database
-
-// Use identity operations
-let authResponse = try await identity.authenticate.login(email, password)
-```
+Uses [swift-dependencies](https://github.com/swift-foundations/swift-dependencies) (the
+institute's fork of [pointfreeco/swift-dependencies](https://github.com/pointfreeco/swift-dependencies))
+for dependency injection, as shown in the Quick Start above.
 
 ## Testing
 
-Test with dependency injection and isolated test databases:
+Test with dependency injection, following the same pattern used throughout this package's own
+test suite:
 
 ```swift
-import Testing
-import Records
 import Dependencies
+import Identity_Provider
+import Testing
 
 @Test
-func testAuthentication() async throws {
+func testProviderConfiguration() async throws {
     try await withDependencies {
-        // Each test gets isolated database schema
-        $0.defaultDatabase = try Database.testPool()
-        $0[Identity.Backend.Configuration.self] = .testValue
+        $0[Identity.Provider.Configuration.self] = .testValue
     } operation: {
-        @Dependency(\.defaultDatabase) var db
-
-        // Create test identity
-        let identity = try await db.write { db in
-            try await Identity.Record
-                .insert { Identity.Record.Draft(email: "test@example.com", passwordHash: hash) }
-                .returning(\.self)
-                .fetchOne(db)
-        }
-
-        // Test authentication logic
-        #expect(identity != nil)
+        @Dependency(\.identityProviderConfiguration) var configuration
+        #expect(configuration.provider.baseURL.absoluteString == "/")
     }
 }
 ```
 
 ## Related Packages
 
-### Dependencies
+### Institute Dependencies
 
-- [swift-html](https://github.com/coenttb/swift-html): The Swift library for domain-accurate and type-safe HTML & CSS.
-- [swift-identities-types](https://github.com/coenttb/swift-identities-types): A Swift package with foundational types for authentication.
-- [swift-one-time-password](https://github.com/coenttb/swift-one-time-password): A Swift package for TOTP and HOTP two-factor authentication.
-- [swift-records](https://github.com/coenttb/swift-records): The Swift library for PostgreSQL database operations.
-
-### Used By
-
-- [swift-identities-mailgun](https://github.com/coenttb/swift-identities-mailgun): A Swift package integrating Mailgun with swift-identities.
+- [swift-identities-types](https://github.com/swift-foundations/swift-identities-types): Type-safe identity authentication and management types with dependency injection and URL routing for Swift.
+- [swift-time-based-one-time-password](https://github.com/swift-foundations/swift-time-based-one-time-password): TOTP and HOTP one-time password generation per RFC 6238 and RFC 4226 for Swift.
+- [swift-records](https://github.com/swift-foundations/swift-records): Type-safe, high-level PostgreSQL database abstraction built on StructuredQueries and PostgresNIO for Swift.
+- [swift-html](https://github.com/swift-foundations/swift-html): Type-safe HTML generation grounded in WHATWG and W3C specifications for Swift.
+- [swift-dependencies](https://github.com/swift-foundations/swift-dependencies): Type-safe dependency injection via a property wrapper with live, preview, and test resolution and scoped overrides for Swift.
+- [swift-server](https://github.com/swift-foundations/swift-server): External-engine membrane for the Swift Institute server runtime — wraps Vapor, PostgresNIO, vapor/queues, and AsyncHTTPClient behind a Foundation-free institute surface.
 
 ### Third-Party Dependencies
 
-- [pointfreeco/swift-dependencies](https://github.com/pointfreeco/swift-dependencies): A dependency management library for controlling dependencies in Swift.
+- [vapor/vapor](https://github.com/vapor/vapor): A server-side Swift HTTP web framework.
+- [apple/swift-log](https://github.com/apple/swift-log): A logging API for Swift.
 
 ## Requirements
 
-- Swift 6.0+
-- macOS 14+ / Linux
-- PostgreSQL 13+ (for database backend)
+- Swift 6.3+ (tools version 6.3.3)
+- macOS 26+ / iOS 26+, and Linux for server deployments
+- PostgreSQL 13+ (for the database backend)
 
 ## License
 
@@ -257,4 +214,5 @@ For commercial licensing options, please contact the maintainer.
 
 ## Support
 
-For issues, questions, or contributions, please visit the [GitHub repository](https://github.com/coenttb/swift-identities).
+For issues, questions, or contributions, please visit the
+[GitHub repository](https://github.com/swift-foundations/swift-authentication).
