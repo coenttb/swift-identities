@@ -1,4 +1,5 @@
 import Foundation
+import Dependencies
 import IdentitiesTypes
 import Identity_Consumer
 import Identity_Frontend
@@ -15,7 +16,7 @@ struct IdentityBehavioralTests {
         let baseURL = URL(string: "https://example.com")!
         let router = Identity.Route.Router().eraseToAnyParserPrinter()
 
-        let configuration = Identity.Consumer.Configuration.Consumer.live.init(
+        let configuration = Identity.Consumer.Configuration.Consumer.live(
             baseURL: baseURL,
             cookies: .consumer(domain: "example.com", router: router),
             router: router,
@@ -51,6 +52,43 @@ struct IdentityBehavioralTests {
         do {
             _ = try Server.Response().setting(
                 cookie: Identity.Cookies.Names.accessToken,
+                token: "invalid\u{0001}token",
+                configuration: .init(path: "/", isHTTPOnly: true)
+            )
+        } catch {
+            didThrow = true
+        }
+
+        #expect(didThrow)
+    }
+
+    @Test
+    func `High-level token cookies render successfully`() throws {
+        try withDependencies {
+            $0[Identity.Frontend.Configuration.self] = .testValue
+        } operation: {
+            let response = try Server.Response.json(success: true).withTokens(
+                for: .init(accessToken: "access-token", refreshToken: "refresh-token")
+            )
+
+            #expect(response.headers["Set-Cookie"]?.count == 2)
+        }
+    }
+
+    @Test
+    func `High-level logout cookies expire successfully`() throws {
+        let response = try Server.Response.json(success: true).expiringIdentityCookies()
+
+        #expect(response.headers["Set-Cookie"]?.count == 3)
+    }
+
+    @Test
+    func `High-level token cookie encoding failures propagate`() {
+        var didThrow = false
+
+        do {
+            _ = try Server.Response.json(success: true).setting(
+                cookie: Identity.Cookies.Names.reauthorizationToken,
                 token: "invalid\u{0001}token",
                 configuration: .init(path: "/", isHTTPOnly: true)
             )

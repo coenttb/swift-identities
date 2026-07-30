@@ -118,12 +118,35 @@ extension Identity.Consumer.Configuration {
 }
 
 extension Identity.Consumer.Configuration.Consumer {
-    /// The live configuration constructor.
-    ///
-    /// This metatype preserves the established `Consumer.live(...)` spelling
-    /// while routing construction through ``init(baseURL:domain:cookies:router:currentUserName:canonicalHref:hreflang:branding:navigation:redirect:rateLimiters:)``.
-    public static var live: Self.Type {
-        Self.self
+    public static func live(
+        baseURL: URL,
+        domain: String? = nil,
+        cookies: Identity.Frontend.Configuration.Cookies,
+        router: AnyParserPrinter<URLRequestData, Identity.Route>,
+        currentUserName: @escaping @Sendable () -> String?,
+        canonicalHref: @escaping @Sendable (Identity.Consumer.View) -> URL? = { _ in nil },
+        hreflang: @escaping @Sendable (Identity.Consumer.View, Translating.Language) -> URL = { _, _ in
+            @Dependency(\.identityConsumerConfiguration) var configuration
+            return configuration.consumer.baseURL
+        },
+        branding: Identity.Consumer.Configuration.Branding,
+        navigation: Identity.Consumer.Configuration.Navigation,
+        redirect: Identity.Consumer.Configuration.Redirect,
+        rateLimiters: RateLimiters = .init()
+    ) -> Self {
+        .init(
+            baseURL: baseURL,
+            domain: domain,
+            cookies: cookies,
+            router: router,
+            currentUserName: currentUserName,
+            canonicalHref: canonicalHref,
+            hreflang: hreflang,
+            branding: branding,
+            navigation: navigation,
+            redirect: redirect,
+            rateLimiters: rateLimiters
+        )
     }
 }
 
