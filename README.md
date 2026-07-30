@@ -26,7 +26,7 @@ Add the package to your `Package.swift` dependencies:
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/swift-foundations/swift-authentication.git", from: "0.2.1")
+    .package(url: "https://github.com/swift-foundations/swift-authentication.git", branch: "main")
 ]
 ```
 
