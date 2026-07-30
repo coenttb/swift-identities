@@ -1,5 +1,5 @@
-import Foundation
 import Dependencies
+import Foundation
 import IdentitiesTypes
 import Identity_Consumer
 import Identity_Frontend
