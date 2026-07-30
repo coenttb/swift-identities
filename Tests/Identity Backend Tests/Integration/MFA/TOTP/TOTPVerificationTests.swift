@@ -56,9 +56,13 @@ struct Test {
                 .execute(db)
         }
 
-        // Use debug bypass code
-        let validCode = "000000"
-        let isValid = try await totpClient.verifyCode(identity.id, validCode)
+        // Inject a deterministic verifier in place of real TOTP validation
+        let validCode = "246810"
+        let isValid = try await withDependencies {
+            $0[Identity.MFA.TOTP.Verifier.self] = .init { code, _, _ in code == validCode }
+        } operation: {
+            try await totpClient.verifyCode(identity.id, validCode)
+        }
 
         #expect(isValid == true)
     }
@@ -98,7 +102,7 @@ struct Test {
                 .execute(db)
         }
 
-        // Use invalid code (not the debug bypass)
+        // Use an invalid code under real TOTP validation
         // verifyCode returns Bool, doesn't throw
         let isValid = try await totpClient.verifyCode(identity.id, "999999")
         #expect(isValid == false, "Invalid TOTP code should return false")
@@ -139,7 +143,7 @@ struct Test {
                 .execute(db)
         }
 
-        // Test that an old/invalid code fails (not using bypass code)
+        // Test that an old/invalid code fails under real TOTP validation
         // In a real scenario, this would be a code from a past time window
         // verifyCode returns Bool, doesn't throw
         let isValid = try await totpClient.verifyCode(identity.id, "111111")
@@ -181,9 +185,13 @@ struct Test {
                 .execute(db)
         }
 
-        // Verify with debug bypass code
-        let validCode = "000000"
-        let isValid = try await totpClient.verifyCode(identity.id, validCode)
+        // Inject a deterministic verifier in place of real TOTP validation
+        let validCode = "246810"
+        let isValid = try await withDependencies {
+            $0[Identity.MFA.TOTP.Verifier.self] = .init { code, _, _ in code == validCode }
+        } operation: {
+            try await totpClient.verifyCode(identity.id, validCode)
+        }
         #expect(isValid == true)
 
         // Check that stats were updated
@@ -238,9 +246,13 @@ struct Test {
                 .execute(db)
         }
 
-        // Use debug bypass code with custom window
-        let validCode = "000000"
-        let isValid = try await totpClient.verifyCodeWithWindow(identity.id, validCode, 2)
+        // Inject a deterministic verifier in place of real TOTP validation
+        let validCode = "246810"
+        let isValid = try await withDependencies {
+            $0[Identity.MFA.TOTP.Verifier.self] = .init { code, _, _ in code == validCode }
+        } operation: {
+            try await totpClient.verifyCodeWithWindow(identity.id, validCode, 2)
+        }
 
         #expect(isValid == true)
 

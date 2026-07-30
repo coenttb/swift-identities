@@ -112,26 +112,20 @@ extension Identity.MFA.TOTP.Client {
                     configuration: configuration
                 )
 
-                // Check for debug bypass
-                if Identity.MFA.TOTP.isDebugBypassCode(sanitizedCode) {
-                    logger.warning("DEBUG: Using bypass code for TOTP setup")
-                    Identity.MFA.TOTP.logDebugBypass()
-                } else {
-                    logger.debug("Validating TOTP code normally")
-                    // Verify the code normally
-                    let validated = totp.validate(
-                        sanitizedCode,
-                        window: configuration.verificationWindow
-                    )
+                // Verify the code through the injected verifier
+                @Dependency(Identity.MFA.TOTP.Verifier.self) var verifier
 
-                    guard validated else {
-                        logger.error(
-                            "TOTP validation failed for confirmSetup - code: \(sanitizedCode)"
-                        )
-                        throw ClientError.invalidCode
-                    }
-                    logger.debug("TOTP code validated successfully")
+                guard
+                    verifier.validate(
+                        sanitizedCode,
+                        totp,
+                        configuration.verificationWindow
+                    )
+                else {
+                    logger.error("TOTP validation failed for confirmSetup")
+                    throw ClientError.invalidCode
                 }
+                logger.debug("TOTP code validated successfully")
                 // Confirm the setup in database with explicit operations
                 @Dependency(\.defaultDatabase) var db
                 @Dependency(\.date) var date
@@ -474,22 +468,6 @@ private func verifyTOTPCode(
             throw Identity.MFA.TOTP.Client.ClientError.setupNotConfirmed
         }
 
-        // Check for debug bypass
-        if Identity.MFA.TOTP.isDebugBypassCode(sanitizedCode) {
-            Identity.MFA.TOTP.logDebugBypass()
-
-            // Record usage in same transaction
-            try await Identity.MFA.TOTP.Record
-                .where { $0.id.eq(totpData.id) }
-                .update { totp in
-                    totp.lastUsedAt = date()
-                    totp.usageCount = SQLQueryExpression("\(totp.usageCount) + 1", as: Int.self)
-                }
-                .execute(db)
-
-            return true
-        }
-
         // Get decrypted secret
         let secret = try totpData.decryptedSecret()
 
@@ -499,8 +477,9 @@ private func verifyTOTPCode(
             configuration: configuration
         )
 
-        // Verify the code with specified window
-        let isValid = totp.validate(sanitizedCode, window: window)
+        // Verify the code with specified window through the injected verifier
+        @Dependency(Identity.MFA.TOTP.Verifier.self) var verifier
+        let isValid = verifier.validate(sanitizedCode, totp, window)
 
         if isValid {
             // Record usage in same transaction

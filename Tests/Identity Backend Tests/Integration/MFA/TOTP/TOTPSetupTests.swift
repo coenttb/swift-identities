@@ -135,11 +135,15 @@ struct Test {
                 .execute(db)
         }
 
-        // Use debug bypass code for testing (works in DEBUG mode)
-        let validCode = "000000"
+        // Inject a deterministic verifier in place of real TOTP validation
+        let validCode = "246810"
 
         // Confirm setup
-        try await totpClient.confirmSetup(identity.id, setupData.secret, validCode)
+        try await withDependencies {
+            $0[Identity.MFA.TOTP.Verifier.self] = .init { code, _, _ in code == validCode }
+        } operation: {
+            try await totpClient.confirmSetup(identity.id, setupData.secret, validCode)
+        }
 
         // Verify confirmation
         let confirmed = try #require(
@@ -194,7 +198,7 @@ struct Test {
                 .execute(db)
         }
 
-        // Attempt to confirm with invalid code (not the debug bypass code)
+        // Attempt to confirm with an invalid code under real TOTP validation
         await #expect(throws: (any Error).self) {
             try await totpClient.confirmSetup(identity.id, setupData.secret, "999999")
         }
