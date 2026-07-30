@@ -10,8 +10,8 @@ import JWT
 
 extension Identity.Context {
     /// Create context from an access token
-    public init(token: Identity.Token.Access) {
-        self.init(jwt: token.jwt)
+    public init(token: Identity.Token.Access) throws(Identity.Context.Error) {
+        try self.init(jwt: token.jwt)
     }
 
     /// Try to get the access token if this context was created from one

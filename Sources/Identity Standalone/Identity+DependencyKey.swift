@@ -129,7 +129,7 @@ extension Identity: @retroactive Dependency.Key {
                     throw Abort(.unauthorized)
                     //                    throw Identity.Error.unauthorized(reason: "Authentication required")
                 }
-                return Identity.Context(token: token)
+                return try Identity.Context(token: token)
             },
             create: .init(
                 client: .live(
