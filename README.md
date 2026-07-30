@@ -1,13 +1,16 @@
-# swift-identities
+# swift-authentication
 
-[![CI](https://github.com/coenttb/swift-identities/workflows/CI/badge.svg)](https://github.com/coenttb/swift-identities/actions/workflows/ci.yml)
+[![CI](https://github.com/swift-foundations/swift-authentication/workflows/CI/badge.svg)](https://github.com/swift-foundations/swift-authentication/actions/workflows/ci.yml)
 ![Development Status](https://img.shields.io/badge/status-active--development-blue.svg)
 
-A complete, production-ready identity authentication and management system for Swift server applications.
+An identity authentication and management system for Swift server applications. Email/password
+and token-based authentication, TOTP, and backup codes are production ready; SMS, Email, and
+WebAuthn multi-factor authentication have configuration infrastructure in place but not yet
+implemented verification logic — see the Multi-Factor Authentication section below.
 
 ## Overview
 
-`swift-identities` provides a comprehensive authentication system with:
+`swift-authentication` provides a comprehensive authentication system with:
 
 - **Complete Authentication**: Email/password, token-based, and API key authentication
 - **Email Workflows**: Verification, password reset, email change with proper confirmation flows
