@@ -86,14 +86,19 @@ struct IdentityBehavioralTests {
     func `High-level token cookie encoding failures propagate`() {
         var didThrow = false
 
-        do {
-            _ = try Server.Response.json(success: true).setting(
-                cookie: Identity.Cookies.Names.reauthorizationToken,
-                token: "invalid\u{0001}token",
-                configuration: .init(path: "/", isHTTPOnly: true)
-            )
-        } catch {
-            didThrow = true
+        withDependencies {
+            $0[Identity.Frontend.Configuration.self] = .testValue
+        } operation: {
+            do {
+                _ = try Server.Response.json(success: true).withTokens(
+                    for: .init(
+                        accessToken: "access-token",
+                        refreshToken: "invalid\u{0001}token"
+                    )
+                )
+            } catch {
+                didThrow = true
+            }
         }
 
         #expect(didThrow)
