@@ -89,7 +89,7 @@ extension Identity.MFA.TOTP {
             self.qrCodeSize = qrCodeSize
         }
 
-        public enum ConfigurationError: Error, Equatable, LocalizedError {
+        public enum ConfigurationError: Swift.Error, Equatable, LocalizedError {
             case invalidIssuer(String)
             case invalidDigits(String)
             case invalidTimeStep(String)

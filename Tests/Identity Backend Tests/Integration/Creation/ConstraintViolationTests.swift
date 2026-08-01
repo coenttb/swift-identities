@@ -33,7 +33,7 @@ struct Test {
         }
 
         // Attempt to create duplicate - should fail
-        await #expect(throws: (any Error).self) {
+        await #expect(throws: (any Swift.Error).self) {
             try await database.write { db in
                 try await TestFixtures.createTestIdentity(
                     email: email,
@@ -113,7 +113,7 @@ struct Test {
         }
 
         // Attempt to update identity2's email to identity1's email
-        await #expect(throws: (any Error).self) {
+        await #expect(throws: (any Swift.Error).self) {
             try await database.write { db in
                 try await Identity.Record
                     .where { $0.id.eq(identity2.id) }
@@ -125,7 +125,7 @@ struct Test {
 
     @Test
     func `INSERT with negative session Version throws check constraint violation`() async throws {
-        await #expect(throws: (any Error).self) {
+        await #expect(throws: (any Swift.Error).self) {
             try await database.write { db in
                 // Try to insert with negative session version
                 try await db.execute(
@@ -148,7 +148,7 @@ struct Test {
             )
         }
 
-        await #expect(throws: (any Error).self) {
+        await #expect(throws: (any Swift.Error).self) {
             try await database.write { db in
                 try await db.execute(
                     """
@@ -163,7 +163,7 @@ struct Test {
 
     @Test
     func `INSERT without required email throws NOT NULL violation`() async throws {
-        await #expect(throws: (any Error).self) {
+        await #expect(throws: (any Swift.Error).self) {
             try await database.write { db in
                 try await db.execute(
                     """
@@ -178,7 +178,7 @@ struct Test {
 
     @Test
     func `INSERT without required password hash throws NOT NULL violation`() async throws {
-        await #expect(throws: (any Error).self) {
+        await #expect(throws: (any Swift.Error).self) {
             try await database.write { db in
                 try await db.execute(
                     """
@@ -193,7 +193,7 @@ struct Test {
 
     @Test
     func `INSERT without email verification status throws NOT NULL violation`() async throws {
-        await #expect(throws: (any Error).self) {
+        await #expect(throws: (any Swift.Error).self) {
             try await database.write { db in
                 try await db.execute(
                     """
@@ -208,7 +208,7 @@ struct Test {
 
     @Test
     func `INSERT invalid email verification status throws check constraint violation`() async throws {
-        await #expect(throws: (any Error).self) {
+        await #expect(throws: (any Swift.Error).self) {
             try await database.write { db in
                 try await db.execute(
                     """
@@ -223,7 +223,7 @@ struct Test {
 
     @Test
     func `INSERT with empty email string throws check constraint violation`() async throws {
-        await #expect(throws: (any Error).self) {
+        await #expect(throws: (any Swift.Error).self) {
             try await database.write { db in
                 try await db.execute(
                     """
@@ -238,7 +238,7 @@ struct Test {
 
     @Test
     func `INSERT with empty password hash throws check constraint violation`() async throws {
-        await #expect(throws: (any Error).self) {
+        await #expect(throws: (any Swift.Error).self) {
             try await database.write { db in
                 try await db.execute(
                     """

@@ -131,7 +131,7 @@ extension Identity.OAuth {
 
 // MARK: - Errors
 
-public enum OAuthTokenError: Error, LocalizedError {
+public enum OAuthTokenError: Swift.Error, LocalizedError {
     case encryptionKeyMissing
     case invalidTokenFormat
     case decryptionFailed

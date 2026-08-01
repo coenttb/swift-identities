@@ -174,7 +174,7 @@ extension Identity.Consumer.CookieReader {
 // MARK: - Cookie Errors
 
 extension Identity.Consumer {
-    public enum CookieError: Error, CustomStringConvertible {
+    public enum CookieError: Swift.Error, CustomStringConvertible {
         case missingAccessToken
         case missingRefreshToken
         case missingReauthorizationToken

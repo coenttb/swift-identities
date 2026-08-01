@@ -174,7 +174,7 @@ extension Identity.OAuth.Configuration {
         }
     }
 
-    public enum ConfigurationError: Error, LocalizedError {
+    public enum ConfigurationError: Swift.Error, LocalizedError {
         case missingEncryptionKey
         case weakEncryptionKey
 

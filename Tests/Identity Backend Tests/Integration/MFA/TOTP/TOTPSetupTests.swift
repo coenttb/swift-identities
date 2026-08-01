@@ -199,7 +199,7 @@ struct Test {
         }
 
         // Attempt to confirm with an invalid code under real TOTP validation
-        await #expect(throws: (any Error).self) {
+        await #expect(throws: (any Swift.Error).self) {
             try await totpClient.confirmSetup(identity.id, setupData.secret, "999999")
         }
 

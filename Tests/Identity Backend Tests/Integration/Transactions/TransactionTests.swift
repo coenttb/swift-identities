@@ -19,7 +19,7 @@ import Vapor
 struct Test {
     @Dependency(\.defaultDatabase) var database
 
-    enum TestError: Error {
+    enum TestError: Swift.Error {
         case intentionalRollback
     }
 
