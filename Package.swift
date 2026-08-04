@@ -48,8 +48,6 @@ extension Target.Dependency {
 
     static var dateExtensions: Self { .product(name: "DateExtensions", package: "swift-foundation-extensions") }
     static var records: Self { .product(name: "Records", package: "swift-records") }
-    // Identity Backend's MFA configuration files use `Tagged` directly (re-pointed off the
-    // dissolving TypesFoundation umbrella, decomposition W2 2026-07-13):
     static var tagged: Self { .product(name: "Tagged Primitives", package: "swift-tagged-primitives") }
     // Needed by the still-red Frontend/Consumer/Standalone (declared ready for the HTML-tower arc;
     // Language EXISTS: swift-translating/Package.swift:45):
