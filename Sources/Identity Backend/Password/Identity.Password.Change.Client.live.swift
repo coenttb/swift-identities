@@ -24,52 +24,56 @@ extension Identity.Password.Change.Client {
         @Dependency(\.passwordValidation.validate) var validatePassword
 
         return .init(
-            request: { currentPassword, newPassword in
-                let identity = try await Identity.Record.get(by: .auth)
+            request: { currentPassword, newPassword throws(Identity.Password.Change.Client.Error) in
+                do {
+                    let identity = try await Identity.Record.get(by: .auth)
 
-                guard try await identity.verifyPassword(currentPassword) else {
-                    throw Identity.Authentication.Error.invalidCredentials
+                    guard try await identity.verifyPassword(currentPassword) else {
+                        throw Identity.Authentication.Error.invalidCredentials
+                    }
+
+                    _ = try validatePassword(newPassword)
+
+                    @Dependency(\.defaultDatabase) var db
+                    @Dependency(\.date) var date
+                    @Dependency(\.envVars) var envVars
+                    @Dependency(\.passwordHasher) var passwordHasher
+
+                    // Hash the new password
+                    let passwordHash = try await passwordHasher.hash(newPassword, envVars.bcryptCost)
+
+                    // Update password and increment session version atomically
+                    try await db.write { db in
+                        try await Identity.Record
+                            .where { $0.id.eq(identity.id) }
+                            .update { record in
+                                record.passwordHash = passwordHash
+                                record.sessionVersion = SQLQueryExpression(
+                                    "\(record.sessionVersion) + 1",
+                                    as: Int.self
+                                )
+                                record.updatedAt = date()
+                            }
+                            .execute(db)
+                    }
+
+                    let emailAddress = identity.email
+
+                    Task { @Sendable in
+                        try await sendPasswordChangeNotification(emailAddress)
+                    }
+
+                    logger.notice(
+                        "Password changed",
+                        metadata: [
+                            "component": "Backend.Password",
+                            "operation": "change",
+                            "identityId": "\(identity.id)",
+                        ]
+                    )
+                } catch {
+                    throw .request(reason: "\(error)")
                 }
-
-                _ = try validatePassword(newPassword)
-
-                @Dependency(\.defaultDatabase) var db
-                @Dependency(\.date) var date
-                @Dependency(\.envVars) var envVars
-                @Dependency(\.passwordHasher) var passwordHasher
-
-                // Hash the new password
-                let passwordHash = try await passwordHasher.hash(newPassword, envVars.bcryptCost)
-
-                // Update password and increment session version atomically
-                try await db.write { db in
-                    try await Identity.Record
-                        .where { $0.id.eq(identity.id) }
-                        .update { record in
-                            record.passwordHash = passwordHash
-                            record.sessionVersion = SQLQueryExpression(
-                                "\(record.sessionVersion) + 1",
-                                as: Int.self
-                            )
-                            record.updatedAt = date()
-                        }
-                        .execute(db)
-                }
-
-                let emailAddress = identity.email
-
-                Task { @Sendable in
-                    try await sendPasswordChangeNotification(emailAddress)
-                }
-
-                logger.notice(
-                    "Password changed",
-                    metadata: [
-                        "component": "Backend.Password",
-                        "operation": "change",
-                        "identityId": "\(identity.id)",
-                    ]
-                )
             }
         )
     }

@@ -23,27 +23,27 @@ extension Identity.Deletion.Client {
         @Dependency(URLRequest.Handler.Identity.self) var handleRequest
 
         return .init(
-            request: { reauthToken in
+            request: { reauthToken throws(Identity.Deletion.Client.Error) in
                 do {
                     try await handleRequest(
                         for: makeRequest(.request(.init(reauthToken: reauthToken)))
                     )
                 } catch {
-                    throw Abort(.unauthorized)
+                    throw .request(reason: "\(error)")
                 }
             },
-            cancel: {
+            cancel: { () throws(Identity.Deletion.Client.Error) in
                 do {
                     try await handleRequest(for: makeRequest(.cancel))
                 } catch {
-                    throw Abort(.unauthorized)
+                    throw .cancel(reason: "\(error)")
                 }
             },
-            confirm: {
+            confirm: { () throws(Identity.Deletion.Client.Error) in
                 do {
                     try await handleRequest(for: makeRequest(.confirm))
                 } catch {
-                    throw Abort(.unauthorized)
+                    throw .confirm(reason: "\(error)")
                 }
             }
         )

@@ -23,22 +23,22 @@ extension Identity.Creation.Client {
         @Dependency(URLRequest.Handler.Identity.self) var handleRequest
 
         return .init(
-            request: { email, password in
+            request: { email, password throws(Identity.Creation.Client.Error) in
                 do {
                     try await handleRequest(
                         for: makeRequest(.request(.init(email: email, password: password)))
                     )
                 } catch {
-                    throw Abort(.internalServerError)
+                    throw .request(reason: "\(error)")
                 }
             },
-            verify: { email, token in
+            verify: { email, token throws(Identity.Creation.Client.Error) in
                 do {
                     try await handleRequest(
                         for: makeRequest(.verify(.init(token: token, email: email)))
                     )
                 } catch {
-                    throw Abort(.internalServerError)
+                    throw .verify(reason: "\(error)")
                 }
             }
         )

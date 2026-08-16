@@ -29,8 +29,9 @@ extension Identity.Email.Change.Client {
                 _ currentEmail: EmailAddress, _ newEmail: EmailAddress
             ) async throws -> Void
     ) -> Self {
-        let requestHandler: @Sendable (String) async throws -> Identity.Email.Change.Request.Result = {
-            newEmail in
+        let requestHandler:
+            @Sendable (String) async throws(Identity.Email.Change.Client.Error) -> Identity.Email.Change.Request.Result = {
+                newEmail throws(Identity.Email.Change.Client.Error) in
             @Dependency(\.logger) var logger
             @Dependency(\.tokenClient) var tokenClient
             do {
@@ -166,12 +167,13 @@ extension Identity.Email.Change.Client {
                         "error": "\(error)",
                     ]
                 )
-                throw error
+                throw .request(reason: "\(error)")
             }
         }
 
-        let confirmHandler: @Sendable (String) async throws -> Identity.Email.Change.Confirmation.Response = {
-            token in
+        let confirmHandler:
+            @Sendable (String) async throws(Identity.Email.Change.Client.Error) -> Identity.Email.Change.Confirmation.Response = {
+                token throws(Identity.Email.Change.Client.Error) in
             @Dependency(\.logger) var logger
             @Dependency(\.tokenClient) var tokenClient
 
@@ -233,7 +235,7 @@ extension Identity.Email.Change.Client {
                         "error": "\(error)",
                     ]
                 )
-                throw error
+                throw .confirm(reason: "\(error)")
             }
         }
 

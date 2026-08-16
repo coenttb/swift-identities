@@ -28,84 +28,88 @@ extension Identity.Password.Reset.Client {
         @Dependency(\.passwordValidation.validate) var validatePassword
 
         return .init(
-            request: { email in
-                let emailAddress = try EmailAddress(email)
+            request: { email throws(Identity.Password.Reset.Client.Error) in
+                do {
+                    let emailAddress = try EmailAddress(email)
 
-                @Dependency(\.defaultDatabase) var db
-                guard
-                    let identity = try await db.read({ db in
-                        try await Identity.Record
-                            .where { $0.email.eq(emailAddress) }
+                    @Dependency(\.defaultDatabase) var db
+                    guard
+                        let identity = try await db.read({ db in
+                            try await Identity.Record
+                                .where { $0.email.eq(emailAddress) }
+                                .fetchOne(db)
+                        })
+                    else {
+                        // Don't reveal if email exists or not
+                        logger.debug(
+                            "Password reset requested for non-existent email",
+                            metadata: [
+                                "component": "Backend.Password",
+                                "operation": "resetRequest",
+                                "emailDomain": "\(emailAddress.domain)",
+                            ]
+                        )
+                        return  // Silently succeed to prevent email enumeration
+                    }
+
+                    // Single transaction for token invalidation and creation
+                    let tokenValue: String = try await db.write { db in
+                        // Invalidate existing reset tokens
+                        try await Identity.Token.Record
+                            .delete()
+                            .where { $0.identityId.eq(identity.id) }
+                            .where { $0.type.eq(Identity.Token.Record.TokenType.passwordReset) }
+                            .execute(db)
+
+                        @Dependency(\.date) var date
+
+                        // Create new reset token
+
+                        // Use UPSERT to handle multiple reset requests gracefully
+                        // This ensures only one password reset token per identity
+                        let token = try await Identity.Token.Record
+                            .insert {
+                                Identity.Token.Record.Draft(
+                                    identityId: identity.id,
+                                    type: .passwordReset,
+                                    validUntil: date().addingTimeInterval(3600)  // 1 hour
+                                )
+                            } onConflict: { cols in
+                                (cols.identityId, cols.type)
+                            } doUpdate: { updates, excluded in
+                                // Replace the token completely with new one
+                                updates.value = excluded.value
+                                updates.validUntil = excluded.validUntil
+                                updates.createdAt = excluded.createdAt
+                                updates.lastUsedAt = nil  // Reset usage
+                            }
+                            .returning(\.self)
                             .fetchOne(db)
-                    })
-                else {
-                    // Don't reveal if email exists or not
-                    logger.debug(
-                        "Password reset requested for non-existent email",
+
+                        guard let value = token?.value else {
+                            throw Identity.Backend.Error.failedToCreateToken(type: .passwordReset)
+                        }
+
+                        return value
+                    }
+
+                    Task { @Sendable in
+                        try await sendPasswordResetEmail(emailAddress, tokenValue)
+                    }
+
+                    logger.info(
+                        "Password reset email sent",
                         metadata: [
                             "component": "Backend.Password",
                             "operation": "resetRequest",
-                            "emailDomain": "\(emailAddress.domain)",
+                            "identityId": "\(identity.id)",
                         ]
                     )
-                    return  // Silently succeed to prevent email enumeration
+                } catch {
+                    throw .request(reason: "\(error)")
                 }
-
-                // Single transaction for token invalidation and creation
-                let tokenValue: String = try await db.write { db in
-                    // Invalidate existing reset tokens
-                    try await Identity.Token.Record
-                        .delete()
-                        .where { $0.identityId.eq(identity.id) }
-                        .where { $0.type.eq(Identity.Token.Record.TokenType.passwordReset) }
-                        .execute(db)
-
-                    @Dependency(\.date) var date
-
-                    // Create new reset token
-
-                    // Use UPSERT to handle multiple reset requests gracefully
-                    // This ensures only one password reset token per identity
-                    let token = try await Identity.Token.Record
-                        .insert {
-                            Identity.Token.Record.Draft(
-                                identityId: identity.id,
-                                type: .passwordReset,
-                                validUntil: date().addingTimeInterval(3600)  // 1 hour
-                            )
-                        } onConflict: { cols in
-                            (cols.identityId, cols.type)
-                        } doUpdate: { updates, excluded in
-                            // Replace the token completely with new one
-                            updates.value = excluded.value
-                            updates.validUntil = excluded.validUntil
-                            updates.createdAt = excluded.createdAt
-                            updates.lastUsedAt = nil  // Reset usage
-                        }
-                        .returning(\.self)
-                        .fetchOne(db)
-
-                    guard let value = token?.value else {
-                        throw Identity.Backend.Error.failedToCreateToken(type: .passwordReset)
-                    }
-
-                    return value
-                }
-
-                Task { @Sendable in
-                    try await sendPasswordResetEmail(emailAddress, tokenValue)
-                }
-
-                logger.info(
-                    "Password reset email sent",
-                    metadata: [
-                        "component": "Backend.Password",
-                        "operation": "resetRequest",
-                        "identityId": "\(identity.id)",
-                    ]
-                )
             },
-            confirm: { newPassword, token in
+            confirm: { newPassword, token throws(Identity.Password.Reset.Client.Error) in
                 do {
                     let _ = try validatePassword(newPassword)
 
@@ -188,7 +192,7 @@ extension Identity.Password.Reset.Client {
                             "error": "\(error)",
                         ]
                     )
-                    throw error
+                    throw .confirm(reason: "\(error)")
                 }
             }
         )

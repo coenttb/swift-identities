@@ -36,7 +36,7 @@ extension Identity.Creation.Client {
         @Dependency(\.passwordValidation.validate) var validatePassword
 
         return .init(
-            request: { email, password in
+            request: { email, password throws(Identity.Creation.Client.Error) in
                 do {
                     _ = try validatePassword(password)
                     let emailAddress = try EmailAddress(email)
@@ -122,10 +122,10 @@ extension Identity.Creation.Client {
                             "error": "\(error)",
                         ]
                     )
-                    throw error
+                    throw .request(reason: "\(error)")
                 }
             },
-            verify: { email, token in
+            verify: { email, token throws(Identity.Creation.Client.Error) in
                 do {
                     let emailAddress = try EmailAddress(email)
 
@@ -183,7 +183,7 @@ extension Identity.Creation.Client {
                     }
                 } catch let error as Identity.Backend.Error {
                     // Re-throw domain errors as-is
-                    throw error
+                    throw .verify(reason: "\(error)")
                 } catch {
                     logger.error(
                         "Verification failed",
@@ -194,7 +194,7 @@ extension Identity.Creation.Client {
                         ]
                     )
                     // Wrap unexpected errors
-                    throw Identity.Backend.Error.unexpected("Verification failed")
+                    throw .verify(reason: "\(Identity.Backend.Error.unexpected("Verification failed"))")
                 }
             }
         )

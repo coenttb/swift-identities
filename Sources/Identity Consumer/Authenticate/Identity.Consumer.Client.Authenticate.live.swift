@@ -26,7 +26,7 @@ extension Identity.Authentication.Client {
         @Dependency(\.tokenClient) var tokenClient
 
         return .init(
-            credentials: { username, password in
+            credentials: { username, password throws(Identity.Authentication.Client.Error) in
                 do {
                     let response = try await handleRequest(
                         for: makeRequest(
@@ -43,17 +43,17 @@ extension Identity.Authentication.Client {
 
                     return response
                 } catch {
-                    throw Abort(.unauthorized)
+                    throw .credentials(reason: "\(error)")
                 }
             },
-            apiKey: { apiKey in
+            apiKey: { apiKey throws(Identity.Authentication.Client.Error) in
                 do {
                     return try await handleRequest(
                         for: makeRequest(.apiKey(.init(token: apiKey))),
                         decodingTo: Identity.Authentication.Response.self
                     )
                 } catch {
-                    throw Abort(.unauthorized)
+                    throw .apiKey(reason: "\(error)")
                 }
             }
         )
@@ -68,15 +68,19 @@ extension Identity.Authentication.Token.Client {
         @Dependency(\.tokenClient) var tokenClient
 
         return .init(
-            access: { token in
-                @Dependency(\.tokenClient) var tokenClient
-                let currentToken = try await tokenClient.verifyAccess(token)
+            access: { token throws(Identity.Authentication.Token.Client.Error) in
+                do {
+                    @Dependency(\.tokenClient) var tokenClient
+                    let currentToken = try await tokenClient.verifyAccess(token)
 
-                @Dependency(\.vapor.request) var request
-                guard let request else { throw Abort.requestUnavailable }
-                request.auth.login(currentToken)
+                    @Dependency(\.vapor.request) var request
+                    guard let request else { throw Abort.requestUnavailable }
+                    request.auth.login(currentToken)
+                } catch {
+                    throw .access(reason: "\(error)")
+                }
             },
-            refresh: { token in
+            refresh: { token throws(Identity.Authentication.Token.Client.Error) in
                 do {
                     let response = try await handleRequest(
                         for: makeRequest(.token(.refresh(try JWT.parse(from: token)))),
@@ -106,12 +110,7 @@ extension Identity.Authentication.Token.Client {
                         )
                     }
 
-                    // Re-throw with more specific status if available
-                    if let abort = error as? Abort {
-                        throw abort
-                    }
-
-                    throw Abort(.unauthorized, reason: "Failed to refresh token")
+                    throw .refresh(reason: "\(error)")
                 }
             }
         )

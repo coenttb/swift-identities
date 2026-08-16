@@ -23,24 +23,24 @@ extension Identity.Email.Change.Client {
         @Dependency(URLRequest.Handler.Identity.self) var handleRequest
 
         return Identity.Email.Change.Client(
-            request: { newEmail in
+            request: { newEmail throws(Identity.Email.Change.Client.Error) in
                 do {
                     return try await handleRequest(
                         for: makeRequest(.request(.init(newEmail: newEmail))),
                         decodingTo: Identity.Email.Change.Request.Result.self
                     )
                 } catch {
-                    throw Abort(.unauthorized)
+                    throw .request(reason: "\(error)")
                 }
             },
-            confirm: { token in
+            confirm: { token throws(Identity.Email.Change.Client.Error) in
                 do {
                     return try await handleRequest(
                         for: makeRequest(.confirm(.init(token: token))),
                         decodingTo: Identity.Email.Change.Confirmation.Response.self
                     )
                 } catch {
-                    throw Abort(.internalServerError)
+                    throw .confirm(reason: "\(error)")
                 }
             }
         )

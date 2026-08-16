@@ -67,305 +67,377 @@ extension Identity.MFA.TOTP.Client {
         configuration: Identity.MFA.TOTP.Configuration
     ) -> Self {
         Self(
-            generateSecret: {
-                // 20 bytes (160 bits) for SHA1 compatibility - RFC recommended
-                let secret = TOTP.generateSecret(length: 20)
+            generateSecret: { () throws(Identity.MFA.TOTP.Client.Error) in
+                do {
+                    // 20 bytes (160 bits) for SHA1 compatibility - RFC recommended
+                    let secret = TOTP.generateSecret(length: 20)
 
-                @Dependency(\.logger) var logger
+                    @Dependency(\.logger) var logger
 
-                let qrCodeURL = try await generateOTPAuthURL(
-                    secret: secret,
-                    email: .init("pending@example.com"),  // Will be replaced during setup
-                    issuer: configuration.issuer,
-                    configuration: configuration
-                )
-                let manualEntryKey = Identity.MFA.TOTP.formatManualEntryKey(secret)
+                    let qrCodeURL = try await generateOTPAuthURL(
+                        secret: secret,
+                        email: .init("pending@example.com"),  // Will be replaced during setup
+                        issuer: configuration.issuer,
+                        configuration: configuration
+                    )
+                    let manualEntryKey = Identity.MFA.TOTP.formatManualEntryKey(secret)
 
-                logger.debug("TOTP setup data generated")
+                    logger.debug("TOTP setup data generated")
 
-                return SetupData(
-                    secret: secret,
-                    qrCodeURL: qrCodeURL,
-                    manualEntryKey: manualEntryKey
-                )
+                    return SetupData(
+                        secret: secret,
+                        qrCodeURL: qrCodeURL,
+                        manualEntryKey: manualEntryKey
+                    )
+                } catch let error as Identity.MFA.TOTP.Client.Error {
+                    throw error
+                } catch {
+                    throw .configurationError("\(error)")
+                }
             },
 
-            confirmSetup: { identityId, secret, code in
-                @Dependency(\.logger) var logger
-                logger.debug(
-                    "TOTP confirmSetup initiated - code: \(code), identityId: \(identityId)"
-                )
-
-                // Validate inputs
-                guard Identity.MFA.TOTP.isValidSecret(secret) else {
-                    throw ClientError.invalidSecret
-                }
-
-                let sanitizedCode = Identity.MFA.TOTP.sanitizeCode(code)
-                guard Identity.MFA.TOTP.isValidCode(sanitizedCode) else {
-                    throw ClientError.invalidCode
-                }
-
-                // Create TOTP instance with the secret as-is
-                let totp = try createTOTP(
-                    secret: secret,
-                    configuration: configuration
-                )
-
-                // Verify the code through the injected verifier
-                @Dependency(Identity.MFA.TOTP.Verifier.self) var verifier
-
-                guard
-                    verifier.validate(
-                        sanitizedCode,
-                        totp,
-                        configuration.verificationWindow
+            confirmSetup: { identityId, secret, code throws(Identity.MFA.TOTP.Client.Error) in
+                do {
+                    @Dependency(\.logger) var logger
+                    logger.debug(
+                        "TOTP confirmSetup initiated - code: \(code), identityId: \(identityId)"
                     )
-                else {
-                    logger.error("TOTP validation failed for confirmSetup")
-                    throw ClientError.invalidCode
-                }
-                logger.debug("TOTP code validated successfully")
-                // Confirm the setup in database with explicit operations
-                @Dependency(\.defaultDatabase) var db
-                @Dependency(\.date) var date
 
-                try await db.write { db in
-                    // Find and confirm in single transaction
-                    guard
-                        let totpRecord = try await Identity.MFA.TOTP.Record
-                            .findByIdentity(identityId)
-                            .fetchOne(db)
-                    else {
-                        throw ClientError.totpNotEnabled
+                    // Validate inputs
+                    guard Identity.MFA.TOTP.isValidSecret(secret) else {
+                        throw Identity.MFA.TOTP.Client.Error.invalidSecret
                     }
 
-                    try await Identity.MFA.TOTP.Record
-                        .where { $0.id.eq(totpRecord.id) }
-                        .update { totp in
-                            totp.isConfirmed = true
-                            totp.confirmedAt = date()
+                    let sanitizedCode = Identity.MFA.TOTP.sanitizeCode(code)
+                    guard Identity.MFA.TOTP.isValidCode(sanitizedCode) else {
+                        throw Identity.MFA.TOTP.Client.Error.invalidCode
+                    }
+
+                    // Create TOTP instance with the secret as-is
+                    let totp = try createTOTP(
+                        secret: secret,
+                        configuration: configuration
+                    )
+
+                    // Verify the code through the injected verifier
+                    @Dependency(Identity.MFA.TOTP.Verifier.self) var verifier
+
+                    guard
+                        verifier.validate(
+                            sanitizedCode,
+                            totp,
+                            configuration.verificationWindow
+                        )
+                    else {
+                        logger.error("TOTP validation failed for confirmSetup")
+                        throw Identity.MFA.TOTP.Client.Error.invalidCode
+                    }
+                    logger.debug("TOTP code validated successfully")
+                    // Confirm the setup in database with explicit operations
+                    @Dependency(\.defaultDatabase) var db
+                    @Dependency(\.date) var date
+
+                    try await db.write { db in
+                        // Find and confirm in single transaction
+                        guard
+                            let totpRecord = try await Identity.MFA.TOTP.Record
+                                .findByIdentity(identityId)
+                                .fetchOne(db)
+                        else {
+                            throw Identity.MFA.TOTP.Client.Error.totpNotEnabled
                         }
-                        .execute(db)
-                }
-                logger.notice("TOTP setup confirmed successfully")
-            },
 
-            verifyCode: { identityId, code in
-                // Use the common verification logic with default window
-                return try await verifyTOTPCode(
-                    identityId: identityId,
-                    code: code,
-                    window: configuration.verificationWindow,
-                    configuration: configuration
-                )
-            },
-
-            verifyCodeWithWindow: { identityId, code, window in
-                // Use the common verification logic with custom window
-                return try await verifyTOTPCode(
-                    identityId: identityId,
-                    code: code,
-                    window: window,
-                    configuration: configuration
-                )
-            },
-            verify: { code, sessionToken in
-                @Dependency(\.logger) var logger
-                @Dependency(\.tokenClient) var tokenClient
-                @Dependency(\.defaultDatabase) var database
-
-                logger.debug("TOTP MFA verification initiated")
-
-                // 1. Verify the MFA session token
-                let mfaToken = try await tokenClient.verifyMFASession(sessionToken)
-
-                // Check if token is valid
-                guard mfaToken.isValid else {
-                    logger.error("MFA session token is expired or invalid")
-                    throw Identity.Authentication.Error.tokenExpired
-                }
-
-                let identityId = mfaToken.identityId
-
-                // 2. Get identity from database
-                guard
-                    let identity = try await database.read({ db in
-                        try await Identity.Record
-                            .where { $0.id.eq(identityId) }
-                            .fetchOne(db)
-                    })
-                else {
-                    logger.error("Identity not found: \(identityId)")
-                    throw Identity.Authentication.Error.accountNotFound
-                }
-
-                // 3. Verify the TOTP code using existing verification logic
-                let isValid = try await verifyTOTPCode(
-                    identityId: identityId,
-                    code: code,
-                    window: configuration.verificationWindow,
-                    configuration: configuration
-                )
-
-                guard isValid else {
-                    logger.warning("Invalid TOTP code for identity: \(identityId)")
-                    throw Identity.MFA.TOTP.Client.ClientError.invalidCode
-                }
-
-                logger.notice("TOTP verified successfully for identity: \(identityId)")
-
-                // 4. Generate full authentication tokens
-                let (accessToken, refreshToken) = try await tokenClient.generateTokenPair(
-                    identity.id,
-                    identity.email,
-                    identity.sessionVersion
-                )
-
-                // 5. Return authentication response
-                return Identity.Authentication.Response(
-                    accessToken: accessToken,
-                    refreshToken: refreshToken,
-                    mfaStatus: .satisfied
-                )
-            },
-            generateBackupCodes: { identityId, count in
-                let actualCount = count > 0 ? count : configuration.backupCodeCount
-                var codes: [String] = []
-
-                for _ in 0..<actualCount {
-                    let code = generateBackupCode(length: configuration.backupCodeLength)
-                    codes.append(code)
-                }
-
-                // Save backup codes to database with explicit operations
-                @Dependency(\.defaultDatabase) var db
-
-                try await db.write { [codes] db in
-                    // Delete existing codes
-                    try await Identity.MFA.BackupCodes.Record
-                        .delete()
-                        .where { $0.identityId.eq(identityId) }
-                        .execute(db)
-
-                    // Hash codes and insert one by one
-                    for code in codes {
-                        let codeHash = try await Identity.MFA.BackupCodes.Record.hashCode(code)
-
-                        try await Identity.MFA.BackupCodes.Record
-                            .insert {
-                                Identity.MFA.BackupCodes.Record.Draft(
-                                    identityId: identityId,
-                                    codeHash: codeHash
-                                )
+                        try await Identity.MFA.TOTP.Record
+                            .where { $0.id.eq(totpRecord.id) }
+                            .update { totp in
+                                totp.isConfirmed = true
+                                totp.confirmedAt = date()
                             }
                             .execute(db)
                     }
+                    logger.notice("TOTP setup confirmed successfully")
+                } catch let error as Identity.MFA.TOTP.Client.Error {
+                    throw error
+                } catch {
+                    throw .verificationFailed
                 }
-
-                return codes
             },
-            verifyBackupCode: { identityId, code in
-                // Implement atomic verify and mark as used
-                @Dependency(\.defaultDatabase) var db
-                @Dependency(\.date) var date
 
-                return try await db.write { db in
-                    let unusedCodes = try await Identity.MFA.BackupCodes.Record
-                        .findUnusedByIdentity(identityId)
-                        .fetchAll(db)
+            verifyCode: { identityId, code throws(Identity.MFA.TOTP.Client.Error) in
+                do {
+                    // Use the common verification logic with default window
+                    return try await verifyTOTPCode(
+                        identityId: identityId,
+                        code: code,
+                        window: configuration.verificationWindow,
+                        configuration: configuration
+                    )
+                } catch let error as Identity.MFA.TOTP.Client.Error {
+                    throw error
+                } catch {
+                    throw .verificationFailed
+                }
+            },
 
-                    for backupCode in unusedCodes {
-                        if try await Identity.MFA.BackupCodes.Record.verifyCode(
-                            code,
-                            hash: backupCode.codeHash
-                        ) {
-                            // Mark as used in same transaction
+            verifyCodeWithWindow: { identityId, code, window throws(Identity.MFA.TOTP.Client.Error) in
+                do {
+                    // Use the common verification logic with custom window
+                    return try await verifyTOTPCode(
+                        identityId: identityId,
+                        code: code,
+                        window: window,
+                        configuration: configuration
+                    )
+                } catch let error as Identity.MFA.TOTP.Client.Error {
+                    throw error
+                } catch {
+                    throw .verificationFailed
+                }
+            },
+            verify: { code, sessionToken throws(Identity.MFA.TOTP.Client.Error) in
+                do {
+                    @Dependency(\.logger) var logger
+                    @Dependency(\.tokenClient) var tokenClient
+                    @Dependency(\.defaultDatabase) var database
+
+                    logger.debug("TOTP MFA verification initiated")
+
+                    // 1. Verify the MFA session token
+                    let mfaToken = try await tokenClient.verifyMFASession(sessionToken)
+
+                    // Check if token is valid
+                    guard mfaToken.isValid else {
+                        logger.error("MFA session token is expired or invalid")
+                        throw Identity.Authentication.Error.tokenExpired
+                    }
+
+                    let identityId = mfaToken.identityId
+
+                    // 2. Get identity from database
+                    guard
+                        let identity = try await database.read({ db in
+                            try await Identity.Record
+                                .where { $0.id.eq(identityId) }
+                                .fetchOne(db)
+                        })
+                    else {
+                        logger.error("Identity not found: \(identityId)")
+                        throw Identity.Authentication.Error.accountNotFound
+                    }
+
+                    // 3. Verify the TOTP code using existing verification logic
+                    let isValid = try await verifyTOTPCode(
+                        identityId: identityId,
+                        code: code,
+                        window: configuration.verificationWindow,
+                        configuration: configuration
+                    )
+
+                    guard isValid else {
+                        logger.warning("Invalid TOTP code for identity: \(identityId)")
+                        throw Identity.MFA.TOTP.Client.Error.invalidCode
+                    }
+
+                    logger.notice("TOTP verified successfully for identity: \(identityId)")
+
+                    // 4. Generate full authentication tokens
+                    let (accessToken, refreshToken) = try await tokenClient.generateTokenPair(
+                        identity.id,
+                        identity.email,
+                        identity.sessionVersion
+                    )
+
+                    // 5. Return authentication response
+                    return Identity.Authentication.Response(
+                        accessToken: accessToken,
+                        refreshToken: refreshToken,
+                        mfaStatus: .satisfied
+                    )
+                } catch let error as Identity.MFA.TOTP.Client.Error {
+                    throw error
+                } catch {
+                    throw .verificationFailed
+                }
+            },
+            generateBackupCodes: { identityId, count throws(Identity.MFA.TOTP.Client.Error) in
+                do {
+                    let actualCount = count > 0 ? count : configuration.backupCodeCount
+                    var codes: [String] = []
+
+                    for _ in 0..<actualCount {
+                        let code = generateBackupCode(length: configuration.backupCodeLength)
+                        codes.append(code)
+                    }
+
+                    // Save backup codes to database with explicit operations
+                    @Dependency(\.defaultDatabase) var db
+
+                    try await db.write { [codes] db in
+                        // Delete existing codes
+                        try await Identity.MFA.BackupCodes.Record
+                            .delete()
+                            .where { $0.identityId.eq(identityId) }
+                            .execute(db)
+
+                        // Hash codes and insert one by one
+                        for code in codes {
+                            let codeHash = try await Identity.MFA.BackupCodes.Record.hashCode(code)
+
                             try await Identity.MFA.BackupCodes.Record
-                                .where { $0.id.eq(backupCode.id) }
-                                .update { code in
-                                    code.isUsed = true
-                                    code.usedAt = date()
+                                .insert {
+                                    Identity.MFA.BackupCodes.Record.Draft(
+                                        identityId: identityId,
+                                        codeHash: codeHash
+                                    )
                                 }
                                 .execute(db)
-                            return true
                         }
                     }
-                    return false
+
+                    return codes
+                } catch let error as Identity.MFA.TOTP.Client.Error {
+                    throw error
+                } catch {
+                    throw .backupCodeGenerationFailed
+                }
+            },
+            verifyBackupCode: { identityId, code throws(Identity.MFA.TOTP.Client.Error) in
+                do {
+                    // Implement atomic verify and mark as used
+                    @Dependency(\.defaultDatabase) var db
+                    @Dependency(\.date) var date
+
+                    return try await db.write { db in
+                        let unusedCodes = try await Identity.MFA.BackupCodes.Record
+                            .findUnusedByIdentity(identityId)
+                            .fetchAll(db)
+
+                        for backupCode in unusedCodes {
+                            if try await Identity.MFA.BackupCodes.Record.verifyCode(
+                                code,
+                                hash: backupCode.codeHash
+                            ) {
+                                // Mark as used in same transaction
+                                try await Identity.MFA.BackupCodes.Record
+                                    .where { $0.id.eq(backupCode.id) }
+                                    .update { code in
+                                        code.isUsed = true
+                                        code.usedAt = date()
+                                    }
+                                    .execute(db)
+                                return true
+                            }
+                        }
+                        return false
+                    }
+                } catch let error as Identity.MFA.TOTP.Client.Error {
+                    throw error
+                } catch {
+                    throw .verificationFailed
                 }
             },
 
-            remainingBackupCodes: { identityId in
-                @Dependency(\.defaultDatabase) var db
+            remainingBackupCodes: { identityId throws(Identity.MFA.TOTP.Client.Error) in
+                do {
+                    @Dependency(\.defaultDatabase) var db
 
-                return try await db.read { db in
-                    try await Identity.MFA.BackupCodes.Record
-                        .findUnusedByIdentity(identityId)
-                        .fetchCount(db)
+                    return try await db.read { db in
+                        try await Identity.MFA.BackupCodes.Record
+                            .findUnusedByIdentity(identityId)
+                            .fetchCount(db)
+                    }
+                } catch let error as Identity.MFA.TOTP.Client.Error {
+                    throw error
+                } catch {
+                    throw .configurationError("\(error)")
                 }
             },
 
-            isEnabled: { identityId in
-                @Dependency(\.defaultDatabase) var db
+            isEnabled: { identityId throws(Identity.MFA.TOTP.Client.Error) in
+                do {
+                    @Dependency(\.defaultDatabase) var db
 
-                let count = try await db.read { db in
-                    try await Identity.MFA.TOTP.Record
-                        .findConfirmedByIdentity(identityId)
-                        .fetchCount(db)
-                }
-                return count > 0
-            },
-
-            disable: { identityId in
-                @Dependency(\.defaultDatabase) var db
-
-                try await db.write { db in
-                    // Delete TOTP records
-                    try await Identity.MFA.TOTP.Record
-                        .delete()
-                        .where { $0.identityId.eq(identityId) }
-                        .execute(db)
-
-                    // Delete backup codes
-                    try await Identity.MFA.BackupCodes.Record
-                        .delete()
-                        .where { $0.identityId.eq(identityId) }
-                        .execute(db)
+                    let count = try await db.read { db in
+                        try await Identity.MFA.TOTP.Record
+                            .findConfirmedByIdentity(identityId)
+                            .fetchCount(db)
+                    }
+                    return count > 0
+                } catch let error as Identity.MFA.TOTP.Client.Error {
+                    throw error
+                } catch {
+                    throw .configurationError("\(error)")
                 }
             },
 
-            getStatus: { identityId in
-                @Dependency(\.defaultDatabase) var db
+            disable: { identityId throws(Identity.MFA.TOTP.Client.Error) in
+                do {
+                    @Dependency(\.defaultDatabase) var db
 
-                // Get all status data in single transaction
-                return try await db.read { db in
-                    let totpData = try await Identity.MFA.TOTP.Record
-                        .findByIdentity(identityId)
-                        .fetchOne(db)
+                    try await db.write { db in
+                        // Delete TOTP records
+                        try await Identity.MFA.TOTP.Record
+                            .delete()
+                            .where { $0.identityId.eq(identityId) }
+                            .execute(db)
 
-                    let backupCodesCount = try await Identity.MFA.BackupCodes.Record
-                        .findUnusedByIdentity(identityId)
-                        .fetchCount(db)
+                        // Delete backup codes
+                        try await Identity.MFA.BackupCodes.Record
+                            .delete()
+                            .where { $0.identityId.eq(identityId) }
+                            .execute(db)
+                    }
+                } catch let error as Identity.MFA.TOTP.Client.Error {
+                    throw error
+                } catch {
+                    throw .configurationError("\(error)")
+                }
+            },
 
-                    // Only consider TOTP enabled if it's confirmed
-                    let isEnabled = (totpData?.isConfirmed ?? false)
+            getStatus: { identityId throws(Identity.MFA.TOTP.Client.Error) in
+                do {
+                    @Dependency(\.defaultDatabase) var db
 
-                    return Status(
-                        isEnabled: isEnabled,
-                        isConfirmed: totpData?.isConfirmed ?? false,
-                        backupCodesRemaining: backupCodesCount,
-                        lastUsedAt: totpData?.lastUsedAt
+                    // Get all status data in single transaction
+                    return try await db.read { db in
+                        let totpData = try await Identity.MFA.TOTP.Record
+                            .findByIdentity(identityId)
+                            .fetchOne(db)
+
+                        let backupCodesCount = try await Identity.MFA.BackupCodes.Record
+                            .findUnusedByIdentity(identityId)
+                            .fetchCount(db)
+
+                        // Only consider TOTP enabled if it's confirmed
+                        let isEnabled = (totpData?.isConfirmed ?? false)
+
+                        return Status(
+                            isEnabled: isEnabled,
+                            isConfirmed: totpData?.isConfirmed ?? false,
+                            backupCodesRemaining: backupCodesCount,
+                            lastUsedAt: totpData?.lastUsedAt
+                        )
+                    }
+                } catch let error as Identity.MFA.TOTP.Client.Error {
+                    throw error
+                } catch {
+                    throw .configurationError("\(error)")
+                }
+            },
+
+            generateQRCodeURL: { secret, email, issuer throws(Identity.MFA.TOTP.Client.Error) in
+                do {
+                    try await generateOTPAuthURL(
+                        secret: secret,
+                        email: .init(email),
+                        issuer: issuer,
+                        configuration: configuration
                     )
+                } catch let error as Identity.MFA.TOTP.Client.Error {
+                    throw error
+                } catch {
+                    throw .configurationError("\(error)")
                 }
-            },
-
-            generateQRCodeURL: { secret, email, issuer in
-                try await generateOTPAuthURL(
-                    secret: secret,
-                    email: .init(email),
-                    issuer: issuer,
-                    configuration: configuration
-                )
             }
         )
     }
@@ -411,7 +483,7 @@ private func generateOTPAuthURL(
     ]
 
     guard let url = components.url else {
-        throw Identity.MFA.TOTP.Client.ClientError.configurationError(
+        throw Identity.MFA.TOTP.Client.Error.configurationError(
             "Failed to generate QR code URL"
         )
     }
@@ -448,7 +520,7 @@ private func verifyTOTPCode(
     // Validate and sanitize the code
     let sanitizedCode = Identity.MFA.TOTP.sanitizeCode(code)
     guard Identity.MFA.TOTP.isValidCode(sanitizedCode) else {
-        throw Identity.MFA.TOTP.Client.ClientError.invalidCode
+        throw Identity.MFA.TOTP.Client.Error.invalidCode
     }
 
     @Dependency(\.defaultDatabase) var db
@@ -461,11 +533,11 @@ private func verifyTOTPCode(
                 .findByIdentity(identityId)
                 .fetchOne(db)
         else {
-            throw Identity.MFA.TOTP.Client.ClientError.totpNotEnabled
+            throw Identity.MFA.TOTP.Client.Error.totpNotEnabled
         }
 
         guard totpData.isConfirmed else {
-            throw Identity.MFA.TOTP.Client.ClientError.setupNotConfirmed
+            throw Identity.MFA.TOTP.Client.Error.setupNotConfirmed
         }
 
         // Get decrypted secret

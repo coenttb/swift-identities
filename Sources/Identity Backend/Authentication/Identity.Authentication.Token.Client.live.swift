@@ -20,15 +20,15 @@ extension Identity.Authentication.Token.Client {
         @Dependency(\.logger) var logger
 
         return .init(
-            access: { token in
+            access: { token throws(Identity.Authentication.Token.Client.Error) in
                 @Dependency(\.logger) var logger
                 @Dependency(\.vapor.request) var request
-                guard let request else { throw Identity.Backend.Error.requestUnavailable }
                 @Dependency(\.tokenClient) var tokenClient
                 @Dependency(\.date) var date
                 @Dependency(\.defaultDatabase) var db
 
                 do {
+                    guard let request else { throw Identity.Backend.Error.requestUnavailable }
                     let payload = try await tokenClient.verifyAccess(token)
 
                     logger.trace(
@@ -91,17 +91,17 @@ extension Identity.Authentication.Token.Client {
                             "error": "\(error)",
                         ]
                     )
-                    throw Identity.Backend.Error.invalidToken(type: .access)
+                    throw .access(reason: "\(Identity.Backend.Error.invalidToken(type: .access))")
                 }
             },
-            refresh: { token in
+            refresh: { token throws(Identity.Authentication.Token.Client.Error) in
                 @Dependency(\.logger) var logger
                 @Dependency(\.vapor.request) var request
-                guard let request else { throw Identity.Backend.Error.requestUnavailable }
                 @Dependency(\.tokenClient) var tokenClient
                 @Dependency(\.defaultDatabase) var db
 
                 do {
+                    guard let request else { throw Identity.Backend.Error.requestUnavailable }
                     let payload = try await tokenClient.verifyRefresh(token)
 
                     // Single read transaction for identity verification
@@ -154,7 +154,7 @@ extension Identity.Authentication.Token.Client {
                             "error": "\(error)",
                         ]
                     )
-                    throw Identity.Backend.Error.invalidToken(type: .refresh)
+                    throw .refresh(reason: "\(Identity.Backend.Error.invalidToken(type: .refresh))")
                 }
             }
         )

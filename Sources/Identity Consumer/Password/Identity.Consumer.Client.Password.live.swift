@@ -24,16 +24,16 @@ extension Identity.Password.Client {
         @Dependency(URLRequest.Handler.Identity.self) var handleRequest
         return .init(
             reset: .init(
-                request: { email in
+                request: { email throws(Identity.Password.Reset.Client.Error) in
                     do {
                         try await handleRequest(
                             for: makeRequest(.reset(.request(.init(email: email))))
                         )
                     } catch {
-                        throw Abort(.unauthorized)
+                        throw .request(reason: "\(error)")
                     }
                 },
-                confirm: { token, newPassword in
+                confirm: { token, newPassword throws(Identity.Password.Reset.Client.Error) in
                     do {
                         try await handleRequest(
                             for: makeRequest(
@@ -41,12 +41,12 @@ extension Identity.Password.Client {
                             )
                         )
                     } catch {
-                        throw Abort(.internalServerError)
+                        throw .confirm(reason: "\(error)")
                     }
                 }
             ),
             change: .init(
-                request: { currentPassword, newPassword in
+                request: { currentPassword, newPassword throws(Identity.Password.Change.Client.Error) in
                     do {
                         try await handleRequest(
                             for: makeRequest(
@@ -61,7 +61,7 @@ extension Identity.Password.Client {
                             )
                         )
                     } catch {
-                        throw Abort(.unauthorized)
+                        throw .request(reason: "\(error)")
                     }
                 }
             )

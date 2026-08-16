@@ -28,14 +28,14 @@ extension Identity.Authentication.Client {
         @Dependency(\.logger) var logger
 
         return .init(
-            credentials: { username, password in
-                let email: EmailAddress = try .init(username)
-
+            credentials: { username, password throws(Identity.Authentication.Client.Error) in
                 @Dependency(\.vapor.request) var request
-                guard let request else { throw Identity.Backend.Error.requestUnavailable }
                 @Dependency(\.date) var date
 
                 do {
+                    let email: EmailAddress = try .init(username)
+                    guard let request else { throw Identity.Backend.Error.requestUnavailable }
+
                     // Use cached and optimized single query for authentication
                     guard
                         let authData = try await Identity.Record.verifyPasswordOptimized(
@@ -103,26 +103,28 @@ extension Identity.Authentication.Client {
                     return response
 
                 } catch let mfaRequired as Identity.Authentication.MFARequired {
-                    // Re-throw MFA required - this is not an error, it's part of the flow
+                    // MFA required is part of the flow, not a failure; it can only cross the
+                    // typed witness boundary as the credentials leaf error.
                     logger.info("Re-throwing MFA required for propagation")
-                    throw mfaRequired
+                    throw .credentials(reason: "\(mfaRequired)")
                 } catch let error as Identity.Backend.Error {
                     // Re-throw domain errors as-is
-                    throw error
+                    throw .credentials(reason: "\(error)")
                 } catch {
                     logger.warning("Login attempt failed: \(error)")
-                    throw Identity.Backend.Error.invalidCredentials
+                    throw .credentials(reason: "\(Identity.Backend.Error.invalidCredentials)")
                 }
             },
-            apiKey: { apiKeyString in
+            apiKey: { apiKeyString throws(Identity.Authentication.Client.Error) in
                 @Dependency(\.vapor.request) var request
                 @Dependency(\.logger) var logger
                 @Dependency(\.date) var date
                 @Dependency(\.tokenClient) var tokenClient
                 @Dependency(\.defaultDatabase) var db
-                guard let request else { throw Identity.Backend.Error.requestUnavailable }
 
                 do {
+                    guard let request else { throw Identity.Backend.Error.requestUnavailable }
+
                     // Single transaction for API key authentication with JOIN
                     let authData = try await db.write { db in
                         // Get API key with identity in single query
@@ -212,7 +214,7 @@ extension Identity.Authentication.Client {
                     return response
                 } catch let error as Identity.Backend.Error {
                     // Re-throw domain errors as-is
-                    throw error
+                    throw .apiKey(reason: "\(error)")
                 } catch {
                     logger.error(
                         "Unexpected error during api key verification",
@@ -222,7 +224,7 @@ extension Identity.Authentication.Client {
                             "error": "\(error)",
                         ]
                     )
-                    throw Identity.Backend.Error.unexpected("API key verification failed")
+                    throw .apiKey(reason: "\(Identity.Backend.Error.unexpected("API key verification failed"))")
                 }
             }
         )
