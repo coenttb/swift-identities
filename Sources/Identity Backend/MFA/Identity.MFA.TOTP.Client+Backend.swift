@@ -427,7 +427,7 @@ extension Identity.MFA.TOTP.Client {
 
             generateQRCodeURL: { secret, email, issuer throws(Identity.MFA.TOTP.Client.Error) in
                 do {
-                    try await generateOTPAuthURL(
+                    return try await generateOTPAuthURL(
                         secret: secret,
                         email: .init(email),
                         issuer: issuer,
@@ -504,7 +504,7 @@ private func generateBackupCode(length: Int) -> String {
 
 private func hashBackupCode(_ code: String) throws -> String {
     // Use SHA256 to hash backup codes
-    let data = Data(code.utf8)
+    let data = Foundation.Data(code.utf8)
     let hashed = SHA256.hash(data: data)
     return hashed.compactMap { String(format: "%02x", $0) }.joined()
 }
