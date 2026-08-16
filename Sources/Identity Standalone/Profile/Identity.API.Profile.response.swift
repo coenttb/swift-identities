@@ -18,6 +18,7 @@ extension Identity.API.Profile {
     public static func response(
         _ profile: Identity.API.Profile
     ) async throws -> any AsyncResponseEncodable {
+        // swiftlint:disable:previous typed_throws_required no_any_protocol_existential
 
         // Get authenticated identity
         let identity = try await Identity.Record.get(by: .auth)

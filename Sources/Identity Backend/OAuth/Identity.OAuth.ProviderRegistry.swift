@@ -12,21 +12,25 @@ extension Identity.OAuth {
     /// Registry for OAuth providers
     public actor ProviderRegistry {
         private var providers: [String: any Identity.OAuth.Provider] = [:]
+        // swiftlint:disable:previous no_any_protocol_existential
 
         public init() {}
 
         /// Register an OAuth provider
         public func register(_ provider: any Identity.OAuth.Provider) {
+            // swiftlint:disable:previous no_any_protocol_existential
             providers[provider.identifier] = provider
         }
 
         /// Get a registered provider by identifier
         public func provider(for identifier: String) -> (any Identity.OAuth.Provider)? {
+            // swiftlint:disable:previous no_any_protocol_existential
             providers[identifier]
         }
 
         /// Get all registered providers
         public func allProviders() -> [any Identity.OAuth.Provider] {
+            // swiftlint:disable:previous no_any_protocol_existential
             Array(providers.values)
         }
 

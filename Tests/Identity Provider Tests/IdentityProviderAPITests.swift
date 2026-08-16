@@ -53,101 +53,101 @@ struct Test {
     // MARK: - Temporarily disabled due to Swift type inference issue with withDependencies
     // See: https://github.com/pointfreeco/swift-dependencies/issues/XXX
 
-    /*
-      @Test
-      func `Rate limit exceeded throws too many requests for credentials`() async throws {
-          try await withDependencies {
-              // Create a rate limiter that immediately fails
-              let restrictiveRateLimiter = RateLimiter<String>(
-                  windows: [
-                      .minutes(1, maxAttempts: 0) // No attempts allowed
-                  ]
-              )
+    //
+    // @Test
+    // func `Rate limit exceeded throws too many requests for credentials`() async throws {
+    // try await withDependencies {
+    // // Create a rate limiter that immediately fails
+    // let restrictiveRateLimiter = RateLimiter<String>(
+    // windows: [
+    // .minutes(1, maxAttempts: 0) // No attempts allowed
+    // ]
+    // )
 
-              var config = Identity.Provider.Configuration.testValue
-              config.provider.rateLimiters = RateLimiters(
-                  credentials: restrictiveRateLimiter
-              )
-              $0[Identity.Provider.Configuration.self] = config
-          } operation: {
-              let credentials = Identity.Authentication.API.Credentials(
-                  username: TestFixtures.testEmail,
-                  password: TestFixtures.testPassword
-              )
-              let api = Identity.Provider.API.authenticate(.credentials(credentials))
+    //               // var config = Identity.Provider.Configuration.testValue
+    // config.provider.rateLimiters = RateLimiters(
+    // credentials: restrictiveRateLimiter
+    // )
+    // $0[Identity.Provider.Configuration.self] = config
+    // } operation: {
+    // let credentials = Identity.Authentication.API.Credentials(
+    // username: TestFixtures.testEmail,
+    // password: TestFixtures.testPassword
+    // )
+    // let api = Identity.Provider.API.authenticate(.credentials(credentials))
 
-              do {
-                  _ = try await Identity.Provider.API.response(api: api)
-                  Issue.record("Expected rate limit to be exceeded")
-              } catch let error as Abort {
-                  #expect(error.status == .tooManyRequests)
-              }
-          }
-      }
+    //               // do {
+    // _ = try await Identity.Provider.API.response(api: api)
+    // Issue.record("Expected rate limit to be exceeded")
+    // } catch let error as Abort {
+    // #expect(error.status == .tooManyRequests)
+    // }
+    // }
+    // }
 
-      @Test
-      func `Rate limit exceeded throws too many requests for creation`() async throws {
-          try await withDependencies {
-              let restrictiveRateLimiter = RateLimiter<String>(
-                  windows: [
-                      .minutes(1, maxAttempts: 0)
-                  ]
-              )
+    //       // @Test
+    // func `Rate limit exceeded throws too many requests for creation`() async throws {
+    // try await withDependencies {
+    // let restrictiveRateLimiter = RateLimiter<String>(
+    // windows: [
+    // .minutes(1, maxAttempts: 0)
+    // ]
+    // )
 
-              var config = Identity.Provider.Configuration.testValue
-              config.provider.rateLimiters = RateLimiters(
-                  credentials: restrictiveRateLimiter
-              )
-              $0[Identity.Provider.Configuration.self] = config
-          } operation: {
-              let request = Identity.Creation.API.Request(
-                  email: TestFixtures.testEmail,
-                  password: TestFixtures.testPassword
-              )
-              let api = Identity.Provider.API.create(.request(request))
+    //               // var config = Identity.Provider.Configuration.testValue
+    // config.provider.rateLimiters = RateLimiters(
+    // credentials: restrictiveRateLimiter
+    // )
+    // $0[Identity.Provider.Configuration.self] = config
+    // } operation: {
+    // let request = Identity.Creation.API.Request(
+    // email: TestFixtures.testEmail,
+    // password: TestFixtures.testPassword
+    // )
+    // let api = Identity.Provider.API.create(.request(request))
 
-              do {
-                  _ = try await Identity.Provider.API.response(api: api)
-                  Issue.record("Expected rate limit to be exceeded")
-              } catch let error as Abort {
-                  #expect(error.status == .tooManyRequests)
-              }
-          }
-      }
+    //               // do {
+    // _ = try await Identity.Provider.API.response(api: api)
+    // Issue.record("Expected rate limit to be exceeded")
+    // } catch let error as Abort {
+    // #expect(error.status == .tooManyRequests)
+    // }
+    // }
+    // }
 
-      @Test
-      func `Rate limit allows request within limits`() async throws {
-          try await withDependencies {
-              // Use generous rate limiter
-              let generousRateLimiter = RateLimiter<String>(
-                  windows: [
-                      .minutes(1, maxAttempts: 100)
-                  ]
-              )
+    //       // @Test
+    // func `Rate limit allows request within limits`() async throws {
+    // try await withDependencies {
+    // // Use generous rate limiter
+    // let generousRateLimiter = RateLimiter<String>(
+    // windows: [
+    // .minutes(1, maxAttempts: 100)
+    // ]
+    // )
 
-              var config = Identity.Provider.Configuration.testValue
-              config.provider.rateLimiters = RateLimiters(
-                  credentials: generousRateLimiter
-              )
-              $0[Identity.Provider.Configuration.self] = config
-          } operation: {
-              let credentials = Identity.Authentication.API.Credentials(
-                  username: TestFixtures.testEmail,
-                  password: TestFixtures.testPassword
-              )
-              let api = Identity.Provider.API.authenticate(.credentials(credentials))
+    //               // var config = Identity.Provider.Configuration.testValue
+    // config.provider.rateLimiters = RateLimiters(
+    // credentials: generousRateLimiter
+    // )
+    // $0[Identity.Provider.Configuration.self] = config
+    // } operation: {
+    // let credentials = Identity.Authentication.API.Credentials(
+    // username: TestFixtures.testEmail,
+    // password: TestFixtures.testPassword
+    // )
+    // let api = Identity.Provider.API.authenticate(.credentials(credentials))
 
-              // Should not throw rate limit error
-              // Will fail with other error (no mocked backend) but that's expected
-              do {
-                  _ = try await Identity.Provider.API.response(api: api)
-              } catch let error as Abort {
-                  // Should not be rate limit error
-                  #expect(error.status != .tooManyRequests)
-              }
-          }
-      }
-      */
+    //               // // Should not throw rate limit error
+    // // Will fail with other error (no mocked backend) but that's expected
+    // do {
+    // _ = try await Identity.Provider.API.response(api: api)
+    // } catch let error as Abort {
+    // // Should not be rate limit error
+    // #expect(error.status != .tooManyRequests)
+    // }
+    // }
+    // }
+    //
 }
 
 // MARK: - Protection/Authentication Tests
@@ -157,79 +157,79 @@ struct Test {
 
     // MARK: - Temporarily disabled due to Swift type inference issue with withDependencies
 
-    /*
+    //
 
-      @Test
-      func `Delete request with empty token throws unauthorized`() async throws {
-          try await withDependencies {
-              $0[Identity.Provider.Configuration.self] = .testValue
-          } operation: {
-              let request = Identity.Deletion.API.Request(reauthToken: "")
-              let api = Identity.Provider.API.delete(.request(request))
+    //       // @Test
+    // func `Delete request with empty token throws unauthorized`() async throws {
+    // try await withDependencies {
+    // $0[Identity.Provider.Configuration.self] = .testValue
+    // } operation: {
+    // let request = Identity.Deletion.API.Request(reauthToken: "")
+    // let api = Identity.Provider.API.delete(.request(request))
 
-              do {
-                  _ = try await Identity.Provider.API.response(api: api)
-                  Issue.record("Expected deletion to fail with empty token")
-              } catch let error as Abort {
-                  #expect(error.status == .unauthorized)
-                  #expect(error.reason == "Invalid token")
-              }
-          }
-      }
+    //               // do {
+    // _ = try await Identity.Provider.API.response(api: api)
+    // Issue.record("Expected deletion to fail with empty token")
+    // } catch let error as Abort {
+    // #expect(error.status == .unauthorized)
+    // #expect(error.reason == "Invalid token")
+    // }
+    // }
+    // }
 
-      @Test
-      func `Delete endpoints check protection before rate limiting`() async throws {
-          try await withDependencies {
-              // Even with generous rate limits, protection should be checked first
-              let generousRateLimiter = RateLimiter<String>(
-                  windows: [
-                      .minutes(1, maxAttempts: 100)
-                  ]
-              )
+    //       // @Test
+    // func `Delete endpoints check protection before rate limiting`() async throws {
+    // try await withDependencies {
+    // // Even with generous rate limits, protection should be checked first
+    // let generousRateLimiter = RateLimiter<String>(
+    // windows: [
+    // .minutes(1, maxAttempts: 100)
+    // ]
+    // )
 
-              var config = Identity.Provider.Configuration.testValue
-              config.provider.rateLimiters = RateLimiters(
-                  tokenAccess: generousRateLimiter
-              )
-              $0[Identity.Provider.Configuration.self] = config
-          } operation: {
-              let request = Identity.Deletion.API.Request(reauthToken: "")
-              let api = Identity.Provider.API.delete(.request(request))
+    //               // var config = Identity.Provider.Configuration.testValue
+    // config.provider.rateLimiters = RateLimiters(
+    // tokenAccess: generousRateLimiter
+    // )
+    // $0[Identity.Provider.Configuration.self] = config
+    // } operation: {
+    // let request = Identity.Deletion.API.Request(reauthToken: "")
+    // let api = Identity.Provider.API.delete(.request(request))
 
-              do {
-                  _ = try await Identity.Provider.API.response(api: api)
-                  Issue.record("Expected protection check to fail")
-              } catch let error as Abort {
-                  // Should fail with unauthorized, not rate limit
-                  #expect(error.status == .unauthorized)
-              }
-          }
-      }
+    //               // do {
+    // _ = try await Identity.Provider.API.response(api: api)
+    // Issue.record("Expected protection check to fail")
+    // } catch let error as Abort {
+    // // Should fail with unauthorized, not rate limit
+    // #expect(error.status == .unauthorized)
+    // }
+    // }
+    // }
 
-      @Test
-      func `Public endpoints don't require request context for protection`() async throws {
-          try await withDependencies {
-              $0[Identity.Provider.Configuration.self] = .testValue
-              // Don't set request - public endpoints shouldn't need it for protection
-          } operation: {
-              let credentials = Identity.Authentication.API.Credentials(
-                  username: TestFixtures.testEmail,
-                  password: TestFixtures.testPassword
-              )
-              let api = Identity.Provider.API.authenticate(.credentials(credentials))
+    //       // @Test
+    // func `Public endpoints don't require request context for protection`() async throws {
+    // try await withDependencies {
+    // $0[Identity.Provider.Configuration.self] = .testValue
+    // // Don't set request - public endpoints shouldn't need it for protection
+    // } operation: {
+    // let credentials = Identity.Authentication.API.Credentials(
+    // username: TestFixtures.testEmail,
+    // password: TestFixtures.testPassword
+    // )
+    // let api = Identity.Provider.API.authenticate(.credentials(credentials))
 
-              // Protection check should pass, will fail in backend call
-              do {
-                  _ = try await Identity.Provider.API.response(api: api)
-              } catch {
-                  // Should not be unauthorized from protection check
-                  if let abort = error as? Abort {
-                      #expect(abort.status != .unauthorized || abort.reason != "Unauthenticated.")
-                  }
-              }
-          }
-      }
-      */
+    //               // // Protection check should pass, will fail in backend call
+    // do {
+    // _ = try await Identity.Provider.API.response(api: api)
+    // } catch {
+    // // Should not be unauthorized from protection check
+    // if let abort = error as? Abort {
+    // #expect(abort.status != .unauthorized || abort.reason != "Unauthenticated.")
+    // }
+    // }
+    // }
+    // }
+    //
 }
 
 // MARK: - Response Handler Tests
@@ -239,39 +239,39 @@ struct Test {
 
     // MARK: - Temporarily disabled due to Swift type inference issue with withDependencies
 
-    /*
+    //
 
-      @Test
-      func `Response handler calls rate limiter before protection`() async throws {
-          try await withDependencies {
-              // Restrictive rate limiter should fail before protection check
-              let restrictiveRateLimiter = RateLimiter<String>(
-                  windows: [
-                      .minutes(1, maxAttempts: 0)
-                  ]
-              )
+    //       // @Test
+    // func `Response handler calls rate limiter before protection`() async throws {
+    // try await withDependencies {
+    // // Restrictive rate limiter should fail before protection check
+    // let restrictiveRateLimiter = RateLimiter<String>(
+    // windows: [
+    // .minutes(1, maxAttempts: 0)
+    // ]
+    // )
 
-              var config = Identity.Provider.Configuration.testValue
-              config.provider.rateLimiters = RateLimiters(
-                  credentials: restrictiveRateLimiter
-              )
-              $0[Identity.Provider.Configuration.self] = config
-          } operation: {
-              let credentials = Identity.Authentication.API.Credentials(
-                  username: TestFixtures.testEmail,
-                  password: TestFixtures.testPassword
-              )
-              let api = Identity.Provider.API.authenticate(.credentials(credentials))
+    //               // var config = Identity.Provider.Configuration.testValue
+    // config.provider.rateLimiters = RateLimiters(
+    // credentials: restrictiveRateLimiter
+    // )
+    // $0[Identity.Provider.Configuration.self] = config
+    // } operation: {
+    // let credentials = Identity.Authentication.API.Credentials(
+    // username: TestFixtures.testEmail,
+    // password: TestFixtures.testPassword
+    // )
+    // let api = Identity.Provider.API.authenticate(.credentials(credentials))
 
-              do {
-                  _ = try await Identity.Provider.API.response(api: api)
-                  Issue.record("Expected rate limit to fail")
-              } catch let error as Abort {
-                  #expect(error.status == .tooManyRequests)
-              }
-          }
-      }
-      */
+    //               // do {
+    // _ = try await Identity.Provider.API.response(api: api)
+    // Issue.record("Expected rate limit to fail")
+    // } catch let error as Abort {
+    // #expect(error.status == .tooManyRequests)
+    // }
+    // }
+    // }
+    //
 
 }
 

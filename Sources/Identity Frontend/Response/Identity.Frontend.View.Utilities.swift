@@ -30,7 +30,7 @@ extension Identity.Frontend {
             branding: configuration.branding,
             canonicalHref: configuration.canonicalHref,
             hreflang: configuration.hreflang,
-            footer_links: configuration.branding.footer_links,
+            footerLinks: configuration.branding.footerLinks,
             content: content
         )
     }
@@ -41,7 +41,7 @@ extension Identity.Frontend {
         branding: Identity.Frontend.Configuration.Branding,
         canonicalHref: @Sendable @escaping (Identity.View) -> URL?,
         hreflang: @Sendable @escaping (Identity.View, Translating.Language) -> URL,
-        footer_links: [(TranslatedString, URL)],
+        footerLinks: [(TranslatedString, URL)],
         @HTML.Builder content: () async throws -> Content
     ) async throws -> Server.Response {
         return try Server.Response.html(
@@ -74,7 +74,7 @@ extension Identity.Frontend {
                 //            favicons: branding.favicons,
                 canonicalHref: canonicalHref,
                 hreflang: hreflang,
-                footer_links: footer_links,
+                footerLinks: footerLinks,
                 body: { try await content() }
             )
         )
@@ -98,7 +98,7 @@ extension Identity.Frontend {
                 //            favicons: configuration.branding.favicons,
                 canonicalHref: configuration.canonicalHref,
                 hreflang: configuration.hreflang,
-                footer_links: configuration.branding.footer_links,
+                footerLinks: configuration.branding.footerLinks,
                 body: { try await content() }
             )
         )

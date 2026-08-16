@@ -26,6 +26,7 @@ extension Identity.Standalone {
         _ application: Vapor.Application,
         runMigrations: Bool = true
     ) async throws {
+        // swiftlint:disable:previous typed_throws_required
         @Dependency(\.logger) var logger
         @Dependency(\.defaultDatabase) var database
 

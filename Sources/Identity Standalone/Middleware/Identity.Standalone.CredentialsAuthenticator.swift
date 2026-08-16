@@ -24,6 +24,7 @@ extension Identity.Standalone {
             credentials: Credentials,
             for request: Request
         ) async throws {
+            // swiftlint:disable:previous typed_throws_required
             @Dependency(\.identity) var identity
             @Dependency(\.tokenClient) var tokenClient
 

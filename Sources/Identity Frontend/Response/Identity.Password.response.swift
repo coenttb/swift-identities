@@ -23,6 +23,7 @@ extension Identity.Password {
         view: Identity.Password.View,
 
     ) async throws -> Server.Response {
+        // swiftlint:disable:previous typed_throws_required
         @Dependency(\.identityFrontendConfiguration) var configuration
         @Dependency(\.identity.router) var router
 
@@ -59,7 +60,7 @@ extension Identity.Password {
     /// Handles password reset confirmation view.
     public static func handleResetConfirm(
 
-        ) async throws -> Server.Response
+        ) async throws -> Server.Response  // swiftlint:disable:this typed_throws_required
     {
         @Dependency(\.identityFrontendConfiguration) var configuration
 
@@ -122,13 +123,18 @@ extension Identity.Password {
     /// Handles password change request view.
     public static func handleChangeRequest(
 
-        ) async throws -> Server.Response
+        ) async throws -> Server.Response  // swiftlint:disable:this typed_throws_required
     {
         @Dependency(\.identityFrontendConfiguration) var configuration
         @Dependency(\.identity.router) var router
         @Dependency(\.identity.require) var requireIdentity
 
-        let email = try? await requireIdentity().email.rawValue
+        let email: String?
+        do {
+            email = try await requireIdentity().email.rawValue
+        } catch {
+            email = nil
+        }
 
         return try await Identity.Frontend.htmlDocument(
             for: .password(.change(.request))

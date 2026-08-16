@@ -17,7 +17,11 @@ extension Identity.Context {
     /// Try to get the access token if this context was created from one
     /// Note: This creates a new Token.Access instance from the JWT
     public var accessToken: Identity.Token.Access? {
-        try? Identity.Token.Access(jwt: jwt)
+        do {
+            return try Identity.Token.Access(jwt: jwt)
+        } catch {
+            return nil
+        }
     }
 
     /// Check if a specific additional claim exists

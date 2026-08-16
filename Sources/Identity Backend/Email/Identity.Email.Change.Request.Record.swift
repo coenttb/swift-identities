@@ -151,6 +151,7 @@ extension Identity.Email.Change.Request.Record {
     package static func findByTokenWithIdentity(
         _ token: String
     ) async throws
+        // swiftlint:disable:previous typed_throws_required
         -> EmailChangeRequestWithIdentity?
     {
         @Dependency(\.defaultDatabase) var db

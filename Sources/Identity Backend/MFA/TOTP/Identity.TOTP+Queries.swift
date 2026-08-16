@@ -12,6 +12,7 @@ import TOTP
 extension Identity.MFA.TOTP.Record {
     /// Encrypt the secret for storage using AES-GCM
     package static func encryptSecret(_ secret: String) throws -> String {
+        // swiftlint:disable:previous typed_throws_required
         @Dependency(\.envVars.encryptionKey) var encryptionKey
         @Dependency(\.logger) var logger
 
@@ -42,6 +43,7 @@ extension Identity.MFA.TOTP.Record {
 
     /// Decrypt the secret for use
     package func decryptedSecret() throws -> String {
+        // swiftlint:disable:previous typed_throws_required
         @Dependency(\.envVars.encryptionKey) var encryptionKey
         @Dependency(\.logger) var logger
 

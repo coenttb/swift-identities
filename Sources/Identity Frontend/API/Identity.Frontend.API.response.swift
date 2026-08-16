@@ -20,6 +20,7 @@ extension Identity.Frontend {
         api: Identity.API,
         configuration: Identity.Frontend.Configuration
     ) async throws -> Server.Response {
+        // swiftlint:disable:previous typed_throws_required
         return try await Self.response(
             api: api,
             identity: configuration.identity,
@@ -38,6 +39,7 @@ extension Identity.Frontend {
         cookies: Identity.Frontend.Configuration.Cookies,
         redirect: Identity.Frontend.Configuration.Redirect
     ) async throws -> Server.Response {
+        // swiftlint:disable:previous typed_throws_required
         switch api {
         case .authenticate(let authenticate):
             return try await handleAuthenticate(
@@ -164,6 +166,7 @@ extension Identity.Frontend {
         _ create: Identity.Creation.API,
         client: Identity.Creation.Client
     ) async throws -> Server.Response {
+        // swiftlint:disable:previous typed_throws_required
         switch create {
         case .request(let request):
             try await client.request(
@@ -185,7 +188,9 @@ extension Identity.Frontend {
         _ delete: Identity.Deletion.API,
         client: Identity.Deletion.Client,
         router: any ParserPrinter<URLRequestData, Identity.Route>
+        // swiftlint:disable:previous no_any_protocol_existential
     ) async throws -> Server.Response {
+        // swiftlint:disable:previous typed_throws_required
 
         switch delete {
         case .request(let request):
@@ -212,6 +217,7 @@ extension Identity.Frontend {
         _ email: Identity.Email.API,
         client: Identity.Email.Change.Client
     ) async throws -> Server.Response {
+        // swiftlint:disable:previous typed_throws_required
         switch email {
         case .change(let change):
             switch change {
@@ -243,6 +249,7 @@ extension Identity.Frontend {
         _ password: Identity.Password.API,
         client: (change: Identity.Password.Change.Client, reset: Identity.Password.Reset.Client)
     ) async throws -> Server.Response {
+        // swiftlint:disable:previous typed_throws_required
         switch password {
         case .reset(let reset):
             switch reset {
@@ -274,8 +281,10 @@ extension Identity.Frontend {
         _ reauthorize: Identity.Reauthorization.API,
         client: Identity.Reauthorization.Client,
         router: any ParserPrinter<URLRequestData, Identity.Route>,
+        // swiftlint:disable:previous no_any_protocol_existential
         cookies: Identity.Frontend.Configuration.Cookies
     ) async throws -> Server.Response {
+        // swiftlint:disable:previous typed_throws_required
         @Dependency(\.vapor.request) var request
 
         let jwt = try await client.reauthorize(reauthorize.password)
@@ -308,6 +317,7 @@ extension Identity.Frontend {
         _ oauth: Identity.OAuth.API,
         client: Identity.OAuth.Client?
     ) async throws -> Server.Response {
+        // swiftlint:disable:previous typed_throws_required
         guard let client else {
             throw Server.Error.notImplemented("OAuth not configured")
         }

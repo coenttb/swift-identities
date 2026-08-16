@@ -45,6 +45,7 @@ extension Identity.Provider {
         public static func forDeployment(
             _ mode: Identity.Cookies.DeploymentMode,
             router: any ParserPrinter<URLRequestData, Identity.Route>
+            // swiftlint:disable:previous no_any_protocol_existential
         ) -> Self {
             switch mode {
             case .sameOrigin:
@@ -66,6 +67,7 @@ extension Identity.Provider {
         public static func sameOrigin(
             domain: String? = nil,
             router: any ParserPrinter<URLRequestData, Identity.Route>
+            // swiftlint:disable:previous no_any_protocol_existential
         ) -> Self {
             let refreshPath = Identity.Cookies.Paths.refresh(using: router)
             let reauthorizePath = Identity.Cookies.Paths.reauthorize(using: router)
@@ -106,6 +108,7 @@ extension Identity.Provider {
         public static func crossSubdomain(
             parentDomain: String,
             router: any ParserPrinter<URLRequestData, Identity.Route>
+            // swiftlint:disable:previous no_any_protocol_existential
         ) -> Self {
             let refreshPath = Identity.Cookies.Paths.refresh(using: router)
             let reauthorizePath = Identity.Cookies.Paths.reauthorize(using: router)
@@ -146,6 +149,7 @@ extension Identity.Provider {
         /// Warning: Requires HTTPS and proper CORS configuration.
         public static func crossDomain(
             router: any ParserPrinter<URLRequestData, Identity.Route>
+            // swiftlint:disable:previous no_any_protocol_existential
         ) -> Self {
             let refreshPath = Identity.Cookies.Paths.refresh(using: router)
             let reauthorizePath = Identity.Cookies.Paths.reauthorize(using: router)
@@ -185,6 +189,7 @@ extension Identity.Provider {
         /// Allows HTTP and cross-origin for local development.
         public static func development(
             router: any ParserPrinter<URLRequestData, Identity.Route>
+            // swiftlint:disable:previous no_any_protocol_existential
         ) -> Self {
             let refreshPath = Identity.Cookies.Paths.refresh(using: router)
             let reauthorizePath = Identity.Cookies.Paths.reauthorize(using: router)

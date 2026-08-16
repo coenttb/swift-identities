@@ -17,6 +17,7 @@ extension Identity.Deletion.Record {
 
     // Keep this as a standalone maintenance operation
     package static func getReadyForDeletion() async throws -> [Identity.Deletion.Record] {
+        // swiftlint:disable:previous typed_throws_required
         @Dependency(\.defaultDatabase) var db
         return try await db.read { db in
             try await Identity.Deletion.Record.readyForDeletion

@@ -11,6 +11,7 @@ extension Identity.Authentication.Response {
     /// Creates an authentication response with access and refresh tokens
     /// for the given identity
     package init(_ identity: Identity.Record) async throws {
+        // swiftlint:disable:previous typed_throws_required
         @Dependency(\.tokenClient) var tokenClient
 
         let (accessToken, refreshToken) = try await tokenClient.generateTokenPair(

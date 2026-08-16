@@ -19,6 +19,7 @@ extension Identity.Provider {
             to request: Request,
             chainingTo next: AsyncResponder
         ) async throws -> Response {
+            // swiftlint:disable:previous typed_throws_required
             return try await withDependencies {
                 $0.vapor.request = request
             } operation: {

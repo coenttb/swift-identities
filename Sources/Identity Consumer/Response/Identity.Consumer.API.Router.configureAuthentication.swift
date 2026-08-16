@@ -17,6 +17,7 @@ extension Identity.Consumer.API.Router {
         baseRouter: some URLRouting.Router<Identity.Consumer.API>,
         route: Identity.Consumer.API
     ) throws -> any ParserPrinter<URLRequestData, Identity.Consumer.API> {
+        // swiftlint:disable:previous typed_throws_required no_any_protocol_existential
         @Dependency(\.vapor.request) var request
         guard let request else { throw Abort.requestUnavailable }
 
@@ -88,6 +89,7 @@ extension ParserPrinter<URLRequestData, Identity.API> {
     package func configureAuthentication(
         for route: Identity.API
     ) throws -> any ParserPrinter<
+        // swiftlint:disable:previous typed_throws_required no_any_protocol_existential
         URLRequestData, Identity.API
     > {
         try Identity.Consumer.API.Router.configureAuthentication(baseRouter: self, route: route)

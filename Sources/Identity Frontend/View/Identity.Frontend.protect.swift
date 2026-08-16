@@ -17,7 +17,9 @@ extension Identity.Frontend {
     package static func protect(
         view: Identity.View,
         router: any ParserPrinter<URLRequestData, Identity.Route>
+        // swiftlint:disable:previous no_any_protocol_existential
     ) async throws {
+        // swiftlint:disable:previous typed_throws_required
         @Dependency(\.vapor.request) var request
         guard let request else { throw Abort.requestUnavailable }
 

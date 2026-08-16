@@ -269,6 +269,7 @@ private func prepareTokensForStorage(
     provider: Identity.OAuth.Provider,
     logger: Logger
 ) throws -> (accessToken: String, refreshToken: String?) {
+    // swiftlint:disable:previous typed_throws_required
     if provider.requiresTokenStorage {
         guard Identity.OAuth.Encryption.isEncryptionAvailable else {
             logger.error(

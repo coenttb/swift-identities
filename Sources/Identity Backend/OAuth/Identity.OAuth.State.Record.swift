@@ -58,6 +58,7 @@ extension Identity.OAuth.State {
 extension Identity.OAuth.State.Record {
     /// Validate and retrieve state
     public static func validate(_ state: String) async throws -> Identity.OAuth.State.Record? {
+        // swiftlint:disable:previous typed_throws_required
         @Dependency(\.defaultDatabase) var db
 
         // First try to find the state
@@ -96,6 +97,7 @@ extension Identity.OAuth.State.Record {
 
     /// Clean up expired states
     public static func cleanupExpired() async throws {
+        // swiftlint:disable:previous typed_throws_required
         @Dependency(\.defaultDatabase) var db
 
         try await db.write { db in

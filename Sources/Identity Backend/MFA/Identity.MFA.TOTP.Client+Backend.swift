@@ -12,6 +12,7 @@ extension Identity.MFA.TOTP.Client {
     /// Convenience method that generates secret AND saves initial TOTP record
     /// This combines generateSecret with database persistence using UPSERT
     public func setup() async throws -> SetupData {
+        // swiftlint:disable:previous typed_throws_required
         // Get authenticated identity
         let identity = try await Identity.Record.get(by: .auth)
 
@@ -452,6 +453,7 @@ private func createTOTP(
     secret: String,
     configuration: Identity.MFA.TOTP.Configuration
 ) throws -> TOTP {
+    // swiftlint:disable:previous typed_throws_required
     let algorithm: TOTP.Algorithm
     switch configuration.algorithm {
     case .sha1: algorithm = .sha1
@@ -473,6 +475,7 @@ private func generateOTPAuthURL(
     issuer: String,
     configuration: Identity.MFA.TOTP.Configuration
 ) async throws -> URL {
+    // swiftlint:disable:previous typed_throws_required
     var components = URLComponents()
     components.scheme = "otpauth"
     components.host = "totp"
@@ -506,6 +509,7 @@ private func generateBackupCode(length: Int) -> String {
 }
 
 private func hashBackupCode(_ code: String) throws -> String {
+    // swiftlint:disable:previous typed_throws_required
     // Use SHA256 to hash backup codes
     let data = Foundation.Data(code.utf8)
     let hashed = SHA256.hash(data: data)
@@ -520,6 +524,7 @@ private func verifyTOTPCode(
     window: Int,
     configuration: Identity.MFA.TOTP.Configuration
 ) async throws -> Bool {
+    // swiftlint:disable:previous typed_throws_required
     // Validate and sanitize the code
     let sanitizedCode = Identity.MFA.TOTP.sanitizeCode(code)
     guard Identity.MFA.TOTP.isValidCode(sanitizedCode) else {

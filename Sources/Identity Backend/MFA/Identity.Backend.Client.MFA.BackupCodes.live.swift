@@ -130,9 +130,10 @@ extension Identity.MFA.BackupCodes.Client {
                                 // Atomically mark as used ONLY if still unused
                                 // This WHERE clause ensures the UPDATE only succeeds if isUsed is still false
                                 // If another concurrent request already used it, returning() will return nil
+                                // The unused predicate makes claiming a backup code atomic.
                                 let updated = try await Identity.MFA.BackupCodes.Record
                                     .where { $0.id.eq(backupCode.id) }
-                                    .where { $0.isUsed.eq(false) }  // CRITICAL: prevents race condition
+                                    .where { $0.isUsed.eq(false) }
                                     .update { code in
                                         code.isUsed = true
                                         code.usedAt = date()

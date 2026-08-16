@@ -16,6 +16,7 @@ extension Identity.Creation.API {
     public static func response(
         create: Identity.Creation.API
     ) async throws -> Server.Response {
+        // swiftlint:disable:previous typed_throws_required
 
         @Dependency(\.identity) var identity
         let client = identity.create.client

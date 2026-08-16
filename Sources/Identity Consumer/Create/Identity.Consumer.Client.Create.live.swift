@@ -19,6 +19,7 @@ import Vapor
 extension Identity.Creation.Client {
     public static func live(
         makeRequest: @escaping @Sendable (_ route: Identity.Creation.API) throws -> URLRequest
+            // swiftlint:disable:previous typed_throws_required
     ) -> Self {
         @Dependency(URLRequest.Handler.Identity.self) var handleRequest
 

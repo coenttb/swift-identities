@@ -27,7 +27,7 @@ extension Identity.Authentication.Credentials {
             self.loginFormAction = loginFormAction
         }
 
-        private static let form_id: String = "login-form-id"
+        private static let formID: String = "login-form-id"
 
         static func handleError(container: String, message: String) -> String {
             #"""
@@ -159,7 +159,7 @@ extension Identity.Authentication.Credentials {
                         .width(.percent(100))
                     }
                 }
-                .id(Self.form_id)
+                .id(Self.formID)
                 .css
                 .width(.percent(100))
                 .maxWidth(.identityComponentDesktop)
@@ -198,7 +198,7 @@ extension Identity.Authentication.Credentials {
                 document.head.appendChild(style);
 
                 document.addEventListener('DOMContentLoaded', function() {
-                    const form = document.getElementById("\#(Self.form_id)");
+                    const form = document.getElementById("\#(Self.formID)");
                     let countdownInterval = null;
 
                     // Password visibility toggle - use name attribute selector as fallback

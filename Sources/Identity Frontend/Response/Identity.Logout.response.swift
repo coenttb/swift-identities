@@ -19,7 +19,12 @@ extension Identity.Logout {
         client: Identity.Logout.Client,
         redirect: Identity.Frontend.Configuration.Redirect
     ) async throws -> Server.Response {
-        try? await client.current()
+        // swiftlint:disable:previous typed_throws_required
+        do {
+            _ = try await client.current()
+        } catch {
+            // Logout remains best-effort when the current session is already invalid.
+        }
 
         return Server.Response.redirect(to: try await redirect.logoutSuccess().absoluteString)
             .expiringIdentityCookies()

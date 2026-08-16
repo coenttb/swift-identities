@@ -24,6 +24,7 @@ extension Identity.Frontend.Configuration.Cookies {
     public static func standalone(
         mode: Identity.Cookies.DeploymentMode = .sameOrigin,
         router: any ParserPrinter<URLRequestData, Identity.Route>
+        // swiftlint:disable:previous no_any_protocol_existential
     ) -> Self {
         switch mode {
         case .sameOrigin:
@@ -43,6 +44,7 @@ extension Identity.Frontend.Configuration.Cookies {
     public static func production(
         domain: String? = nil,
         router: any ParserPrinter<URLRequestData, Identity.Route>
+        // swiftlint:disable:previous no_any_protocol_existential
     ) -> Self {
         let refreshPath = Identity.Cookies.Paths.refresh(using: router)
         let reauthorizePath = Identity.Cookies.Paths.reauthorize(using: router)
@@ -82,6 +84,7 @@ extension Identity.Frontend.Configuration.Cookies {
     /// Uses relaxed security settings suitable for local development.
     public static func development(
         router: (any ParserPrinter<URLRequestData, Identity.Route>)? = nil
+            // swiftlint:disable:previous no_any_protocol_existential
     ) -> Self {
 
         return Self(

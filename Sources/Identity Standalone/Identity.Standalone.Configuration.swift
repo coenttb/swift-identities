@@ -26,6 +26,7 @@ extension Identity.Standalone {
         /// Frontend configuration
         public var baseURL: URL
         public var router: any URLRouting.Router<Identity.Route>
+        // swiftlint:disable:previous no_any_protocol_existential
         public var jwt: Identity.Token.Client
         public var cookies: Identity.Standalone.Configuration.Cookies
         public var branding: Identity.Standalone.Configuration.Branding
@@ -33,6 +34,7 @@ extension Identity.Standalone {
         public var redirect: Identity.Standalone.Configuration.Redirect
         public var rateLimiters: RateLimiters?
         public var currentUserName: @Sendable () async throws -> String?
+        // swiftlint:disable:previous typed_throws_required
         public var canonicalHref: @Sendable (Identity.View) -> URL?
         public var hreflang: @Sendable (Identity.View, Language) -> URL
 
@@ -52,6 +54,7 @@ extension Identity.Standalone {
         package init(
             baseURL: URL,
             router: any URLRouting.Router<Identity.Route>,
+            // swiftlint:disable:previous no_any_protocol_existential
             jwt: Identity.Token.Client,
             cookies: Identity.Standalone.Configuration.Cookies,
             branding: Identity.Standalone.Configuration.Branding,
@@ -59,6 +62,7 @@ extension Identity.Standalone {
             redirect: Identity.Standalone.Configuration.Redirect,
             rateLimiters: RateLimiters?,
             currentUserName: (@Sendable () async throws -> String?)? = nil,
+            // swiftlint:disable:previous typed_throws_required
             canonicalHref: (@Sendable (Identity.View) -> URL?)? = nil,
             hreflang: (@Sendable (Identity.View, Language) -> URL)? = nil,
             email: Identity.Backend.Configuration.Email,
@@ -113,6 +117,7 @@ extension Identity.Standalone.Configuration {
     public init(
         baseURL: URL,
         router: any URLRouting.Router<Identity.Route>,
+        // swiftlint:disable:previous no_any_protocol_existential
         jwt: Identity.Token.Client,
         cookies: Identity.Frontend.Configuration.Cookies? = nil,
         branding: Identity.Frontend.Configuration.Branding = .default,
@@ -120,6 +125,7 @@ extension Identity.Standalone.Configuration {
         redirect: Identity.Frontend.Configuration.Redirect? = nil,
         rateLimiters: RateLimiters? = .default,
         currentUserName: (@Sendable () async throws -> String?)? = nil,
+        // swiftlint:disable:previous typed_throws_required
         canonicalHref: (@Sendable (Identity.View) -> URL?)? = nil,
         hreflang: (@Sendable (Identity.View, Language) -> URL)? = nil,
         email: Identity.Backend.Configuration.Email = .noop,

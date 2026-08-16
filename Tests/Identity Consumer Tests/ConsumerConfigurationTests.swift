@@ -38,7 +38,7 @@ struct Test {
             currentUserName: { "testuser" },
             branding: .init(
                 logo: Identity.View.Logo(logo: "🔐", href: URL(string: "/")!),
-                footer_links: []
+                footerLinks: []
             ),
             navigation: .default,
             redirect: .live()
@@ -79,7 +79,7 @@ struct Test {
             currentUserName: { "currentuser" },
             branding: .init(
                 logo: Identity.View.Logo(logo: "🔐", href: baseURL),
-                footer_links: []
+                footerLinks: []
             ),
             navigation: .default,
             redirect: .live()

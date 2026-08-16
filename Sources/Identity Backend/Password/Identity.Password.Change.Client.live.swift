@@ -19,6 +19,7 @@ extension Identity.Password.Change.Client {
     public static func live(
         sendPasswordChangeNotification:
             @escaping @Sendable (_ email: EmailAddress) async throws -> Void
+            // swiftlint:disable:previous typed_throws_required
     ) -> Self {
         @Dependency(\.logger) var logger
         @Dependency(\.passwordValidation.validate) var validatePassword

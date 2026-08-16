@@ -19,6 +19,7 @@ extension Identity.Consumer {
     ///
     /// - Parameter application: The Vapor application to configure
     public static func configure(_ application: Vapor.Application) async throws {
+        // swiftlint:disable:previous typed_throws_required
         @Dependency(\.logger) var logger
 
         logger.info(

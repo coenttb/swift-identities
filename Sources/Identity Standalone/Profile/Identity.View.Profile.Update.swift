@@ -34,8 +34,8 @@ extension Identity.View.Profile {
             self.dashboardHref = dashboardHref
         }
 
-        private static var pagemodule_profile_update_id: String { "pagemodule-profile-update" }
-        private static var displayname_form_id: String { "form-update-displayname" }
+        private static var pageModuleProfileUpdateID: String { "pagemodule-profile-update" }
+        private static var displayNameFormID: String { "form-update-displayname" }
 
         public var body: some HTML.View {
             PageModule(theme: .authenticationFlow) {
@@ -131,7 +131,7 @@ extension Identity.View.Profile {
                                 .justifyContent(.center)
                             }
                         }
-                        .id(Self.displayname_form_id)
+                        .id(Self.displayNameFormID)
                     }
 
                     // Back to Dashboard Link
@@ -161,7 +161,7 @@ extension Identity.View.Profile {
                 .display(.inlineBlock)
                 .textAlign(.center)
             }
-            .id(Self.pagemodule_profile_update_id)
+            .id(Self.pageModuleProfileUpdateID)
             .width(.percent(100))
 
         }

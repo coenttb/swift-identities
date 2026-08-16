@@ -18,6 +18,7 @@ extension Identity.Creation.API {
     package static func providerResponse(
         create: Identity.Creation.API
     ) async throws -> Server.Response {
+        // swiftlint:disable:previous typed_throws_required
 
         @Dependency(\.identity) var identity
         @Dependency(\.logger) var logger

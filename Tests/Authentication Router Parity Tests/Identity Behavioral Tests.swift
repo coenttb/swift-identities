@@ -47,7 +47,7 @@ struct IdentityBehavioralTests {
             currentUserName: { "currentuser" },
             branding: .init(
                 logo: Identity.View.Logo(logo: "🔐", href: baseURL),
-                footer_links: []
+                footerLinks: []
             ),
             navigation: .default,
             redirect: .live()

@@ -15,6 +15,7 @@ extension Identity.Record {
         email: EmailAddress,
         password: String
     ) async throws -> Identity.Record? {
+        // swiftlint:disable:previous typed_throws_required
         @Dependency(\.defaultDatabase) var db
         @Dependency(\.date) var date
 
@@ -60,6 +61,7 @@ extension Identity.Record {
         id: Identity.ID,
         status: EmailVerificationStatus
     ) async throws -> Identity.Record? {
+        // swiftlint:disable:previous typed_throws_required
         @Dependency(\.defaultDatabase) var db
         @Dependency(\.date) var date
 
@@ -98,6 +100,7 @@ extension Identity.Record {
     package static func emailsExistOptimized(
         _ emails: [EmailAddress]
     ) async throws -> Set<
+        // swiftlint:disable:previous typed_throws_required
         EmailAddress
     > {
         @Dependency(\.defaultDatabase) var db
@@ -123,6 +126,7 @@ extension Identity.Record {
         passwordHash: String,
         emailVerificationStatus: EmailVerificationStatus = .unverified
     ) async throws -> Identity.Record? {
+        // swiftlint:disable:previous typed_throws_required
         @Dependency(\.defaultDatabase) var db
         @Dependency(\.uuid) var uuid
         @Dependency(\.date) var date

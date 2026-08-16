@@ -22,6 +22,7 @@ extension Identity.Email {
     public static func response(
         view: Identity.Email.View,
     ) async throws -> Server.Response {
+        // swiftlint:disable:previous typed_throws_required
         switch view {
         case .change(let change):
             switch change {
@@ -43,6 +44,7 @@ extension Identity.Email {
 
     /// Handles the email change request view.
     public static func handleChangeRequest() async throws -> Server.Response {
+        // swiftlint:disable:previous typed_throws_required
         @Dependency(\.identityFrontendConfiguration) var configuration
         @Dependency(\.identity.router) var router
         let homeHref = configuration.navigation.home
@@ -58,6 +60,7 @@ extension Identity.Email {
 
     /// Handles the email change confirmation view.
     public static func handleChangeConfirm() async throws -> Server.Response {
+        // swiftlint:disable:previous typed_throws_required
         @Dependency(\.identityFrontendConfiguration) var configuration
         let redirect = configuration.redirect
 
@@ -70,6 +73,7 @@ extension Identity.Email {
 
     /// Handles the email change reauthorization view.
     public static func handleChangeReauthorization() async throws -> Server.Response {
+        // swiftlint:disable:previous typed_throws_required
         @Dependency(\.identityFrontendConfiguration) var configuration
         @Dependency(\.identity.router) var router
 

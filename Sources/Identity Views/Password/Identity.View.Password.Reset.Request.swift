@@ -25,7 +25,7 @@ extension Identity.Password.Reset.Request {
             self.homeHref = homeHref
         }
 
-        private static var pagemodule_forgot_password_id: String { "pagemodule_forgot_password_id" }
+        private static var pageModuleForgotPasswordID: String { "pagemodule_forgot_password_id" }
 
         package var body: some HTML.View {
             PageModule(theme: .authenticationFlow) {
@@ -107,7 +107,7 @@ extension Identity.Password.Reset.Request {
                 .display(.inlineBlock)
                 .textAlign(.center)
             }
-            .id(Self.pagemodule_forgot_password_id)
+            .id(Self.pageModuleForgotPasswordID)
             .css
             .width(.percent(100))
             .maxWidth(.identityComponentDesktop)
@@ -132,7 +132,7 @@ extension Identity.Password.Reset.Request {
                             });
                             const data = await response.json();
                             if (data.success) {
-                                const pageModule = document.getElementById("\(Self.pagemodule_forgot_password_id)");
+                                const pageModule = document.getElementById("\(Self.pageModuleForgotPasswordID)");
                                 pageModule.outerHTML = \(html: Identity.Password.Reset.Request.View.ConfirmReceipt(homeHref: homeHref));
                             } else {
                                 throw new Error(data.message || '\(TranslatedString(

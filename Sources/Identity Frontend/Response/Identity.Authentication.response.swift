@@ -22,6 +22,7 @@ extension Identity.Authentication {
     public static func response(
         view: Identity.Authentication.View
     ) async throws -> Server.Response {
+        // swiftlint:disable:previous typed_throws_required
         @Dependency(\.identityFrontendConfiguration) var configuration
         @Dependency(\.identity.router) var router
 

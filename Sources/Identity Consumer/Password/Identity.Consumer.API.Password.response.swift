@@ -16,6 +16,7 @@ extension Identity.Password.API {
     public static func response(
         password: Identity.Password.API
     ) async throws -> Server.Response {
+        // swiftlint:disable:previous typed_throws_required
 
         @Dependency(\.identity) var identity
 

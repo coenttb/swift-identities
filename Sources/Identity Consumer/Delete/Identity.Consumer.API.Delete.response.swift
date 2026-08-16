@@ -16,6 +16,7 @@ extension Identity.Deletion.API {
     public static func response(
         delete: Identity.Deletion.API
     ) async throws -> Server.Response {
+        // swiftlint:disable:previous typed_throws_required
 
         @Dependency(\.identity) var identity
         let client = identity.delete.client

@@ -22,6 +22,7 @@ extension Identity.API {
         api: Identity.API,
         with type: Authenticatable.Type
     ) throws {
+        // swiftlint:disable:previous typed_throws_required
         // Only require authentication if the endpoint needs it
         guard api.requiresAuthentication else { return }
         try requireAuthentication(type)

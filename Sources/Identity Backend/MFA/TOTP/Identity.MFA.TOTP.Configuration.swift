@@ -51,6 +51,7 @@ extension Identity.MFA.TOTP {
             backupCodeCount: Int = 10,
             qrCodeSize: Int? = 200
         ) throws {
+            // swiftlint:disable:previous typed_throws_required
             // Validation
             guard !issuer.isEmpty else {
                 throw ConfigurationError.invalidIssuer("Issuer cannot be empty")

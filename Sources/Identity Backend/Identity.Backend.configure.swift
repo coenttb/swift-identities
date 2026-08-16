@@ -23,6 +23,7 @@ extension Identity.Backend {
         _ application: Vapor.Application,
         runMigrations: Bool
     ) async throws {
+        // swiftlint:disable:previous typed_throws_required
         @Dependency(\.logger) var logger
         @Dependency(\.defaultDatabase) var database
         @Dependency(\.envVars) var envVars

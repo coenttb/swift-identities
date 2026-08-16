@@ -18,6 +18,7 @@ extension Identity.API {
     public static func response(
         api: Identity.API,
     ) async throws -> any AsyncResponseEncodable {
+        // swiftlint:disable:previous typed_throws_required no_any_protocol_existential
 
         @Dependency(\.identityStandaloneConfiguration) var configuration
 
@@ -316,7 +317,9 @@ extension Identity.API {
         _ api: Identity.MFA.API,
         mfa: Identity.MFA,
         router: any ParserPrinter<URLRequestData, Identity.Route>
+        // swiftlint:disable:previous no_any_protocol_existential
     ) async throws -> any AsyncResponseEncodable {
+        // swiftlint:disable:previous typed_throws_required no_any_protocol_existential
 
         switch api {
         case .totp(let totp):

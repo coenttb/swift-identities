@@ -18,9 +18,11 @@ extension Identity.Deletion.Client {
     public static func live(
         sendDeletionRequestNotification:
             @escaping @Sendable (_ email: EmailAddress) async throws ->
+            // swiftlint:disable:previous typed_throws_required
             Void,
         sendDeletionConfirmationNotification:
             @escaping @Sendable (_ email: EmailAddress) async throws
+            // swiftlint:disable:previous typed_throws_required
             -> Void
     ) -> Self {
         @Dependency(\.logger) var logger

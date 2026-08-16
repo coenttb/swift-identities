@@ -26,6 +26,7 @@ extension Identity.Audit {
         tableName: String,
         limit: Int = 100
     ) async throws -> [Identity.Audit] {
+        // swiftlint:disable:previous typed_throws_required
         @Dependency(\.defaultDatabase) var db
 
         return try await db.read { db in
@@ -46,6 +47,7 @@ extension Identity.Audit {
     public static func recentIdentityChanges(
         limit: Int = 100
     ) async throws -> [Identity.Audit] {
+        // swiftlint:disable:previous typed_throws_required
         @Dependency(\.defaultDatabase) var db
 
         return try await db.read { db in
@@ -66,6 +68,7 @@ extension Identity.Audit {
     public static func recentMFAChanges(
         limit: Int = 100
     ) async throws -> [Identity.Audit] {
+        // swiftlint:disable:previous typed_throws_required
         @Dependency(\.defaultDatabase) var db
 
         return try await db.read { db in
@@ -86,6 +89,7 @@ extension Identity.Audit {
     public static func recentAPIKeyChanges(
         limit: Int = 100
     ) async throws -> [Identity.Audit] {
+        // swiftlint:disable:previous typed_throws_required
         @Dependency(\.defaultDatabase) var db
 
         return try await db.read { db in
@@ -109,6 +113,7 @@ extension Identity.Audit {
         since: Date,
         limit: Int = 100
     ) async throws -> [Identity.Audit] {
+        // swiftlint:disable:previous typed_throws_required
         @Dependency(\.defaultDatabase) var db
 
         return try await db.read { db in
@@ -129,6 +134,7 @@ extension Identity.Audit {
     public static func recentDeletions(
         limit: Int = 100
     ) async throws -> [Identity.Audit] {
+        // swiftlint:disable:previous typed_throws_required
         @Dependency(\.defaultDatabase) var db
 
         return try await db.read { db in
@@ -149,6 +155,7 @@ extension Identity.Audit {
     public static func countFor(
         tableName: String
     ) async throws -> Int {
+        // swiftlint:disable:previous typed_throws_required
         @Dependency(\.defaultDatabase) var db
 
         return try await db.read { db in
@@ -170,6 +177,7 @@ extension Identity.Audit {
     public static func purgeRecords(
         olderThan: Date
     ) async throws -> Int {
+        // swiftlint:disable:previous typed_throws_required
         @Dependency(\.defaultDatabase) var db
 
         // First count how many will be deleted
@@ -202,6 +210,7 @@ extension Identity.Audit {
     /// let oldIdentity: Identity.Record? = try audit.decodeOldData()
     /// ```
     public func decodeOldData<T: Decodable>() throws -> T? {
+        // swiftlint:disable:previous typed_throws_required
         guard let oldData,
             let data = oldData.data(using: .utf8)
         else {
@@ -218,6 +227,7 @@ extension Identity.Audit {
     /// let newIdentity: Identity.Record? = try audit.decodeNewData()
     /// ```
     public func decodeNewData<T: Decodable>() throws -> T? {
+        // swiftlint:disable:previous typed_throws_required
         guard let newData,
             let data = newData.data(using: .utf8)
         else {

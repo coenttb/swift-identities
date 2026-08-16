@@ -28,10 +28,10 @@ extension Identity.Email.Change.Request {
             self.reauthorizationURL = reauthorizationURL
         }
 
-        private static var pagemodule_request_email_change_id: String {
+        private static var pageModuleRequestEmailChangeID: String {
             "pagemodule_request_email_change_id"
         }
-        private static var form_id: String { "form-request-email-change" }
+        private static var formID: String { "form-request-email-change" }
 
         package var body: some HTML.View {
             PageModule(theme: .authenticationFlow) {
@@ -100,7 +100,7 @@ extension Identity.Email.Change.Request {
                                 .width(.percent(100))
                             }
                         }
-                        .id(Self.form_id)
+                        .id(Self.formID)
                     }
                     .css
                     .width(.percent(100))
@@ -121,14 +121,14 @@ extension Identity.Email.Change.Request {
                 .display(.inlineBlock)
                 .textAlign(.center)
             }
-            .id(Self.pagemodule_request_email_change_id)
+            .id(Self.pageModuleRequestEmailChangeID)
             .css
             .width(.percent(100))
 
             script {
                 #"""
                 document.addEventListener('DOMContentLoaded', function() {
-                    const form = document.getElementById('\#(Self.form_id)');
+                    const form = document.getElementById('\#(Self.formID)');
                     const errorContainer = document.createElement('div');
                     errorContainer.id = 'error-container';
                     errorContainer.style.color = 'red';
@@ -176,7 +176,7 @@ extension Identity.Email.Change.Request {
                             const data = await response.json();
 
                             if (data.success) {
-                                const pageModule = document.getElementById("\#(Self.pagemodule_request_email_change_id)");
+                                const pageModule = document.getElementById("\#(Self.pageModuleRequestEmailChangeID)");
                                 pageModule.outerHTML = \#(html: Identity.Email.Change.Request.View.ReceiptConfirmation(homeHref: homeHref));
                             } else {
                                 throw new Error(data.reason || '\#(TranslatedString(

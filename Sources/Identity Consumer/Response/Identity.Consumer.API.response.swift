@@ -18,6 +18,7 @@ extension Identity.API {
     public static func response(
         api: Identity.API
     ) async throws -> Server.Response {
+        // swiftlint:disable:previous typed_throws_required
 
         @Dependency(\.identity) var identity
         @Dependency(\.identityConsumerConfiguration) var config

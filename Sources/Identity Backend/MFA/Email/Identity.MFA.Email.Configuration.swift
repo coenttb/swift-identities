@@ -14,6 +14,7 @@ extension Identity.MFA.Email {
     public struct Configuration: Sendable {
         /// Callback to send email verification codes for MFA
         public var sendCode: @Sendable (EmailAddress, String) async throws -> Void
+        // swiftlint:disable:previous typed_throws_required
 
         /// The length of the generated verification code
         public var codeLength: Int
@@ -30,6 +31,7 @@ extension Identity.MFA.Email {
 
         public init(
             sendCode: @escaping @Sendable (EmailAddress, String) async throws -> Void,
+            // swiftlint:disable:previous typed_throws_required
             codeLength: Int = 6,
             expirationSeconds: Int = 300,
             subject: String? = "Your verification code",

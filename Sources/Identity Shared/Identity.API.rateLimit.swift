@@ -30,6 +30,7 @@ extension Identity.API {
         api: Identity.API,
         rateLimiter: RateLimiters
     ) async throws -> RateLimiter<String>.Client {
+        // swiftlint:disable:previous typed_throws_required
 
         switch api {
         case .authenticate(let authenticate):

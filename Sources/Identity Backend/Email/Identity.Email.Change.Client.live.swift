@@ -20,14 +20,17 @@ extension Identity.Email.Change.Client {
             @escaping @Sendable (
                 _ currentEmail: EmailAddress, _ newEmail: EmailAddress, _ token: String
             ) async throws -> Void,
+        // swiftlint:disable:previous typed_throws_required
         sendEmailChangeRequestNotification:
             @escaping @Sendable (
                 _ currentEmail: EmailAddress, _ newEmail: EmailAddress
             ) async throws -> Void,
+        // swiftlint:disable:previous typed_throws_required
         onEmailChangeSuccess:
             @escaping @Sendable (
                 _ currentEmail: EmailAddress, _ newEmail: EmailAddress
             ) async throws -> Void
+            // swiftlint:disable:previous typed_throws_required
     ) -> Self {
         let requestHandler:
             @Sendable (String) async throws(Identity.Email.Change.Client.Error) ->
@@ -252,11 +255,14 @@ extension Identity.Email.Change.Client {
 private func performEmailChangeConfirmation(
     token: String,
     db: any Database.Writer,
+    // swiftlint:disable:previous no_any_protocol_existential
     date: Date,
     onEmailChangeSuccess:
         @escaping @Sendable (_ currentEmail: EmailAddress, _ newEmail: EmailAddress)
         async throws -> Void
+        // swiftlint:disable:previous typed_throws_required
 ) async throws -> (
+    // swiftlint:disable:previous typed_throws_required
     identity: Identity.Record, oldEmail: EmailAddress, newEmail: EmailAddress,
     newSessionVersion: Int
 ) {

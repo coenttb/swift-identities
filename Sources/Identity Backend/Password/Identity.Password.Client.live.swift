@@ -18,8 +18,10 @@ extension Identity.Password.Client {
         sendPasswordResetEmail:
             @escaping @Sendable (_ email: EmailAddress, _ token: String)
             async throws -> Void,
+        // swiftlint:disable:previous typed_throws_required
         sendPasswordChangeNotification:
             @escaping @Sendable (_ email: EmailAddress) async throws -> Void
+            // swiftlint:disable:previous typed_throws_required
     ) -> Self {
         @Dependency(\.logger) var logger
         @Dependency(\.passwordValidation.validate) var validatePassword

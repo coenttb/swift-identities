@@ -31,14 +31,18 @@ extension Identity.Token {
         ///         if the token is malformed. For validation, use `init(jwt:)` which properly throws.
         public var email: EmailAddress {
             guard let sub = jwt.payload.sub,
-                let components = Self.parseSubject(sub),
-                let emailAddress = try? EmailAddress(components.email)
+                let components = Self.parseSubject(sub)
             else {
                 // Return placeholder email for invalid tokens
                 // This allows the token to fail validation downstream rather than crashing
                 return EmailAddress(rawValue: "invalid@token.invalid")!
             }
-            return emailAddress
+
+            do {
+                return try EmailAddress(components.email)
+            } catch {
+                return EmailAddress(rawValue: "invalid@token.invalid")!
+            }
         }
 
         /// The display name (only available in Standalone deployments)

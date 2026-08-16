@@ -15,6 +15,7 @@ extension Identity.Authentication.API {
     package static func providerResponse(
         authenticate: Identity.Authentication.API
     ) async throws -> Server.Response {
+        // swiftlint:disable:previous typed_throws_required
 
         @Dependency(\.identity) var identity
 

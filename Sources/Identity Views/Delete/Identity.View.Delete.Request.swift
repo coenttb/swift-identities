@@ -31,8 +31,8 @@ extension Identity.Deletion.Request {
             self.reauthorizationURL = reauthorizationURL
         }
 
-        private static var pagemodule_delete_request_id: String { "pagemodule-delete-request" }
-        private static var form_id: String { "form-delete-request" }
+        private static var pageModuleDeleteRequestID: String { "pagemodule-delete-request" }
+        private static var formID: String { "form-delete-request" }
 
         package var body: some HTML.View {
             PageModule(theme: .authenticationFlow) {
@@ -136,7 +136,7 @@ extension Identity.Deletion.Request {
                                 .width(.percent(100))
                             }
                         }
-                        .id(Self.form_id)
+                        .id(Self.formID)
                     }
                     .css
                     .width(.percent(100))
@@ -156,14 +156,14 @@ extension Identity.Deletion.Request {
                 .display(.inlineBlock)
                 .textAlign(.center)
             }
-            .id(Self.pagemodule_delete_request_id)
+            .id(Self.pageModuleDeleteRequestID)
             .css
             .width(.percent(100))
 
             script {
                 #"""
                 document.addEventListener('DOMContentLoaded', function() {
-                    const form = document.getElementById('\#(Self.form_id)');
+                    const form = document.getElementById('\#(Self.formID)');
                     const errorContainer = document.createElement('div');
                     errorContainer.id = 'error-container';
                     errorContainer.style.color = 'red';
@@ -239,7 +239,7 @@ extension Identity.Deletion.Request {
 
                             if (deleteData.success) {
                                 // Replace view with pending status
-                                const pageModule = document.getElementById('\#(Self.pagemodule_delete_request_id)');
+                                const pageModule = document.getElementById('\#(Self.pageModuleDeleteRequestID)');
                                 pageModule.outerHTML = \#(html: Identity.Deletion.Request.View.PendingReceipt(
                                 daysRemaining: 7,
                                 cancelAction: cancelAction,
@@ -336,7 +336,7 @@ extension Identity.Deletion.Request.View {
                     }
                     .css
                     .padding(.rem(1))
-                    .backgroundColor(.background.warning /*.opacity(0.1)*/)
+                    .backgroundColor(.background.warning)
                     .borderRadius(.rem(0.5))
                     .textAlign(.center)
                     .margin(bottom: .rem(2))

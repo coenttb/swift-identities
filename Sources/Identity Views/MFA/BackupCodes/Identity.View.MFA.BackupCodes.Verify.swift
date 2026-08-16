@@ -162,8 +162,8 @@ extension Identity.MFA.BackupCodes.Verify {
             self.remainingCodes = remainingCodes
         }
 
-        private static let form_id: String = "backup-code-verify-form"
-        private static let code_input_id: String = "backup-code-input"
+        private static let formID: String = "backup-code-verify-form"
+        private static let codeInputID: String = "backup-code-input"
 
         public var body: some HTML.View {
             PageModule(theme: .authenticationFlow) {
@@ -180,7 +180,7 @@ extension Identity.MFA.BackupCodes.Verify {
                         input.hidden(name: "method", value: "backupCode")
 
                         // Backup code input
-                        BackupCodeInput(inputId: Self.code_input_id)
+                        BackupCodeInput(inputId: Self.codeInputID)
 
                         // Remaining codes notice
                         if let remaining = remainingCodes, remaining > 0 {
@@ -206,7 +206,7 @@ extension Identity.MFA.BackupCodes.Verify {
                         )
                     }
                 }
-                .id(Self.form_id)
+                .id(Self.formID)
                 .css
                 .width(.percent(100))
                 .maxWidth(.identityComponentDesktop)
@@ -217,8 +217,8 @@ extension Identity.MFA.BackupCodes.Verify {
                 script {
                     """
                     document.addEventListener('DOMContentLoaded', function() {
-                        const codeInput = document.getElementById('\(Self.code_input_id)');
-                        const form = document.getElementById('\(Self.form_id)');
+                        const codeInput = document.getElementById('\(Self.codeInputID)');
+                        const form = document.getElementById('\(Self.formID)');
                         let isSubmitting = false;
 
                         if (codeInput && form) {

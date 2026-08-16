@@ -262,8 +262,10 @@ extension Identity.Backend {
         #if DEBUG
             @Sendable func createTestUser(
                 using db: any Records.Database.Connection.`Protocol`,
+                // swiftlint:disable:previous no_any_protocol_existential
                 logger: Logger
             ) async throws {
+                // swiftlint:disable:previous typed_throws_required
                 @Dependency(\.passwordHasher) var passwordHasher
                 @Dependency(\.envVars) var envVars
 

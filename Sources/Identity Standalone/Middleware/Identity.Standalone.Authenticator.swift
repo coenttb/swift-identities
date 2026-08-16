@@ -44,6 +44,7 @@ extension Identity.Standalone {
             to request: Request,
             chainingTo next: AsyncResponder
         ) async throws -> Response {
+            // swiftlint:disable:previous typed_throws_required
             @Dependency(\.logger) var logger
 
             logger.trace(

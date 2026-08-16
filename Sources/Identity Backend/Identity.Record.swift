@@ -53,6 +53,7 @@ extension EmailAddress: @retroactive QueryBindable {}
 
 extension Identity.Record {
     package mutating func setPassword(_ password: String) async throws {
+        // swiftlint:disable:previous typed_throws_required
         @Dependency(\.envVars) var envVars
         @Dependency(\.passwordHasher) var passwordHasher
 
@@ -61,6 +62,7 @@ extension Identity.Record {
     }
 
     package func verifyPassword(_ password: String) async throws -> Bool {
+        // swiftlint:disable:previous typed_throws_required
         @Dependency(\.passwordHasher) var passwordHasher
         return try await passwordHasher.verify(password, self.passwordHash)
     }
@@ -94,6 +96,7 @@ extension Identity.Record {
     /// - Performance: O(1) database query regardless of number of emails
     /// - Complexity: Single query: `SELECT email FROM identities WHERE email IN (...)`
     package static func emailsExist(_ emails: [EmailAddress]) async throws -> [EmailAddress: Bool] {
+        // swiftlint:disable:previous typed_throws_required
         @Dependency(\.defaultDatabase) var db
 
         guard !emails.isEmpty else { return [:] }

@@ -25,6 +25,7 @@ extension Identity.View.HTMLDocument {
         configuration: Identity.Standalone.Configuration,
         @HTML.Builder body: () -> Body
     ) async throws where Self == Identity.View.HTMLDocument<Body> {
+        // swiftlint:disable:previous typed_throws_required
         try await self.init(
             view: view,
             title: title,
@@ -32,7 +33,7 @@ extension Identity.View.HTMLDocument {
             //            favicons: configuration.branding.favicons,
             canonicalHref: { view in configuration.canonicalHref(view) },
             hreflang: { view, lang in configuration.hreflang(view, lang) },
-            footer_links: configuration.branding.footer_links,
+            footerLinks: configuration.branding.footerLinks,
             body: body
         )
     }

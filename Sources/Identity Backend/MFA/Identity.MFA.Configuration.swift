@@ -79,7 +79,9 @@ extension Identity.MFA.Configuration {
     public static func full(
         issuer: String,
         sendSMS: @escaping @Sendable (String, String) async throws -> Void,
+        // swiftlint:disable:previous typed_throws_required
         sendEmail: @escaping @Sendable (EmailAddress, String) async throws -> Void
+            // swiftlint:disable:previous typed_throws_required
     ) -> Self {
         Self(
             totp: .standard(issuer: issuer),

@@ -23,6 +23,7 @@ extension Identity.OAuth {
     public static func response(
         view: Identity.View.OAuth
     ) async throws -> Server.Response {
+        // swiftlint:disable:previous typed_throws_required
         @Dependency(\.identityFrontendConfiguration) var configuration
         @Dependency(\.identity.router) var router
 
@@ -54,7 +55,7 @@ extension Identity.OAuth {
     /// Handles OAuth login view showing available providers.
     private static func handleLogin(
 
-        ) async throws -> Server.Response
+        ) async throws -> Server.Response  // swiftlint:disable:this typed_throws_required
     {
         @Dependency(\.identityFrontendConfiguration) var configuration
 
@@ -99,6 +100,7 @@ extension Identity.OAuth {
         callbackRequest: Identity.OAuth.CallbackRequest,
 
     ) async throws -> Server.Response {
+        // swiftlint:disable:previous typed_throws_required
         // The callback is typically handled by the API endpoint
         // This view can show a processing state or error
         return try await Identity.Frontend.htmlDocument(
@@ -118,7 +120,7 @@ extension Identity.OAuth {
     /// Handles OAuth connections management view.
     private static func handleConnections(
 
-        ) async throws -> Server.Response
+        ) async throws -> Server.Response  // swiftlint:disable:this typed_throws_required
     {
         @Dependency(\.identityFrontendConfiguration) var configuration
 
@@ -162,6 +164,7 @@ extension Identity.OAuth {
         message: String,
 
     ) async throws -> Server.Response {
+        // swiftlint:disable:previous typed_throws_required
         return try await Identity.Frontend.htmlDocument(
             for: .oauth(.error(message)),
             title: "OAuth Error",

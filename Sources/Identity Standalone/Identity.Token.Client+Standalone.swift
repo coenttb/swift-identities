@@ -62,11 +62,15 @@ extension Identity.Token.Client {
                 var additionalClaims: [String: Any] = [:]
 
                 // Try to fetch the profile's displayName (but don't fail if not found)
-                if let profile = try? await database.read { db in
-                    try await Identity.Profile.Record.findByIdentity(identityId).fetchOne(db)
-                },
-                    let displayName = profile.displayName
-                {
+                let profile: Identity.Profile.Record?
+                do {
+                    profile = try await database.read { db in
+                        try await Identity.Profile.Record.findByIdentity(identityId).fetchOne(db)
+                    }
+                } catch {
+                    profile = nil
+                }
+                if let displayName = profile?.displayName {
                     additionalClaims["displayName"] = displayName
                 }
 
@@ -147,11 +151,15 @@ extension Identity.Token.Client {
                 var additionalClaims: [String: Any] = [:]
 
                 // Try to fetch the profile's displayName
-                if let profile = try? await database.read { db in
-                    try await Identity.Profile.Record.findByIdentity(identityId).fetchOne(db)
-                },
-                    let displayName = profile.displayName
-                {
+                let profile: Identity.Profile.Record?
+                do {
+                    profile = try await database.read { db in
+                        try await Identity.Profile.Record.findByIdentity(identityId).fetchOne(db)
+                    }
+                } catch {
+                    profile = nil
+                }
+                if let displayName = profile?.displayName {
                     additionalClaims["displayName"] = displayName
                 }
 
@@ -227,11 +235,15 @@ extension Identity.Token.Client {
                 var additionalClaims: [String: Any] = [:]
 
                 // Try to fetch the profile's displayName
-                if let profile = try? await database.read({ db in
-                    try await Identity.Profile.Record.findByIdentity(identityId).fetchOne(db)
-                }),
-                    let displayName = profile.displayName
-                {
+                let profile: Identity.Profile.Record?
+                do {
+                    profile = try await database.read { db in
+                        try await Identity.Profile.Record.findByIdentity(identityId).fetchOne(db)
+                    }
+                } catch {
+                    profile = nil
+                }
+                if let displayName = profile?.displayName {
                     additionalClaims["displayName"] = displayName
                 }
 
@@ -264,9 +276,13 @@ extension Identity.Token.Client {
             },
 
             identifyTokenType: { tokenString in
-                guard let jwt = try? JWT.parse(from: tokenString),
-                    let type = jwt.payload.additionalClaim("type", as: String.self)
-                else {
+                let jwt: JWT
+                do {
+                    jwt = try JWT.parse(from: tokenString)
+                } catch {
+                    return .unknown
+                }
+                guard let type = jwt.payload.additionalClaim("type", as: String.self) else {
                     return .unknown
                 }
 
@@ -279,11 +295,13 @@ extension Identity.Token.Client {
             },
 
             isExpired: { tokenString in
-                guard let jwt = try? JWT.parse(from: tokenString),
-                    let exp = jwt.payload.exp
-                else {
+                let jwt: JWT
+                do {
+                    jwt = try JWT.parse(from: tokenString)
+                } catch {
                     return true
                 }
+                guard let exp = jwt.payload.exp else { return true }
                 return Date() > exp
             }
         )

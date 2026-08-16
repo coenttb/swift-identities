@@ -150,6 +150,7 @@ extension Identity.Consumer.CookieReader {
 
     /// Validate that required cookies are present for authentication
     public func validateAuthenticationCookies(in request: Request) throws {
+        // swiftlint:disable:previous typed_throws_required
         guard accessToken(from: request) != nil else {
             throw Identity.Consumer.CookieError.missingAccessToken
         }
@@ -158,6 +159,7 @@ extension Identity.Consumer.CookieReader {
 
     /// Validate that required cookies are present for token refresh
     public func validateRefreshCookies(in request: Request) throws {
+        // swiftlint:disable:previous typed_throws_required
         guard refreshToken(from: request) != nil else {
             throw Identity.Consumer.CookieError.missingRefreshToken
         }
@@ -165,6 +167,7 @@ extension Identity.Consumer.CookieReader {
 
     /// Validate that required cookies are present for reauthorization
     public func validateReauthorizationCookies(in request: Request) throws {
+        // swiftlint:disable:previous typed_throws_required
         guard reauthorizationToken(from: request) != nil else {
             throw Identity.Consumer.CookieError.missingReauthorizationToken
         }

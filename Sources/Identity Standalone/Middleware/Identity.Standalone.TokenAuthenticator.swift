@@ -27,6 +27,7 @@ extension Identity.Standalone {
             bearer: BearerAuthorization,
             for request: Request
         ) async throws {
+            // swiftlint:disable:previous typed_throws_required
             @Dependency(\.identity) var identity
             @Dependency(\.tokenClient) var tokenClient
 
@@ -56,6 +57,7 @@ extension Identity.Standalone {
             to request: Request,
             chainingTo next: AsyncResponder
         ) async throws -> Response {
+            // swiftlint:disable:previous typed_throws_required
             @Dependency(\.identity) var identity
             @Dependency(\.tokenClient) var tokenClient
             @Dependency(\.logger) var logger

@@ -23,6 +23,7 @@ extension Identity.OAuth.State {
             redirectURI: String,
             identityId: Identity.ID? = nil
         ) async throws -> String {
+            // swiftlint:disable:previous typed_throws_required
             let stateValue = Identity.OAuth.State.Record.generateState()
 
             let state = Identity.OAuth.State.Record(
@@ -41,6 +42,7 @@ extension Identity.OAuth.State {
 
         /// Validate and consume an OAuth state
         public func validateState(_ state: String) async throws -> Identity.OAuth.State.Record {
+            // swiftlint:disable:previous typed_throws_required
             guard let oauthState = try await Identity.OAuth.State.Record.validate(state) else {
                 throw Identity.OAuth.Error.invalidState
             }
@@ -50,6 +52,7 @@ extension Identity.OAuth.State {
 
         /// Clean up expired states (should be called periodically)
         public func cleanupExpiredStates() async throws {
+            // swiftlint:disable:previous typed_throws_required
             try await Identity.OAuth.State.Record.cleanupExpired()
         }
     }

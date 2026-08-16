@@ -26,11 +26,13 @@ extension Identity.Creation.Client {
     public static func live(
         sendVerificationEmail:
             @escaping @Sendable (_ email: EmailAddress, _ token: String) async throws
+            // swiftlint:disable:previous typed_throws_required
             -> Void,
         onIdentityCreationSuccess:
             @escaping @Sendable (
                 _ identity: (id: Identity.ID, email: EmailAddress)
             ) async throws -> Void
+            // swiftlint:disable:previous typed_throws_required
     ) -> Self {
         @Dependency(\.logger) var logger
         @Dependency(\.passwordValidation.validate) var validatePassword

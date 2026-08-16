@@ -60,6 +60,7 @@ extension Identity.Profile.Record.Draft {
 
 extension Identity.Profile.Record {
     package static func validateDisplayName(_ displayName: String) throws {
+        // swiftlint:disable:previous typed_throws_required
         // Check length (1-100 characters)
         guard displayName.count >= 1 && displayName.count <= 100 else {
             throw ValidationError.invalidLength

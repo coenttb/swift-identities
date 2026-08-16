@@ -19,6 +19,7 @@ extension Identity.View {
     public static func consumerResponse(
         view: Identity.View
     ) async throws -> Server.Response {
+        // swiftlint:disable:previous typed_throws_required
 
         @Dependency(\.identityConsumerConfiguration) var config
         @Dependency(\.identity) var identity

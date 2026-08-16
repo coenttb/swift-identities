@@ -24,6 +24,7 @@ extension Identity.Consumer {
             to request: Request,
             chainingTo next: AsyncResponder
         ) async throws
+            // swiftlint:disable:previous typed_throws_required
             -> Vapor.Response
         {
             return try await withDependencies {

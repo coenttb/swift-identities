@@ -13,6 +13,7 @@ extension Identity.OAuth {
     public struct Configuration: Sendable {
         /// Registered OAuth providers
         public var providers: [any Identity.OAuth.Provider]
+        // swiftlint:disable:previous no_any_protocol_existential
 
         /// Whether to store OAuth tokens for API access
         /// If false, tokens are only used for authentication and discarded
@@ -40,16 +41,20 @@ extension Identity.OAuth {
 
         /// Called after successful OAuth authentication
         public var onOAuthSuccess: (@Sendable (Identity.OAuth.UserInfo) async throws -> Void)?
+        // swiftlint:disable:previous typed_throws_required
 
         /// Called when linking OAuth account to existing identity
         public var onOAuthLink:
             (@Sendable (Identity.ID, Identity.OAuth.Connection) async throws -> Void)?
+        // swiftlint:disable:previous typed_throws_required
 
         /// Called when OAuth authentication fails
-        public var onOAuthFailure: (@Sendable (Error) async throws -> Void)?
+        public var onOAuthFailure: (@Sendable (Swift.Error) async throws -> Void)?
+        // swiftlint:disable:previous typed_throws_required
 
         public init(
             providers: [any Identity.OAuth.Provider] = [],
+            // swiftlint:disable:previous no_any_protocol_existential
             storeTokens: Bool = false,
             tokenEncryptionKey: String? = nil,
             successRedirectPath: String = "/",
@@ -58,10 +63,13 @@ extension Identity.OAuth {
             autoCreateAccounts: Bool = true,
             allowAccountLinking: Bool = true,
             onOAuthSuccess: (@Sendable (Identity.OAuth.UserInfo) async throws -> Void)? = nil,
+            // swiftlint:disable:previous typed_throws_required
             onOAuthLink: (
                 @Sendable (Identity.ID, Identity.OAuth.Connection) async throws -> Void
+                    // swiftlint:disable:previous typed_throws_required
             )? = nil,
-            onOAuthFailure: (@Sendable (Error) async throws -> Void)? = nil
+            onOAuthFailure: (@Sendable (Swift.Error) async throws -> Void)? = nil
+                // swiftlint:disable:previous typed_throws_required
         ) {
             self.providers = providers
             self.storeTokens = storeTokens
@@ -84,6 +92,7 @@ extension Identity.OAuth.Configuration {
     /// Basic OAuth configuration with common providers
     public static func basic(
         providers: [any Identity.OAuth.Provider],
+        // swiftlint:disable:previous no_any_protocol_existential
         successPath: String = "/dashboard",
         failurePath: String = "/login"
     ) -> Self {
@@ -100,6 +109,7 @@ extension Identity.OAuth.Configuration {
     /// Configuration for API-focused OAuth (stores tokens)
     public static func api(
         providers: [any Identity.OAuth.Provider],
+        // swiftlint:disable:previous no_any_protocol_existential
         tokenEncryptionKey: String
     ) -> Self {
         Self(
@@ -116,6 +126,7 @@ extension Identity.OAuth.Configuration {
     /// Strict configuration that requires existing accounts
     public static func strict(
         providers: [any Identity.OAuth.Provider]
+            // swiftlint:disable:previous no_any_protocol_existential
     ) -> Self {
         Self(
             providers: providers,
@@ -156,6 +167,7 @@ extension Identity.OAuth.Configuration {
 
     /// Get provider by identifier
     public func provider(for identifier: String) -> (any Identity.OAuth.Provider)? {
+        // swiftlint:disable:previous no_any_protocol_existential
         providers.first { $0.identifier == identifier }
     }
 
@@ -166,6 +178,7 @@ extension Identity.OAuth.Configuration {
 
     /// Validate configuration
     public func validate() throws {
+        // swiftlint:disable:previous typed_throws_required
         if storeTokens && tokenEncryptionKey == nil {
             throw ConfigurationError.missingEncryptionKey
         }

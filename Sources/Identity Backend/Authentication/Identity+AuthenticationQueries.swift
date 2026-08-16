@@ -29,6 +29,7 @@ extension Identity.Record {
     package static func findForAuthentication(
         email: EmailAddress
     ) async throws
+        // swiftlint:disable:previous typed_throws_required
         -> AuthenticationData?
     {
         @Dependency(\.defaultDatabase) var db
@@ -55,6 +56,7 @@ extension Identity.Record {
     package static func findWithMFAStatus(
         identityId: Identity.ID
     ) async throws
+        // swiftlint:disable:previous typed_throws_required
         -> IdentityWithMFAStatus?
     {
         @Dependency(\.defaultDatabase) var db
@@ -88,6 +90,7 @@ extension Identity.Record {
     /// Update lastLoginAt without fetching the record
     /// Replaces: fetch -> modify -> save pattern
     package static func updateLastLogin(id: Identity.ID) async throws {
+        // swiftlint:disable:previous typed_throws_required
         @Dependency(\.defaultDatabase) var db
         @Dependency(\.date) var date
 
@@ -111,6 +114,7 @@ extension Identity.Record {
         email: EmailAddress,
         password: String
     ) async throws
+        // swiftlint:disable:previous typed_throws_required
         -> AuthenticationData?
     {
         @Dependency(\.defaultDatabase) var db
@@ -130,10 +134,14 @@ extension Identity.Record {
         } else {
             // Dummy password verification with same cost to match timing
             // Use a known-invalid hash to ensure verification fails
-            let _ = try? await passwordHasher.verify(
-                password,
-                "$2b$10$invalidHashThatWillNeverMatchAnythingEverXXXXXXXXXXXXXXXXXXXXXX"
-            )
+            do {
+                _ = try await passwordHasher.verify(
+                    password,
+                    "$2b$10$invalidHashThatWillNeverMatchAnythingEverXXXXXXXXXXXXXXXXXXXXXX"
+                )
+            } catch {
+                // The dummy verification exists only to equalize response timing.
+            }
             return nil
         }
 
@@ -157,6 +165,7 @@ extension Identity.Record {
     /// Batch update for session invalidation
     /// Increments session version for all identities in the list
     package static func invalidateSessions(identityIds: [Identity.ID]) async throws -> Int {
+        // swiftlint:disable:previous typed_throws_required
         @Dependency(\.defaultDatabase) var db
         @Dependency(\.date) var date
 
@@ -187,6 +196,7 @@ extension Identity.Record {
     /// Check if email exists without fetching the full record
     /// Useful for registration validation
     package static func emailExists(_ email: EmailAddress) async throws -> Bool {
+        // swiftlint:disable:previous typed_throws_required
         @Dependency(\.defaultDatabase) var db
 
         let count = try await db.read { db in
@@ -205,6 +215,7 @@ extension Identity.MFA.TOTP.Record {
 
     /// Check if TOTP is enabled without fetching the full record
     package static func isEnabled(for identityId: Identity.ID) async throws -> Bool {
+        // swiftlint:disable:previous typed_throws_required
         @Dependency(\.defaultDatabase) var db
 
         let count = try await db.read { db in
@@ -221,6 +232,7 @@ extension Identity.MFA.TOTP.Record {
 
     /// Update TOTP usage statistics without fetching
     package static func recordUsageOptimized(id: Identity.MFA.TOTP.Record.ID) async throws {
+        // swiftlint:disable:previous typed_throws_required
         @Dependency(\.defaultDatabase) var db
         @Dependency(\.date) var date
 
@@ -242,6 +254,7 @@ extension Identity.MFA.BackupCodes.Record {
 
     /// Get count of unused backup codes without fetching them all
     package static func unusedCount(for identityId: Identity.ID) async throws -> Int {
+        // swiftlint:disable:previous typed_throws_required
         @Dependency(\.defaultDatabase) var db
 
         return try await db.read { db in
@@ -257,6 +270,7 @@ extension Identity.MFA.BackupCodes.Record {
     /// Mark a backup code as used atomically
     /// Returns true if the code was found and marked as used
     package static func useCode(identityId: Identity.ID, code: String) async throws -> Bool {
+        // swiftlint:disable:previous typed_throws_required
         @Dependency(\.defaultDatabase) var db
         @Dependency(\.date) var date
 

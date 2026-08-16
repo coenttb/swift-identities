@@ -186,6 +186,7 @@ extension Identity.Token.Record {
         value: String,
         type: TokenType
     ) async throws
+        // swiftlint:disable:previous typed_throws_required
         -> TokenWithIdentity?
     {
         @Dependency(\.defaultDatabase) var db
@@ -212,6 +213,7 @@ extension Identity.Token.Record {
 
     /// Batch cleanup expired tokens with count
     package static func cleanupExpiredWithCount() async throws -> Int {
+        // swiftlint:disable:previous typed_throws_required
         @Dependency(\.defaultDatabase) var db
 
         // First get count of expired tokens

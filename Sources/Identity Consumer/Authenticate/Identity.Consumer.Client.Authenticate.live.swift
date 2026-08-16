@@ -21,6 +21,7 @@ import Vapor
 extension Identity.Authentication.Client {
     package static func live(
         makeRequest: @escaping @Sendable (_ route: Identity.Authentication.API) throws -> URLRequest
+            // swiftlint:disable:previous typed_throws_required
     ) -> Self {
         @Dependency(URLRequest.Handler.Identity.self) var handleRequest
         @Dependency(\.tokenClient) var tokenClient
@@ -63,6 +64,7 @@ extension Identity.Authentication.Client {
 extension Identity.Authentication.Token.Client {
     package static func live(
         makeRequest: @escaping @Sendable (_ route: Identity.Authentication.API) throws -> URLRequest
+            // swiftlint:disable:previous typed_throws_required
     ) -> Self {
         @Dependency(URLRequest.Handler.Identity.self) var handleRequest
         @Dependency(\.tokenClient) var tokenClient

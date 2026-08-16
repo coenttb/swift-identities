@@ -28,7 +28,7 @@ extension Identity.Password.Change.Request {
             self.redirectOnSuccess = redirectOnSuccess
         }
 
-        private static var pagemodule_change_password_id: String { "pagemodule_change_password_id" }
+        private static var pageModuleChangePasswordID: String { "pagemodule_change_password_id" }
 
         package var body: some HTML.View {
             PageModule(theme: .authenticationFlow) {
@@ -150,7 +150,7 @@ extension Identity.Password.Change.Request {
                 .display(.inlineBlock)
                 .textAlign(.center)
             }
-            .id(Self.pagemodule_change_password_id)
+            .id(Self.pageModuleChangePasswordID)
             .css
             .width(.percent(100))
             .maxWidth(.identityComponentDesktop)
@@ -175,7 +175,7 @@ extension Identity.Password.Change.Request {
                             });
                             const data = await response.json();
                             if (data.success) {
-                                const pageModule = document.getElementById("\(Self.pagemodule_change_password_id)");
+                                const pageModule = document.getElementById("\(Self.pageModuleChangePasswordID)");
                                 pageModule.outerHTML = \(html: Identity.Password.Change.Request.View.Confirmation(redirectOnSuccess: redirectOnSuccess));
                             } else {
                                 throw new Error(data.message || '\(TranslatedString(

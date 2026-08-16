@@ -44,6 +44,7 @@ extension Identity.Deletion.Client {
     ///
     /// - Returns: A `DeletionStatus` if a deletion is pending, or `nil` if no deletion request exists
     package func status() async throws -> DeletionStatus? {
+        // swiftlint:disable:previous typed_throws_required
         let identity = try await Identity.Record.get(by: .auth)
 
         @Dependency(\.defaultDatabase) var db

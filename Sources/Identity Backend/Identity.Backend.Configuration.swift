@@ -22,6 +22,7 @@ extension Identity.Backend {
 
         /// Router for generating authentication URLs
         public var router: any URLRouting.Router<Identity.Authentication.Route>
+        // swiftlint:disable:previous no_any_protocol_existential
 
         /// Email configuration with all email callbacks
         public var email: Identity.Backend.Configuration.Email
@@ -41,6 +42,7 @@ extension Identity.Backend {
         public init(
             jwt: Identity.Token.Client,
             router: any URLRouting.Router<Identity.Authentication.Route>,
+            // swiftlint:disable:previous no_any_protocol_existential
             email: Identity.Backend.Configuration.Email,
             tokenEnrichment: Identity.Backend.Configuration.TokenEnrichment? = nil,
             mfa: Identity.MFA? = nil,
@@ -128,38 +130,56 @@ extension Identity.Backend.Configuration {
     /// Email configuration containing all email-related callbacks
     public struct Email: Sendable {
         public var sendVerificationEmail: @Sendable (EmailAddress, String) async throws -> Void
+        // swiftlint:disable:previous typed_throws_required
         public var sendPasswordResetEmail: @Sendable (EmailAddress, String) async throws -> Void
+        // swiftlint:disable:previous typed_throws_required
         public var sendPasswordChangeNotification: @Sendable (EmailAddress) async throws -> Void
+        // swiftlint:disable:previous typed_throws_required
         public var sendEmailChangeConfirmation:
             @Sendable (EmailAddress, EmailAddress, String) async throws -> Void
+        // swiftlint:disable:previous typed_throws_required
         public var sendEmailChangeRequestNotification:
             @Sendable (EmailAddress, EmailAddress) async throws -> Void
+        // swiftlint:disable:previous typed_throws_required
         public var onEmailChangeSuccess: @Sendable (EmailAddress, EmailAddress) async throws -> Void
+        // swiftlint:disable:previous typed_throws_required
         public var sendDeletionRequestNotification: @Sendable (EmailAddress) async throws -> Void
+        // swiftlint:disable:previous typed_throws_required
         public var sendDeletionConfirmationNotification:
             @Sendable (EmailAddress) async throws -> Void
+        // swiftlint:disable:previous typed_throws_required
         public var onIdentityCreationSuccess:
             @Sendable ((id: Identity.ID, email: EmailAddress)) async throws -> Void
+        // swiftlint:disable:previous typed_throws_required
 
         public init(
             sendVerificationEmail: @escaping @Sendable (EmailAddress, String) async throws -> Void,
+            // swiftlint:disable:previous typed_throws_required
             sendPasswordResetEmail: @escaping @Sendable (EmailAddress, String) async throws -> Void,
+            // swiftlint:disable:previous typed_throws_required
             sendPasswordChangeNotification: @escaping @Sendable (EmailAddress) async throws -> Void,
+            // swiftlint:disable:previous typed_throws_required
             sendEmailChangeConfirmation:
                 @escaping @Sendable (EmailAddress, EmailAddress, String)
                 async throws -> Void,
+            // swiftlint:disable:previous typed_throws_required
             sendEmailChangeRequestNotification:
                 @escaping @Sendable (EmailAddress, EmailAddress)
                 async throws -> Void,
+            // swiftlint:disable:previous typed_throws_required
             onEmailChangeSuccess:
                 @escaping @Sendable (EmailAddress, EmailAddress) async throws -> Void,
+            // swiftlint:disable:previous typed_throws_required
             sendDeletionRequestNotification:
                 @escaping @Sendable (EmailAddress) async throws -> Void,
+            // swiftlint:disable:previous typed_throws_required
             sendDeletionConfirmationNotification:
                 @escaping @Sendable (EmailAddress) async throws -> Void,
+            // swiftlint:disable:previous typed_throws_required
             onIdentityCreationSuccess:
                 @escaping @Sendable ((id: Identity.ID, email: EmailAddress))
                 async throws -> Void = { _ in }
+            // swiftlint:disable:previous typed_throws_required
         ) {
             self.sendVerificationEmail = sendVerificationEmail
             self.sendPasswordResetEmail = sendPasswordResetEmail
@@ -196,9 +216,11 @@ extension Identity.Backend.Configuration {
     public struct TokenEnrichment: Sendable {
         /// Closure to provide additional claims for a given identity
         public var additionalClaims: @Sendable (Identity.ID) async throws -> [String: Any]
+        // swiftlint:disable:previous typed_throws_required
 
         public init(
             additionalClaims: @escaping @Sendable (Identity.ID) async throws -> [String: Any]
+                // swiftlint:disable:previous typed_throws_required
         ) {
             self.additionalClaims = additionalClaims
         }

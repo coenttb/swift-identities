@@ -35,9 +35,9 @@ extension Identity.Deletion.Pending {
             self.homeHref = homeHref
         }
 
-        private static var pagemodule_delete_pending_id: String { "pagemodule-delete-pending" }
-        private static var cancel_form_id: String { "form-cancel-deletion" }
-        private static var confirm_form_id: String { "form-confirm-deletion" }
+        private static var pageModuleDeletePendingID: String { "pagemodule-delete-pending" }
+        private static var cancelFormID: String { "form-cancel-deletion" }
+        private static var confirmFormID: String { "form-confirm-deletion" }
 
         package var body: some HTML.View {
             PageModule(theme: .authenticationFlow) {
@@ -148,7 +148,7 @@ extension Identity.Deletion.Pending {
                             .width(.percent(100))
                             .justifyContent(.center)
                         }
-                        .id(Self.cancel_form_id)
+                        .id(Self.cancelFormID)
 
                         // Confirm button (only when grace period expired)
                         if daysRemaining == 0 {
@@ -170,7 +170,7 @@ extension Identity.Deletion.Pending {
                                 .width(.percent(100))
                                 .justifyContent(.center)
                             }
-                            .id(Self.confirm_form_id)
+                            .id(Self.confirmFormID)
                         }
 
                         Link(href: .init(homeHref.relativePath)) {
@@ -209,7 +209,7 @@ extension Identity.Deletion.Pending {
                 .textAlign(.center)
                 .color(.text.primary)
             }
-            .id(Self.pagemodule_delete_pending_id)
+            .id(Self.pageModuleDeletePendingID)
             .css
             .width(.percent(100))
 
@@ -217,7 +217,7 @@ extension Identity.Deletion.Pending {
             script {
                 #"""
                 document.addEventListener('DOMContentLoaded', function() {
-                    const confirmForm = document.getElementById('\#(Self.confirm_form_id)');
+                    const confirmForm = document.getElementById('\#(Self.confirmFormID)');
 
                     if (confirmForm) {
                         confirmForm.addEventListener('submit', function(event) {

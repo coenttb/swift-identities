@@ -20,6 +20,7 @@ extension Identity.Creation {
     public static func response(
         view: Identity.Creation.View
     ) async throws -> Server.Response {
+        // swiftlint:disable:previous typed_throws_required
 
         switch view {
         case .request:
@@ -45,6 +46,7 @@ extension Identity.Creation {
 
     /// Handles the account creation request view.
     public static func handleCreateRequest() async throws -> Server.Response {
+        // swiftlint:disable:previous typed_throws_required
         @Dependency(\.identityFrontendConfiguration) var configuration
         @Dependency(\.identity.router) var router
 

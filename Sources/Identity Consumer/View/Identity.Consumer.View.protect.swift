@@ -15,6 +15,7 @@ extension Identity.Consumer.View {
         view: Identity.Consumer.View,
         with type: Authenticatable.Type
     ) async throws {
+        // swiftlint:disable:previous typed_throws_required
         @Dependency(\.vapor.request) var request
         guard let request else { throw Abort.requestUnavailable }
 

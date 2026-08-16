@@ -19,6 +19,7 @@ extension Identity.Frontend.Configuration.Cookies {
     public static func consumer(
         domain: String? = nil,
         router: any ParserPrinter<URLRequestData, Identity.Route>,
+        // swiftlint:disable:previous no_any_protocol_existential
         crossOrigin: Bool = false
     ) -> Self {
         // Calculate refresh token path from router
@@ -69,6 +70,7 @@ extension Identity.Frontend.Configuration.Cookies {
     /// More relaxed settings for local development but still maintains separation concerns.
     public static func consumerDevelopment(
         router: any ParserPrinter<URLRequestData, Identity.Route>
+        // swiftlint:disable:previous no_any_protocol_existential
     ) -> Self {
         // Calculate refresh token path from router
         let refreshPath: String = {

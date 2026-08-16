@@ -26,6 +26,7 @@ extension Identity.Record {
     public static func get(
         by identifier: Identity.Record.Get.Identifier
     ) async throws -> Identity.Record {
+        // swiftlint:disable:previous typed_throws_required
         switch identifier {
         case .id(let id):
             @Dependency(\.defaultDatabase) var db
@@ -93,6 +94,7 @@ extension Identity.Record {
         password: String,
         emailVerificationStatus: Identity.Record.EmailVerificationStatus = .unverified
     ) async throws {
+        // swiftlint:disable:previous typed_throws_required
         @Dependency(\.passwordHasher) var passwordHasher
         @Dependency(\.envVars) var envVars
 

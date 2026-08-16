@@ -18,6 +18,7 @@ extension Identity.Token {
                 _ email: EmailAddress,
                 _ sessionVersion: Int
             ) async throws -> String
+        // swiftlint:disable:previous typed_throws_required
 
         /// Parse and verify an access token
         public var verifyAccess: (_ token: String) async throws -> Identity.Token.Access
@@ -30,6 +31,7 @@ extension Identity.Token {
                 _ identityId: Identity.ID,
                 _ sessionVersion: Int
             ) async throws -> String
+        // swiftlint:disable:previous typed_throws_required
 
         /// Parse and verify a refresh token
         public var verifyRefresh: (_ token: String) async throws -> Identity.Token.Refresh
@@ -42,6 +44,7 @@ extension Identity.Token {
                 _ email: EmailAddress,
                 _ sessionVersion: Int
             ) async throws -> String
+        // swiftlint:disable:previous typed_throws_required
 
         // MARK: - MFA Session Token Operations
 
@@ -53,6 +56,7 @@ extension Identity.Token {
                 _ attemptsRemaining: Int,
                 _ availableMethods: [Identity.MFA.Method]
             ) async throws -> String
+        // swiftlint:disable:previous typed_throws_required
 
         /// Parse and verify an MFA session token
         public var verifyMFASession: (_ token: String) async throws -> Identity.MFA.Challenge.Token
@@ -67,10 +71,12 @@ extension Identity.Token {
                 _ purpose: String,
                 _ allowedOperations: [String]
             ) async throws -> String
+        // swiftlint:disable:previous typed_throws_required
 
         /// Parse and verify a reauthorization token
         public var verifyReauthorization:
             (_ token: String) async throws -> Identity.Token.Reauthorization
+        // swiftlint:disable:previous typed_throws_required
 
         // MARK: - Token Pair Operations
 
@@ -81,6 +87,7 @@ extension Identity.Token {
                 _ email: EmailAddress,
                 _ sessionVersion: Int
             ) async throws -> (access: String, refresh: String)
+        // swiftlint:disable:previous typed_throws_required
 
         // MARK: - Generic Token Operations
 
@@ -252,7 +259,10 @@ extension Identity.Token.Client {
             },
 
             identifyTokenType: { tokenString in
-                guard let jwt = try? JWT.parse(from: tokenString) else {
+                let jwt: JWT
+                do {
+                    jwt = try JWT.parse(from: tokenString)
+                } catch {
                     return .unknown
                 }
 
@@ -266,7 +276,10 @@ extension Identity.Token.Client {
             },
 
             isExpired: { tokenString in
-                guard let jwt = try? JWT.parse(from: tokenString) else {
+                let jwt: JWT
+                do {
+                    jwt = try JWT.parse(from: tokenString)
+                } catch {
                     return true
                 }
                 if let exp = jwt.payload.exp {

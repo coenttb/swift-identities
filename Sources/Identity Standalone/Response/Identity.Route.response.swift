@@ -17,6 +17,7 @@ extension Identity.Route {
     public static func response(
         route: Identity.Route
     ) async throws -> any AsyncResponseEncodable {
+        // swiftlint:disable:previous typed_throws_required no_any_protocol_existential
         switch route {
         case .create(let create):
             switch create {

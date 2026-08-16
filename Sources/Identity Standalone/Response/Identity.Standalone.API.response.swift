@@ -20,6 +20,7 @@ extension Identity.Standalone.API {
     public static func response(
         api: Identity.Standalone.API,
     ) async throws -> any AsyncResponseEncodable {
+        // swiftlint:disable:previous typed_throws_required no_any_protocol_existential
         @Dependency(\.identity.require) var requireIdentity
         switch api {
         case .profile(let profileAPI):

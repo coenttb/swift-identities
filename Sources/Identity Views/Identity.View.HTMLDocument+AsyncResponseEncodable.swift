@@ -14,6 +14,7 @@ extension Identity.View.HTMLDocument: AsyncResponseEncodable {
     public func encodeResponse(
         for request: Vapor.Request
     ) async throws -> Vapor.Response {
+        // swiftlint:disable:previous typed_throws_required
         var headers = HTTPHeaders()
         headers.add(name: .contentType, value: "text/html")
         // The protocol-era `render()` is retired. `HTML.Document.Protocol` vends the document-shaped

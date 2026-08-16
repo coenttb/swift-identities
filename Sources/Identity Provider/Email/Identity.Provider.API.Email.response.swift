@@ -19,6 +19,7 @@ extension Identity.Email.API {
     package static func providerResponse(
         email: Identity.Email.API
     ) async throws -> Server.Response {
+        // swiftlint:disable:previous typed_throws_required
 
         @Dependency(\.identity) var identity
 

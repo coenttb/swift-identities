@@ -16,6 +16,7 @@ extension Identity.Email.API {
     public static func response(
         email: Identity.Email.API
     ) async throws -> Server.Response {
+        // swiftlint:disable:previous typed_throws_required
         @Dependency(\.identity) var identity
         let client = identity.email.change.client
 

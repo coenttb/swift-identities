@@ -20,6 +20,7 @@ extension Identity.OAuth.Callback {
         public init(
             provider: String,
             redirectUrl: @escaping (Identity.ID) async throws -> URL
+                // swiftlint:disable:previous typed_throws_required
         ) {
             self.provider = provider
             self.redirectUrl = redirectUrl

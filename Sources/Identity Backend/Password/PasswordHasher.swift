@@ -22,6 +22,7 @@ public struct PasswordHasher: Sendable {
     /// - Returns: The hashed password string
     /// - Throws: If hashing fails
     public var hash: @Sendable (_ password: String, _ cost: Int) async throws -> String
+    // swiftlint:disable:previous typed_throws_required
 
     /// Verify a plaintext password against a hash
     ///
@@ -31,6 +32,7 @@ public struct PasswordHasher: Sendable {
     /// - Returns: True if the password matches the hash
     /// - Throws: If verification encounters an error
     public var verify: @Sendable (_ password: String, _ hash: String) async throws -> Bool
+    // swiftlint:disable:previous typed_throws_required
 }
 
 extension PasswordHasher: Dependency.Key.Test {

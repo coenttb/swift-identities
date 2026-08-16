@@ -54,7 +54,7 @@ extension Identity.Consumer.Configuration.Consumer: Dependency.Key.Test {
         currentUserName: { String?.none },
         branding: Identity.Frontend.Configuration.Branding(
             logo: Identity.View.Logo(logo: "🔐", href: URL(string: "/")!),
-            footer_links: []
+            footerLinks: []
         ),
         navigation: Identity.Frontend.Configuration.Navigation.default,
         redirect: Identity.Consumer.Configuration.Redirect.live()

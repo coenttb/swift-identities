@@ -17,6 +17,7 @@ extension Identity.Provider.API {
     public static func response(
         api: Identity.Provider.API
     ) async throws -> Server.Response {
+        // swiftlint:disable:previous typed_throws_required
 
         @Dependency(\.identityProviderConfiguration) var configuration
         let rateLimiters = configuration.provider.rateLimiters

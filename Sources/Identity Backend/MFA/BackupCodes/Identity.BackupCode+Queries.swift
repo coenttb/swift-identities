@@ -21,6 +21,7 @@ extension Identity.MFA.BackupCodes.Record {
 extension Identity.MFA.BackupCodes.Record {
     /// Hash a backup code for storage
     package static func hashCode(_ code: String) async throws -> String {
+        // swiftlint:disable:previous typed_throws_required
         @Dependency(\.passwordHasher) var passwordHasher
         @Dependency(\.envVars) var envVars
 
@@ -30,6 +31,7 @@ extension Identity.MFA.BackupCodes.Record {
 
     /// Verify a code against its hash
     package static func verifyCode(_ code: String, hash: String) async throws -> Bool {
+        // swiftlint:disable:previous typed_throws_required
         @Dependency(\.passwordHasher) var passwordHasher
         return try await passwordHasher.verify(code, hash)
     }

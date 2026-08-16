@@ -25,7 +25,7 @@ extension Identity.View {
         //        let favicons: Favicons
         let canonicalHref: (Identity.View) -> URL?
         let hreflang: (Identity.View, Language) -> URL
-        let footer_links: [(TranslatedString, URL)]
+        let footerLinks: [(TranslatedString, URL)]
 
         @Dependency(\.language) var language
         @Dependency(\.languages) var languages
@@ -43,7 +43,7 @@ extension Identity.View {
             //            favicons: Favicons,
             canonicalHref: @escaping (Identity.View) -> URL?,
             hreflang: @escaping (Identity.View, Language) -> URL,
-            footer_links: [(TranslatedString, URL)],
+            footerLinks: [(TranslatedString, URL)],
             @HTML.Builder body: () async throws -> Body
         ) async throws {
             self.view = view
@@ -53,7 +53,7 @@ extension Identity.View {
             //            self.favicons = favicons
             self.canonicalHref = canonicalHref
             self.hreflang = hreflang
-            self.footer_links = footer_links
+            self.footerLinks = footerLinks
         }
 
         public var head: some HTML.View {
@@ -120,7 +120,7 @@ extension Identity.View {
             HTML.Group {
                 _body
 
-                Identity.View.Footer(links: footer_links)
+                Identity.View.Footer(links: footerLinks)
             }
             .linkColor(.branding.primary)
         }

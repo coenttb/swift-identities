@@ -32,6 +32,7 @@ extension Identity.Frontend {
         public var redirect: Redirect
         public var rateLimiters: RateLimiters?  // Optional for Standalone
         public var currentUserName: @Sendable () async throws -> String?
+        // swiftlint:disable:previous typed_throws_required
         public var canonicalHref: @Sendable (Identity.View) -> URL?
         public var hreflang: @Sendable (Identity.View, Language) -> URL
 
@@ -45,6 +46,7 @@ extension Identity.Frontend {
             redirect: Redirect,
             rateLimiters: RateLimiters?,
             currentUserName: (@Sendable () async throws -> String?)? = nil,
+            // swiftlint:disable:previous typed_throws_required
             canonicalHref: (@Sendable (Identity.View) -> URL?)? = nil,
             hreflang: (@Sendable (Identity.View, Language) -> URL)? = nil
         ) {
@@ -81,17 +83,27 @@ extension Identity.Frontend {
         /// Redirect configuration shared between Consumer and Standalone
         public struct Redirect: Sendable {
             public var loginSuccess: @Sendable (Identity.ID) async throws -> URL
+            // swiftlint:disable:previous typed_throws_required
             public var loginProtected: @Sendable () async throws -> URL
+            // swiftlint:disable:previous typed_throws_required
             public var createProtected: @Sendable () async throws -> URL
+            // swiftlint:disable:previous typed_throws_required
             public var createVerificationSuccess: @Sendable () async throws -> URL
+            // swiftlint:disable:previous typed_throws_required
             public var logoutSuccess: @Sendable () async throws -> URL
+            // swiftlint:disable:previous typed_throws_required
 
             public init(
                 loginSuccess: @escaping @Sendable (Identity.ID) async throws -> URL,
+                // swiftlint:disable:previous typed_throws_required
                 loginProtected: @escaping @Sendable () async throws -> URL,
+                // swiftlint:disable:previous typed_throws_required
                 createProtected: @escaping @Sendable () async throws -> URL,
+                // swiftlint:disable:previous typed_throws_required
                 createVerificationSuccess: @escaping @Sendable () async throws -> URL,
+                // swiftlint:disable:previous typed_throws_required
                 logoutSuccess: @escaping @Sendable () async throws -> URL
+                    // swiftlint:disable:previous typed_throws_required
             ) {
                 self.loginSuccess = loginSuccess
                 self.loginProtected = loginProtected
@@ -105,16 +117,16 @@ extension Identity.Frontend {
         public struct Branding: Sendable {
             public var logo: Identity.View.Logo
             //            public var favicons: Favicons
-            public var footer_links: [(TranslatedString, URL)]
+            public var footerLinks: [(TranslatedString, URL)]
 
             public init(
                 logo: Identity.View.Logo,
                 //                favicons: Favicons = Branding.defaultFavicons,
-                footer_links: [(TranslatedString, URL)] = []
+                footerLinks: [(TranslatedString, URL)] = []
             ) {
                 self.logo = logo
                 //                self.favicons = favicons
-                self.footer_links = footer_links
+                self.footerLinks = footerLinks
             }
 
             //            public static let defaultFavicons: Favicons = .init(
@@ -145,6 +157,7 @@ extension Identity.Frontend.Configuration: Dependency.Key.Test {
         let baseURL = URL(string: "http://localhost:8080")!
 
         let router: any ParserPrinter<URLRequestData, Identity.Route> = Identity.Route.Router()
+            // swiftlint:disable:previous no_any_protocol_existential
             .baseURL(
                 baseURL.absoluteString
             )
@@ -215,8 +228,10 @@ extension Identity.Frontend.Configuration: Dependency.Key.Test {
 }
 
 extension Identity.Frontend.Configuration.Redirect {
-    public static func `default`(router: any ParserPrinter<URLRequestData, Identity.Route>) -> Self
-    {
+    public static func `default`(
+        router: any ParserPrinter<URLRequestData, Identity.Route>
+        // swiftlint:disable:previous no_any_protocol_existential
+    ) -> Self {
         let home = URL(string: "/")!
         let loginURL = router.url(for: .authenticate(.view(.credentials)))
         return .init(

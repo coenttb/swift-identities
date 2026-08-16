@@ -16,6 +16,7 @@ extension Identity.Provider {
             bearer: BearerAuthorization,
             for request: Request
         ) async throws {
+            // swiftlint:disable:previous typed_throws_required
             await withDependencies {
                 $0.vapor.request = request
             } operation: {

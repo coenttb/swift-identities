@@ -86,6 +86,7 @@ extension Identity.Frontend.Configuration {
 extension Identity.Frontend.Configuration.Cookies {
     public static func live(
         _ router: any ParserPrinter<URLRequestData, Identity.Route>,
+        // swiftlint:disable:previous no_any_protocol_existential
         domain: String?
     ) -> Identity.Frontend.Configuration.Cookies {
 

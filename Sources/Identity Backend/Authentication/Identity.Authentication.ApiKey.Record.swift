@@ -160,6 +160,7 @@ extension Identity.Authentication.ApiKey.Record {
     /// Single query to validate API key and get associated identity
     /// Replaces: findByKey + separate identity lookup
     package static func authenticateWithKey(_ key: String) async throws -> ApiKeyWithIdentity? {
+        // swiftlint:disable:previous typed_throws_required
         @Dependency(\.defaultDatabase) var db
         @Dependency(\.date) var date
 
@@ -197,7 +198,7 @@ extension Identity.Authentication.ApiKey.Record {
     package static func deactivateMultiple(
         ids: [Identity.Authentication.ApiKey.Record.ID]
     )
-        async throws
+        async throws  // swiftlint:disable:this typed_throws_required
     {
         @Dependency(\.defaultDatabase) var db
 

@@ -18,6 +18,7 @@ extension Identity.Route {
     public static func consumerResponse(
         route: Identity.Route
     ) async throws -> Server.Response {
+        // swiftlint:disable:previous typed_throws_required
 
         @Dependency(\.identityConsumerConfiguration) var config
         let configuration = config.consumer
@@ -63,6 +64,7 @@ extension Identity.Route {
         _ route: Identity.Creation.Route,
         configuration: Identity.Consumer.Configuration.Consumer
     ) async throws -> Server.Response {
+        // swiftlint:disable:previous typed_throws_required
         switch route {
         case .api(let api):
             return try await Identity.API.response(api: .create(api))
@@ -76,6 +78,7 @@ extension Identity.Route {
         _ route: Identity.Authentication.Route,
         configuration: Identity.Consumer.Configuration.Consumer
     ) async throws -> Server.Response {
+        // swiftlint:disable:previous typed_throws_required
         switch route {
         case .api(let api):
             return try await Identity.API.response(api: .authenticate(api))
@@ -89,6 +92,7 @@ extension Identity.Route {
         _ route: Identity.Deletion.Route,
         configuration: Identity.Consumer.Configuration.Consumer
     ) async throws -> Server.Response {
+        // swiftlint:disable:previous typed_throws_required
         switch route {
         case .api(let api):
             return try await Identity.API.response(api: .delete(api))
@@ -102,6 +106,7 @@ extension Identity.Route {
         _ route: Identity.Email.Route,
         configuration: Identity.Consumer.Configuration.Consumer
     ) async throws -> Server.Response {
+        // swiftlint:disable:previous typed_throws_required
         switch route {
         case .api(let api):
             return try await Identity.API.response(api: .email(api))
@@ -115,6 +120,7 @@ extension Identity.Route {
         _ route: Identity.Password.Route,
         configuration: Identity.Consumer.Configuration.Consumer
     ) async throws -> Server.Response {
+        // swiftlint:disable:previous typed_throws_required
         switch route {
         case .api(let api):
             return try await Identity.API.response(api: .password(api))
@@ -128,6 +134,7 @@ extension Identity.Route {
         _ route: Identity.MFA.Route,
         configuration: Identity.Consumer.Configuration.Consumer
     ) async throws -> Server.Response {
+        // swiftlint:disable:previous typed_throws_required
         switch route {
         case .api(let api):
             return try await Identity.API.response(api: .mfa(api))

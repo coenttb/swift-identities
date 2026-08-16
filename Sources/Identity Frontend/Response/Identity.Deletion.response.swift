@@ -20,6 +20,7 @@ import enum Server.Server
 extension Identity.Deletion {
     /// Dispatches delete view requests to appropriate handlers.
     public static func response() async throws -> Server.Response {
+        // swiftlint:disable:previous typed_throws_required
         // Delete only has one view (request), no subviews
         return try await handleRequest()
     }
@@ -30,6 +31,7 @@ extension Identity.Deletion {
 
     /// Handles the account deletion request view.
     public static func handleRequest() async throws -> Server.Response {
+        // swiftlint:disable:previous typed_throws_required
         @Dependency(\.identityFrontendConfiguration) var configuration
         @Dependency(\.identity.router) var router
 

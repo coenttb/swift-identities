@@ -28,7 +28,7 @@ extension Identity.Creation.Request {
             self.createFormAction = createFormAction
         }
 
-        private static let pagemodule_create_identity: String = "pagemodule-create-identity"
+        private static let pageModuleCreateIdentity: String = "pagemodule-create-identity"
 
         package var body: some HTML.View {
             PageModule(theme: .authenticationFlow) {
@@ -102,7 +102,7 @@ extension Identity.Creation.Request {
                 .textAlign(.center)
                 .color(.text.primary)
             }
-            .id(Self.pagemodule_create_identity)
+            .id(Self.pageModuleCreateIdentity)
             .css
             .width(.percent(100))
             .maxWidth(.identityComponentDesktop)
@@ -141,7 +141,7 @@ extension Identity.Creation.Request {
                             const data = await response.json();
 
                             if (data.success) {
-                                const pageModule = document.getElementById("\(Self.pagemodule_create_identity)");
+                                const pageModule = document.getElementById("\(Self.pageModuleCreateIdentity)");
                                 pageModule.outerHTML = \(html: Identity.Creation.Request.View.ConfirmReceipt(loginHref: loginHref));
                             } else {
                                 throw new Error(data.message || 'Account creation failed');
@@ -236,7 +236,7 @@ extension Identity.Creation.Verification {
             self.redirectURL = redirectURL
         }
 
-        private static let pagemodule_verify_id: String = "pagemodule_verify_id"
+        private static let pageModuleVerifyID: String = "pagemodule_verify_id"
 
         package var body: some HTML.View {
             PageModule(theme: .authenticationFlow) {
@@ -273,7 +273,7 @@ extension Identity.Creation.Verification {
                 .display(.inlineBlock)
                 .textAlign(.center)
             }
-            .id(Self.pagemodule_verify_id)
+            .id(Self.pageModuleVerifyID)
             .css
             .width(.percent(100))
             .maxWidth(.identityComponentDesktop)
@@ -311,7 +311,7 @@ extension Identity.Creation.Verification {
                             const data = await response.json();
 
                             if (data.success) {
-                                const pageModule = document.getElementById("\(Self.pagemodule_verify_id)");
+                                const pageModule = document.getElementById("\(Self.pageModuleVerifyID)");
                                 pageModule.outerHTML = \(html: Identity.Creation.Verification.View.Confirmation(redirectURL: redirectURL));
                                 setTimeout(() => { window.location.href = '\(redirectURL.absoluteString)'; }, 5000);
 

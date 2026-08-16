@@ -23,6 +23,7 @@ extension Identity.API {
     package static func requireAuthentication<A: Vapor.Authenticatable>(
         _ type: A.Type
     ) throws {
+        // swiftlint:disable:previous typed_throws_required
         @Dependency(\.vapor.request) var request
         guard let request else { throw Abort.requestUnavailable }
         try request.auth.require(type)

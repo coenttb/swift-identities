@@ -17,6 +17,7 @@ extension Identity.Token.Access {
     /// IMPORTANT: The subject claim will contain both the identity ID and email
     /// in the format "ID:email" to ensure both pieces of information are preserved.
     package init(identity: Identity.Record) async throws {
+        // swiftlint:disable:previous typed_throws_required
         @Dependency(\.tokenClient) var tokenClient
 
         let tokenString = try await tokenClient.generateAccess(
@@ -34,6 +35,7 @@ extension Identity.Token.Access {
 extension Identity.Token.Refresh {
     /// Creates a refresh token from an Identity
     package init(identity: Identity.Record) async throws {
+        // swiftlint:disable:previous typed_throws_required
         @Dependency(\.tokenClient) var tokenClient
 
         let tokenString = try await tokenClient.generateRefresh(
@@ -57,6 +59,7 @@ extension Identity.Token.Reauthorization {
         purpose: String = "general",
         allowedOperations: [String] = []
     ) async throws {
+        // swiftlint:disable:previous typed_throws_required
         @Dependency(\.tokenClient) var tokenClient
 
         let tokenString = try await tokenClient.generateReauthorization(

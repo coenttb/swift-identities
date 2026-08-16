@@ -19,6 +19,7 @@ import Vapor
 extension Identity.Password.Client {
     public static func live(
         makeRequest: @escaping @Sendable (_ route: Identity.Password.API) throws -> URLRequest
+            // swiftlint:disable:previous typed_throws_required
     ) -> Self {
 
         @Dependency(URLRequest.Handler.Identity.self) var handleRequest

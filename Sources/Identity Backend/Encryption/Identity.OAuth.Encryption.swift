@@ -19,6 +19,7 @@ extension Identity.OAuth {
         /// Encrypt OAuth token for storage
         /// Returns encrypted token with version prefix, or plain token in development
         public static func encrypt(token: String) throws -> String {
+            // swiftlint:disable:previous typed_throws_required
             @Dependency(\.envVars.encryptionKey) var encryptionKey
             @Dependency(\.logger) var logger
 
@@ -47,6 +48,7 @@ extension Identity.OAuth {
         /// Decrypt OAuth token for use
         /// Handles both encrypted (v1:) and unencrypted tokens
         public static func decrypt(token encrypted: String) throws -> String {
+            // swiftlint:disable:previous typed_throws_required
             @Dependency(\.envVars.encryptionKey) var encryptionKey
             @Dependency(\.logger) var logger
 

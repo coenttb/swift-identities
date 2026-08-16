@@ -12,6 +12,7 @@ import URLRouting
 extension URLRouting.Router where Output == Identity.Route, Input == URLRequestData {
 
     var authentication: any URLRouting.Router<Identity.Authentication.Route> {
+        // swiftlint:disable:previous no_any_protocol_existential
         self.map(
             .convert(
                 apply: \.authenticate,
@@ -21,6 +22,7 @@ extension URLRouting.Router where Output == Identity.Route, Input == URLRequestD
     }
 
     var logout: any URLRouting.Router<Identity.Logout.Route> {
+        // swiftlint:disable:previous no_any_protocol_existential
         self.map(
             .convert(
                 apply: \.logout,
@@ -30,6 +32,7 @@ extension URLRouting.Router where Output == Identity.Route, Input == URLRequestD
     }
 
     var reauthorization: any URLRouting.Router<Identity.Reauthorization.Route> {
+        // swiftlint:disable:previous no_any_protocol_existential
         self.map(
             .convert(
                 apply: \.reauthorize,
@@ -39,6 +42,7 @@ extension URLRouting.Router where Output == Identity.Route, Input == URLRequestD
     }
 
     var creation: any URLRouting.Router<Identity.Creation.Route> {
+        // swiftlint:disable:previous no_any_protocol_existential
         self.map(
             .convert(
                 apply: \.create,
@@ -48,6 +52,7 @@ extension URLRouting.Router where Output == Identity.Route, Input == URLRequestD
     }
 
     var deletion: any URLRouting.Router<Identity.Deletion.Route> {
+        // swiftlint:disable:previous no_any_protocol_existential
         self.map(
             .convert(
                 apply: \.delete,
@@ -57,6 +62,7 @@ extension URLRouting.Router where Output == Identity.Route, Input == URLRequestD
     }
 
     var email: any URLRouting.Router<Identity.Email.Route> {
+        // swiftlint:disable:previous no_any_protocol_existential
         self.map(
             .convert(
                 apply: \.email,
@@ -68,6 +74,7 @@ extension URLRouting.Router where Output == Identity.Route, Input == URLRequestD
     // MARK: - Password Routes
 
     var password: any URLRouting.Router<Identity.Password.Route> {
+        // swiftlint:disable:previous no_any_protocol_existential
         self.map(
             .convert(
                 apply: \.password,
@@ -82,6 +89,7 @@ extension URLRouting.Router where Output == Identity.Route, Input == URLRequestD
 extension URLRouting.Router where Output == Identity.Email.Route, Input == URLRequestData {
     // Extract the API router from Email.Route
     var api: any URLRouting.Router<Identity.Email.API> {
+        // swiftlint:disable:previous no_any_protocol_existential
         self.map(
             .convert(
                 apply: \.api,
@@ -95,6 +103,7 @@ extension URLRouting.Router where Output == Identity.Email.Route, Input == URLRe
 extension URLRouting.Router where Output == Identity.Email.API, Input == URLRequestData {
     // Extract change from the Email.API router
     var change: any URLRouting.Router<Identity.Email.Change.API> {
+        // swiftlint:disable:previous no_any_protocol_existential
         self.map(
             .convert(
                 apply: \.change,
@@ -109,6 +118,7 @@ extension URLRouting.Router where Output == Identity.Email.API, Input == URLRequ
 extension URLRouting.Router where Output == Identity.Password.Route, Input == URLRequestData {
     // Extract the API router from Password.Route
     var api: any URLRouting.Router<Identity.Password.API> {
+        // swiftlint:disable:previous no_any_protocol_existential
         self.map(
             .convert(
                 apply: \.api,
@@ -122,6 +132,7 @@ extension URLRouting.Router where Output == Identity.Password.Route, Input == UR
 extension URLRouting.Router where Output == Identity.Password.API, Input == URLRequestData {
     // Extract change from the Password.API router
     var change: any URLRouting.Router<Identity.Password.Change.API> {
+        // swiftlint:disable:previous no_any_protocol_existential
         self.map(
             .convert(
                 apply: \.change,
@@ -132,6 +143,7 @@ extension URLRouting.Router where Output == Identity.Password.API, Input == URLR
 
     // Extract reset from the Password.API router
     var reset: any URLRouting.Router<Identity.Password.Reset.API> {
+        // swiftlint:disable:previous no_any_protocol_existential
         self.map(
             .convert(
                 apply: \.reset,

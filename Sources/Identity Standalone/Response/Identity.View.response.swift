@@ -22,6 +22,7 @@ extension Identity.View {
     public static func response(
         view: Identity.View
     ) async throws -> any AsyncResponseEncodable {
+        // swiftlint:disable:previous typed_throws_required no_any_protocol_existential
 
         @Dependency(\.identityStandaloneConfiguration) var configuration
         @Dependency(\.identity) var identity
@@ -77,7 +78,13 @@ extension Identity.View {
             }
 
             // Check deletion status from backend
-            if let deletionStatus = try? await identity.delete.client.status() {
+            let deletionStatus: Identity.Deletion.Client.DeletionStatus?
+            do {
+                deletionStatus = try await identity.delete.client.status()
+            } catch {
+                deletionStatus = nil
+            }
+            if let deletionStatus {
                 switch deletionStatus.status {
                 case .pending, .awaitingGracePeriod:
                     return try await Identity.Frontend.htmlDocument(
@@ -149,6 +156,7 @@ extension Identity.View {
     private static func handleMFAView(
         mfa: Identity.MFA.View,
     ) async throws -> any AsyncResponseEncodable {
+        // swiftlint:disable:previous typed_throws_required no_any_protocol_existential
         @Dependency(\.identityStandaloneConfiguration) var configuration
         @Dependency(\.identity.router) var router
         @Dependency(\.identity) var identity
@@ -326,11 +334,20 @@ extension Identity.View {
                 var isRegeneration = false
 
                 @Dependency(\.request) var request
-                if let request,
-                    let codesString = request.session.data["backup_codes"],
-                    let codesData = codesString.data(using: .utf8),
-                    let codes = try? JSONDecoder().decode([String].self, from: codesData)
+                let storedBackupCodes: [String]?
+                if let codesString = request?.session.data["backup_codes"],
+                    let codesData = codesString.data(using: .utf8)
                 {
+                    do {
+                        storedBackupCodes = try JSONDecoder().decode([String].self, from: codesData)
+                    } catch {
+                        storedBackupCodes = nil
+                    }
+                } else {
+                    storedBackupCodes = nil
+                }
+
+                if let request, let codes = storedBackupCodes {
                     // Codes from TOTP setup
                     backupCodes = codes
                     // Clear from session after reading

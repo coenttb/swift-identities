@@ -19,6 +19,7 @@ extension Identity.MFA.SMS {
         /// Callback to send SMS verification codes
         /// First parameter is the phone number as a String, second is the verification code
         public var sendCode: @Sendable (String, String) async throws -> Void
+        // swiftlint:disable:previous typed_throws_required
 
         /// The length of the generated verification code
         public var codeLength: Int
@@ -32,6 +33,7 @@ extension Identity.MFA.SMS {
 
         public init(
             sendCode: @escaping @Sendable (String, String) async throws -> Void,
+            // swiftlint:disable:previous typed_throws_required
             codeLength: Int = 6,
             expirationSeconds: Int = 300,
             messageTemplate: String? = nil
