@@ -19,10 +19,10 @@ extension Identity.MFA.TOTP {
     }
 }
 
-extension Identity.MFA.TOTP.Verifier: DependencyKey {
-    package static let liveValue = Self { code, totp, window in
+extension Identity.MFA.TOTP.Verifier: Dependency.Key {
+    package static let liveValue: Identity.MFA.TOTP.Verifier = .init { code, totp, window in
         totp.validate(code, window: window)
     }
 
-    package static let testValue = Self.liveValue
+    package static let testValue: Identity.MFA.TOTP.Verifier = .liveValue
 }
