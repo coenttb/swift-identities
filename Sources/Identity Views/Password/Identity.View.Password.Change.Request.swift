@@ -65,7 +65,7 @@ extension Identity.Password.Change.Request {
                         .color(.text.secondary)
 
                         form(
-                            action: .init(self.formActionURL.relativePath),
+                            action: .init(formActionURL.relativePath),
                             method: .post
                         ) {
                             VStack {
@@ -176,7 +176,7 @@ extension Identity.Password.Change.Request {
                             const data = await response.json();
                             if (data.success) {
                                 const pageModule = document.getElementById("\(Self.pagemodule_change_password_id)");
-                                pageModule.outerHTML = \(html: Identity.Password.Change.Request.View.Confirmation(redirectOnSuccess: self.redirectOnSuccess));
+                                pageModule.outerHTML = \(html: Identity.Password.Change.Request.View.Confirmation(redirectOnSuccess: redirectOnSuccess));
                             } else {
                                 throw new Error(data.message || '\(TranslatedString(
                                 dutch: "Wachtwoord wijzigen mislukt",

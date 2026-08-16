@@ -27,8 +27,10 @@ extension Identity.Email {
             switch change {
             case .request:
                 return try await handleChangeRequest()
+
             case .confirm:
                 return try await handleChangeConfirm()
+
             case .reauthorization:
                 return try await handleChangeReauthorization()
             }

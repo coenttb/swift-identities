@@ -51,7 +51,7 @@ extension Identity.Email.Change.Request {
                         .color(.text.secondary)
 
                         form(
-                            action: .init(self.formActionURL.relativePath),
+                            action: .init(formActionURL.relativePath),
                             method: .post
                         ) {
                             VStack {
@@ -169,7 +169,7 @@ extension Identity.Email.Change.Request {
                             // Check if reauthorization is required
                             if (response.status === 401 && response.headers.get('X-Requires-Reauth') === 'true') {
                                 // Redirect to reauthorization page
-                                window.location.href = '\#(self.reauthorizationURL.absoluteString)';
+                                window.location.href = '\#(reauthorizationURL.absoluteString)';
                                 return;
                             }
 
@@ -177,7 +177,7 @@ extension Identity.Email.Change.Request {
 
                             if (data.success) {
                                 const pageModule = document.getElementById("\#(Self.pagemodule_request_email_change_id)");
-                                pageModule.outerHTML = \#(html: Identity.Email.Change.Request.View.ReceiptConfirmation(homeHref: self.homeHref));
+                                pageModule.outerHTML = \#(html: Identity.Email.Change.Request.View.ReceiptConfirmation(homeHref: homeHref));
                             } else {
                                 throw new Error(data.reason || '\#(TranslatedString(
                                 dutch: "Verzoek om e-mailadres te wijzigen mislukt",

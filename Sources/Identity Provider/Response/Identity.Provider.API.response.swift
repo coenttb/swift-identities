@@ -76,6 +76,7 @@ extension Identity.Provider.API {
             switch logout {
             case .current:
                 try await identity.logout.client.current()
+
             case .all:
                 try await identity.logout.client.all()
             }

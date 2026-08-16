@@ -65,10 +65,13 @@ extension Identity.Deletion.Client {
         switch deletion.status {
         case .pending, .awaitingGracePeriod:
             clientStatus = .pending
+
         case .readyForDeletion:
             clientStatus = .readyForDeletion
+
         case .cancelled:
             clientStatus = .cancelled
+
         case .confirmed:
             // Shouldn't happen but handle it
             clientStatus = .awaitingGracePeriod

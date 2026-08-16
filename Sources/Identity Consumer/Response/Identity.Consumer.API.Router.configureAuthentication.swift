@@ -63,6 +63,7 @@ extension Identity.Consumer.API.Router {
 
         case .mfa:
             break
+
         case .oauth(let oauth):
             // OAuth views generally don't require authentication
             // except for the connections management page
@@ -72,6 +73,7 @@ extension Identity.Consumer.API.Router {
                 return
                     router
                     .setBearerAuth(request.cookies.accessToken?.string)
+
             case .providers, .authorize, .callback:
                 // These are part of the OAuth flow and don't require authentication
                 break

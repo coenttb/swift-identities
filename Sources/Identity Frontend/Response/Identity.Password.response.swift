@@ -40,6 +40,7 @@ extension Identity.Password {
                         homeHref: configuration.navigation.home
                     )
                 }
+
             case .confirm:
                 return try await handleResetConfirm()
             }

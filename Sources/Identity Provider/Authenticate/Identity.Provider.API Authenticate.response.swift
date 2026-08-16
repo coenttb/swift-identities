@@ -37,6 +37,7 @@ extension Identity.Authentication.API {
                 )
                 return try Server.Response.json(success: true, data: identityAuthenticationResponse)
             }
+
         case .apiKey(let apiKey):
             let identityAuthenticationResponse = try await identity.authenticate.apiKey(
                 apiKey.token

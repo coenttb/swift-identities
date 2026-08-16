@@ -183,8 +183,10 @@ extension Identity.Consumer {
             switch self {
             case .missingAccessToken:
                 return "Access token cookie is missing. User may need to log in."
+
             case .missingRefreshToken:
                 return "Refresh token cookie is missing. User may need to log in again."
+
             case .missingReauthorizationToken:
                 return
                     "Reauthorization token cookie is missing. User needs to reauthorize this operation."

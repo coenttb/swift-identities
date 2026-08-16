@@ -30,6 +30,7 @@ extension Identity.Creation.API {
             } catch {
                 throw error
             }
+
         //            catch let error as Abort where error.status == .tooManyRequests {
         //                throw error
         //            }

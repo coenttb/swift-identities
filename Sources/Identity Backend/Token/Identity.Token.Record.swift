@@ -60,11 +60,13 @@ extension Identity.Token {
                     .replacingOccurrences(of: "+", with: "-")
                     .replacingOccurrences(of: "/", with: "_")
                     .replacingOccurrences(of: "=", with: "")
+
             case .apiAccess:
                 // Generate API key with prefix
                 @Dependency(\.uuid) var uuid
                 return
                     "sk_\(uuid().uuidString.replacingOccurrences(of: "-", with: "").lowercased())"
+
             default:
                 // Generate standard token
                 return SymmetricKey(size: .bits256)

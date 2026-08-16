@@ -45,7 +45,7 @@ extension Identity.Password.Reset.Request {
                     .color(.text.secondary)
 
                     form(
-                        action: .init(self.formActionURL.relativePath),
+                        action: .init(formActionURL.relativePath),
                         method: .post
                     ) {
                         VStack {
@@ -133,7 +133,7 @@ extension Identity.Password.Reset.Request {
                             const data = await response.json();
                             if (data.success) {
                                 const pageModule = document.getElementById("\(Self.pagemodule_forgot_password_id)");
-                                pageModule.outerHTML = \(html: Identity.Password.Reset.Request.View.ConfirmReceipt(homeHref: self.homeHref));
+                                pageModule.outerHTML = \(html: Identity.Password.Reset.Request.View.ConfirmReceipt(homeHref: homeHref));
                             } else {
                                 throw new Error(data.message || '\(TranslatedString(
                                 dutch: "Verzoek om wachtwoord te resetten mislukt",
@@ -259,7 +259,7 @@ extension Identity.Password.Reset.Confirm {
                     .color(.text.secondary)
 
                     form(
-                        action: .init(self.passwordResetAction.relativePath),
+                        action: .init(passwordResetAction.relativePath),
                         method: .post
                     ) {
                         VStack {
@@ -336,7 +336,7 @@ extension Identity.Password.Reset.Confirm {
                                        'Accept': 'application/json'
                                    },
                                    body: new URLSearchParams({
-                                        \(Identity.Password.Reset.Confirm.CodingKeys.token.rawValue): '\(self.token)',
+                                        \(Identity.Password.Reset.Confirm.CodingKeys.token.rawValue): '\(token)',
                                         \(Identity.Password.Reset.Confirm.CodingKeys.newPassword.rawValue): password
                                    }).toString()
                                });
@@ -350,7 +350,7 @@ extension Identity.Password.Reset.Confirm {
 
                                if (data.success) {
                                    const pageModule = document.getElementById("\(Self.passwordResetId)");
-                                   pageModule.outerHTML = \(html: Identity.Password.Reset.Confirm.View.Confirmation(redirect: self.redirect));
+                                   pageModule.outerHTML = \(html: Identity.Password.Reset.Confirm.View.Confirmation(redirect: redirect));
                                } else {
                                    throw new Error(data.message || '\(TranslatedString(
                                    dutch: "Verzoek om wachtwoord te resetten mislukt",

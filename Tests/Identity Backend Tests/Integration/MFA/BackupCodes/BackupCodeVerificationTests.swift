@@ -76,7 +76,7 @@ struct Test {
         #expect(usedRecord?.usedAt != nil)
 
         // Verify usedAt is recent (timezone-tolerant)
-        if let usedRecord = usedRecord, let usedAt = usedRecord.usedAt {
+        if let usedRecord, let usedAt = usedRecord.usedAt {
             let age = abs(usedAt.timeIntervalSinceNow)
             #expect(age < 3600)  // Within last hour
         }

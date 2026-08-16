@@ -31,7 +31,9 @@ extension Identity.MFA.Status.Client {
                         for: identity.id
                     )
 
-                    let (totpEnabled, backupCodesRemaining) = try await (totpCheck, backupCodesCheck)
+                    let (totpEnabled, backupCodesRemaining) = try await (
+                        totpCheck, backupCodesCheck
+                    )
 
                     let configuredMethods = Identity.MFA.Status.ConfiguredMethods(
                         totp: totpEnabled,
@@ -66,7 +68,9 @@ extension Identity.MFA.Status.Client {
                         for: identity.id
                     )
 
-                    let (totpEnabled, backupCodesRemaining) = try await (totpCheck, backupCodesCheck)
+                    let (totpEnabled, backupCodesRemaining) = try await (
+                        totpCheck, backupCodesCheck
+                    )
 
                     var methods = Set<Identity.MFA.Method>()
                     if totpEnabled {

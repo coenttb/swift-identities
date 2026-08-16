@@ -141,10 +141,13 @@ public enum OAuthTokenError: Swift.Error, LocalizedError {
         switch self {
         case .encryptionKeyMissing:
             return "Encryption key not configured but found encrypted token"
+
         case .invalidTokenFormat:
             return "Invalid OAuth token format"
+
         case .decryptionFailed:
             return "Failed to decrypt OAuth token"
+
         case .encryptionRequired:
             return "OAuth provider requires token storage but encryption key not configured"
         }

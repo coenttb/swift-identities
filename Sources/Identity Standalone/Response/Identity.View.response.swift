@@ -46,7 +46,7 @@ extension Identity.View {
                 }
                 .first
 
-            if let statusParam = statusParam {
+            if let statusParam {
                 switch statusParam {
                 case "cancelled":
 
@@ -59,6 +59,7 @@ extension Identity.View {
                             homeHref: configuration.navigation.home
                         )
                     }
+
                 case "confirmed":
                     return try await Identity.Frontend.htmlDocument(
                         for: view,
@@ -69,6 +70,7 @@ extension Identity.View {
                             redirectURL: configuration.navigation.home
                         )
                     }
+
                 default:
                     break  // Fall through to normal status check
                 }
@@ -90,6 +92,7 @@ extension Identity.View {
                             homeHref: configuration.navigation.home
                         )
                     }
+
                 case .readyForDeletion:
                     // Grace period expired, ready for final confirmation
                     return try await Identity.Frontend.htmlDocument(
@@ -104,6 +107,7 @@ extension Identity.View {
                             homeHref: configuration.navigation.home
                         )
                     }
+
                 case .cancelled:
                     // Show initial request form if previously cancelled
                     return try await Identity.Deletion.response()
@@ -135,6 +139,7 @@ extension Identity.View {
 
         case .password(let password):
             return try await Identity.Password.response(view: password)
+
         case .oauth(let oath):
             return try await Identity.OAuth.response(view: oath)
         }
@@ -299,7 +304,8 @@ extension Identity.View {
                         .marginBottom(.rem(2))
 
                         div {
-                            a(href: .init(router.url(for: .view(.mfa(.totp(.setup)))).relativePath)) {
+                            a(href: .init(router.url(for: .view(.mfa(.totp(.setup)))).relativePath))
+                            {
                                 "Enable Two-Factor Authentication"
                             }
                             .class("btn btn-success")

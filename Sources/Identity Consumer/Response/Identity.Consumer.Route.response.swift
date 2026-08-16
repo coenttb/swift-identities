@@ -66,6 +66,7 @@ extension Identity.Route {
         switch route {
         case .api(let api):
             return try await Identity.API.response(api: .create(api))
+
         case .view(let view):
             return try await Identity.View.consumerResponse(view: mapCreateView(view))
         }
@@ -78,6 +79,7 @@ extension Identity.Route {
         switch route {
         case .api(let api):
             return try await Identity.API.response(api: .authenticate(api))
+
         case .view(let view):
             return try await Identity.View.consumerResponse(view: mapAuthView(view))
         }
@@ -90,6 +92,7 @@ extension Identity.Route {
         switch route {
         case .api(let api):
             return try await Identity.API.response(api: .delete(api))
+
         case .view(let view):
             return try await Identity.View.consumerResponse(view: .delete(view))
         }
@@ -102,6 +105,7 @@ extension Identity.Route {
         switch route {
         case .api(let api):
             return try await Identity.API.response(api: .email(api))
+
         case .view(let view):
             return try await Identity.View.consumerResponse(view: mapEmailView(view))
         }
@@ -114,6 +118,7 @@ extension Identity.Route {
         switch route {
         case .api(let api):
             return try await Identity.API.response(api: .password(api))
+
         case .view(let view):
             return try await Identity.View.consumerResponse(view: mapPasswordView(view))
         }
@@ -126,6 +131,7 @@ extension Identity.Route {
         switch route {
         case .api(let api):
             return try await Identity.API.response(api: .mfa(api))
+
         case .view(let view):
             return try await Identity.View.consumerResponse(view: mapMFAView(view))
         }
@@ -137,6 +143,7 @@ extension Identity.Route {
         switch view {
         case .request:
             return .create(.request)
+
         case .verify:
             return .create(.verify)
         }
@@ -155,8 +162,10 @@ extension Identity.Route {
             switch change {
             case .request:
                 return .email(.change(.request))
+
             case .confirm:
                 return .email(.change(.confirm))
+
             case .reauthorization:
                 return .email(.change(.reauthorization))
             }
@@ -169,9 +178,11 @@ extension Identity.Route {
             switch reset {
             case .request:
                 return .password(.reset(.request))
+
             case .confirm:
                 return .password(.reset(.confirm))
             }
+
         case .change(let change):
             switch change {
             case .request:
@@ -184,21 +195,27 @@ extension Identity.Route {
         switch view {
         case .verify(let challenge):
             return .mfa(.verify(challenge))
+
         case .manage:
             return .mfa(.manage)
+
         case .totp(let totp):
             switch totp {
             case .setup:
                 return .mfa(.totp(.setup))
+
             case .confirmSetup:
                 return .mfa(.totp(.confirmSetup))
+
             case .manage:
                 return .mfa(.totp(.manage))
             }
+
         case .backupCodes(let codes):
             switch codes {
             case .display:
                 return .mfa(.backupCodes(.display))
+
             case .verify(let challenge):
                 return .mfa(.backupCodes(.verify(challenge)))
             }

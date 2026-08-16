@@ -32,6 +32,7 @@ extension Identity.Deletion.API {
             } catch {
                 throw Abort(.internalServerError, reason: "Failed to delete")
             }
+
         case .cancel:
             do {
                 try await identity.delete.cancel()
@@ -39,6 +40,7 @@ extension Identity.Deletion.API {
             } catch {
                 throw Abort(.internalServerError, reason: "Failed to delete")
             }
+
         case .confirm:
             do {
                 try await identity.delete.confirm()

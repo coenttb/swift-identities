@@ -101,14 +101,19 @@ extension Identity.MFA.TOTP {
                 switch self {
                 case .invalidIssuer(let message):
                     return message
+
                 case .invalidDigits(let message):
                     return message
+
                 case .invalidTimeStep(let message):
                     return message
+
                 case .invalidWindow(let message):
                     return message
+
                 case .invalidBackupCodeLength(let message):
                     return message
+
                 case .invalidBackupCodeCount(let message):
                     return message
                 }

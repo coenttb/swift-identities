@@ -83,7 +83,7 @@ extension Identity.Deletion.Request {
                         .margin(bottom: .rem(1))
 
                         form(
-                            action: .init(self.deleteRequestAction.relativePath),
+                            action: .init(deleteRequestAction.relativePath),
                             method: .post
                         ) {
                             VStack {
@@ -242,8 +242,8 @@ extension Identity.Deletion.Request {
                                 const pageModule = document.getElementById('\#(Self.pagemodule_delete_request_id)');
                                 pageModule.outerHTML = \#(html: Identity.Deletion.Request.View.PendingReceipt(
                                 daysRemaining: 7,
-                                cancelAction: self.cancelAction,
-                                homeHref: self.homeHref
+                                cancelAction: cancelAction,
+                                homeHref: homeHref
                             ));
                             } else {
                                 throw new Error(deleteData.message || '\#(TranslatedString(

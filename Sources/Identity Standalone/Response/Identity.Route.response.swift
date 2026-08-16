@@ -22,6 +22,7 @@ extension Identity.Route {
             switch create {
             case .api(let api):
                 return try await Identity.API.response(api: .create(api))
+
             case .view(let view):
                 return try await Identity.View.response(view: .create(mapCreateView(view)))
             }
@@ -30,6 +31,7 @@ extension Identity.Route {
             switch authenticate {
             case .api(let api):
                 return try await Identity.API.response(api: .authenticate(api))
+
             case .view(let view):
                 return try await Identity.View.response(view: .authenticate(mapAuthView(view)))
             }
@@ -38,6 +40,7 @@ extension Identity.Route {
             switch delete {
             case .api(let api):
                 return try await Identity.API.response(api: .delete(api))
+
             case .view(let view):
                 return try await Identity.View.response(view: .delete(view))
             }
@@ -46,6 +49,7 @@ extension Identity.Route {
             switch email {
             case .api(let api):
                 return try await Identity.API.response(api: .email(api))
+
             case .view(let view):
                 return try await Identity.View.response(view: .email(mapEmailView(view)))
             }
@@ -54,6 +58,7 @@ extension Identity.Route {
             switch password {
             case .api(let api):
                 return try await Identity.API.response(api: .password(api))
+
             case .view(let view):
                 return try await Identity.View.response(view: .password(mapPasswordView(view)))
             }
@@ -62,6 +67,7 @@ extension Identity.Route {
             switch mfa {
             case .api(let api):
                 return try await Identity.API.response(api: .mfa(api))
+
             case .view(let view):
                 return try await Identity.View.response(view: .mfa(mapMFAView(view)))
             }
@@ -79,6 +85,7 @@ extension Identity.Route {
             switch oauth {
             case .api(let oauth):
                 return try await Identity.API.response(api: .oauth(oauth))
+
             case .view(let oauth):
                 return try await Identity.View.response(view: .oauth(oauth))
             }
@@ -91,6 +98,7 @@ extension Identity.Route {
         switch view {
         case .request:
             return .request
+
         case .verify:
             return .verify
         }
@@ -113,8 +121,10 @@ extension Identity.Route {
             switch change {
             case .request:
                 return .change(.request)
+
             case .confirm:
                 return .change(.confirm)
+
             case .reauthorization:
                 return .change(.reauthorization)
             }
@@ -127,9 +137,11 @@ extension Identity.Route {
             switch reset {
             case .request:
                 return .reset(.request)
+
             case .confirm:
                 return .reset(.confirm)
             }
+
         case .change(let change):
             switch change {
             case .request:
@@ -142,21 +154,27 @@ extension Identity.Route {
         switch view {
         case .verify(let challenge):
             return .verify(challenge)
+
         case .manage:
             return .manage
+
         case .totp(let totp):
             switch totp {
             case .setup:
                 return .totp(.setup)
+
             case .confirmSetup:
                 return .totp(.confirmSetup)
+
             case .manage:
                 return .totp(.manage)
             }
+
         case .backupCodes(let codes):
             switch codes {
             case .display:
                 return .backupCodes(.display)
+
             case .verify(let challenge):
                 return .backupCodes(.verify(challenge))
             }

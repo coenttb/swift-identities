@@ -85,7 +85,10 @@ private func authorizationURLImplementation(
 private func callbackImplementation(
     registry: Identity.OAuth.ProviderRegistry,
     stateManager: Identity.OAuth.State.Manager
-) -> @Sendable (Identity.OAuth.CallbackRequest) async throws(Identity.OAuth.Client.Error) -> Identity.Authentication.Response {
+)
+    -> @Sendable (Identity.OAuth.CallbackRequest) async throws(Identity.OAuth.Client.Error) ->
+    Identity.Authentication.Response
+{
     return { callbackRequest throws(Identity.OAuth.Client.Error) in
         do {
             @Dependency(\.defaultDatabase) var database
@@ -296,61 +299,65 @@ private func prepareTokensForStorage(
 }
 
 // MARK: - Get Connection
-private let connectionImplementation: @Sendable (String) async throws(Identity.OAuth.Client.Error) -> Identity.OAuth.Connection? = { provider throws(Identity.OAuth.Client.Error) in
-    // Get current authenticated identity
-    @Dependency(\.defaultDatabase) var database
-
-    do {
-        let identity = try await Identity.Record.get(by: .auth)
-
-        // Find connection for this provider
-        @Dependency(\.defaultDatabase) var db
-
-        guard
-            let dbConnection = try await db.read({ db in
-                try await Identity.OAuth.Connection.Record
-                    .findByIdentityProvider(identity.id, provider)
-                    .fetchOne(db)
-            })
-        else {
-            return nil
-        }
-
-        return Identity.OAuth.Connection(from: dbConnection)
-    } catch {
-        // Not authenticated or no connection found
-        return nil
-    }
-}
-
-// MARK: - Disconnect Provider
-private let disconnectImplementation: @Sendable (String) async throws(Identity.OAuth.Client.Error) -> Void = { provider throws(Identity.OAuth.Client.Error) in
-    do {
+private let connectionImplementation:
+    @Sendable (String) async throws(Identity.OAuth.Client.Error) -> Identity.OAuth.Connection? = {
+        provider throws(Identity.OAuth.Client.Error) in
         // Get current authenticated identity
         @Dependency(\.defaultDatabase) var database
 
-        let identity = try await Identity.Record.get(by: .auth)
+        do {
+            let identity = try await Identity.Record.get(by: .auth)
 
-        guard
-            let connection = try await database.read({ db in
-                try await Identity.OAuth.Connection.Record
-                    .findByIdentityProvider(identity.id, provider)
-                    .fetchOne(db)
-            })
-        else {
-            throw Identity.OAuth.Error.providerNotFound(provider)
-        }
+            // Find connection for this provider
+            @Dependency(\.defaultDatabase) var db
 
-        try await database.write { db in
-            try await Identity.OAuth.Connection.Record.all
-                .where { $0.id.eq(connection.id) }
-                .delete()
-                .execute(db)
+            guard
+                let dbConnection = try await db.read({ db in
+                    try await Identity.OAuth.Connection.Record
+                        .findByIdentityProvider(identity.id, provider)
+                        .fetchOne(db)
+                })
+            else {
+                return nil
+            }
+
+            return Identity.OAuth.Connection(from: dbConnection)
+        } catch {
+            // Not authenticated or no connection found
+            return nil
         }
-    } catch {
-        throw .disconnect(reason: "\(error)")
     }
-}
+
+// MARK: - Disconnect Provider
+private let disconnectImplementation:
+    @Sendable (String) async throws(Identity.OAuth.Client.Error) -> Void = {
+        provider throws(Identity.OAuth.Client.Error) in
+        do {
+            // Get current authenticated identity
+            @Dependency(\.defaultDatabase) var database
+
+            let identity = try await Identity.Record.get(by: .auth)
+
+            guard
+                let connection = try await database.read({ db in
+                    try await Identity.OAuth.Connection.Record
+                        .findByIdentityProvider(identity.id, provider)
+                        .fetchOne(db)
+                })
+            else {
+                throw Identity.OAuth.Error.providerNotFound(provider)
+            }
+
+            try await database.write { db in
+                try await Identity.OAuth.Connection.Record.all
+                    .where { $0.id.eq(connection.id) }
+                    .delete()
+                    .execute(db)
+            }
+        } catch {
+            throw .disconnect(reason: "\(error)")
+        }
+    }
 
 // MARK: - Get Valid Token
 private func getValidTokenImplementation(
@@ -488,7 +495,9 @@ private func getValidTokenImplementation(
                 }
 
                 // Update stored tokens
-                let newAccessToken = try Identity.OAuth.Encryption.encrypt(token: newTokens.accessToken)
+                let newAccessToken = try Identity.OAuth.Encryption.encrypt(
+                    token: newTokens.accessToken
+                )
                 let newRefreshToken = try newTokens.refreshToken.map {
                     try Identity.OAuth.Encryption.encrypt(token: $0)
                 }
@@ -538,33 +547,35 @@ private func getValidTokenImplementation(
 }
 
 // MARK: - Get All Connections
-private let getAllConnectionsImplementation: @Sendable () async throws(Identity.OAuth.Client.Error) -> [Identity.OAuth.Connection] = { () throws(Identity.OAuth.Client.Error) in
-    @Dependency(\.defaultDatabase) var database
-    @Dependency(\.logger) var logger
+private let getAllConnectionsImplementation:
+    @Sendable () async throws(Identity.OAuth.Client.Error) -> [Identity.OAuth.Connection] = {
+        () throws(Identity.OAuth.Client.Error) in
+        @Dependency(\.defaultDatabase) var database
+        @Dependency(\.logger) var logger
 
-    do {
-        let identity = try await Identity.Record.get(by: .auth)
+        do {
+            let identity = try await Identity.Record.get(by: .auth)
 
-        // Get all connections for this identity
-        let dbConnections = try await database.read { db in
-            try await Identity.OAuth.Connection.Record
-                .findByIdentity(identity.id)
-                .fetchAll(db)
+            // Get all connections for this identity
+            let dbConnections = try await database.read { db in
+                try await Identity.OAuth.Connection.Record
+                    .findByIdentity(identity.id)
+                    .fetchAll(db)
+            }
+
+            return dbConnections.map { dbConnection in
+                Identity.OAuth.Connection(from: dbConnection)
+            }
+        } catch {
+            logger.error(
+                "Failed to get OAuth connections",
+                metadata: [
+                    "error": "\(error)"
+                ]
+            )
+            return []
         }
-
-        return dbConnections.map { dbConnection in
-            Identity.OAuth.Connection(from: dbConnection)
-        }
-    } catch {
-        logger.error(
-            "Failed to get OAuth connections",
-            metadata: [
-                "error": "\(error)"
-            ]
-        )
-        return []
     }
-}
 
 extension Identity.OAuth.Connection.Record.Draft {
     /// Convenience initializer that creates a Draft from OAuth response objects

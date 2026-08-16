@@ -36,6 +36,7 @@ extension Identity.Password.API {
                     )
                     throw Abort(.internalServerError, reason: "Failed to request password reset")
                 }
+
             case .confirm(let confirm):
                 do {
                     try await identity.password.reset.confirm(confirm)
@@ -49,6 +50,7 @@ extension Identity.Password.API {
                     throw Abort(.internalServerError, reason: "Failed to reset password")
                 }
             }
+
         case .change(let change):
             switch change {
             case .request(change: let request):

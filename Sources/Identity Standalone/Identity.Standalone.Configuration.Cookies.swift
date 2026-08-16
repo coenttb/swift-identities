@@ -28,8 +28,10 @@ extension Identity.Frontend.Configuration.Cookies {
         switch mode {
         case .sameOrigin:
             return production(router: router)
+
         case .development:
             return development(router: router)
+
         case .crossSubdomain, .crossDomain:
             // Standalone typically doesn't use cross-origin, but support it if needed
             return production(router: router)

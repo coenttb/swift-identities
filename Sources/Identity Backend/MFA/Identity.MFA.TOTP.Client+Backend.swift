@@ -179,7 +179,10 @@ extension Identity.MFA.TOTP.Client {
                 }
             },
 
-            verifyCodeWithWindow: { identityId, code, window throws(Identity.MFA.TOTP.Client.Error) in
+            verifyCodeWithWindow: {
+                identityId,
+                code,
+                window throws(Identity.MFA.TOTP.Client.Error) in
                 do {
                     // Use the common verification logic with custom window
                     return try await verifyTOTPCode(

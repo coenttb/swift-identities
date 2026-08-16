@@ -55,7 +55,8 @@ extension RFC_6238.TOTP.Algorithm: @retroactive QueryBindable {}
 // MARK: - Query Helpers
 
 extension Identity.MFA.TOTP.Record {
-    package static func findByIdentity(_ identityId: Identity.ID) -> Where<Identity.MFA.TOTP.Record> {
+    package static func findByIdentity(_ identityId: Identity.ID) -> Where<Identity.MFA.TOTP.Record>
+    {
         Self.where { $0.identityId.eq(identityId) }
     }
 

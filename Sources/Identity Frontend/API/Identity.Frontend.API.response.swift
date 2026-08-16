@@ -45,21 +45,26 @@ extension Identity.Frontend {
                 authentication: identity.authenticate,
                 loginSuccessRedirect: redirect.loginSuccess
             )
+
         case .create(let create):
             return try await handleCreate(create, client: identity.create.client)
+
         case .delete(let delete):
             return try await handleDelete(
                 delete,
                 client: identity.delete.client,
                 router: identity.router
             )
+
         case .email(let email):
             return try await handleEmail(email, client: identity.email.change.client)
+
         case .password(let password):
             return try await handlePassword(
                 password,
                 client: (identity.password.change.client, identity.password.reset.client)
             )
+
         case .reauthorize(let reauthorize):
             return try await handleReauthorize(
                 reauthorize,
@@ -67,15 +72,19 @@ extension Identity.Frontend {
                 router: identity.router,
                 cookies: cookies
             )
+
         case .logout(.current):
             try await identity.logout.client.current()
             return try Server.Response.json(success: true)
+
         case .logout(.all):
             try await identity.logout.client.all()
             return try Server.Response.json(success: true)
+
         case .mfa:
             // MFA not yet implemented in Frontend
             throw Server.Error.notImplemented("MFA not yet implemented in Frontend")
+
         case .oauth(let oauth):
             return try await handleOAuth(
                 oauth,
@@ -137,6 +146,7 @@ extension Identity.Frontend {
             case .access(let jwt):
                 try await authentication.token.access(jwt)
                 return try Server.Response.json(success: true)
+
             case .refresh(let jwt):
                 let response = try await authentication.token.refresh(jwt)
                 return try Server.Response.json(success: true)
@@ -210,10 +220,12 @@ extension Identity.Frontend {
                 switch result {
                 case .success:
                     return try Server.Response.json(success: true)
+
                 case .requiresReauthentication:
                     return Server.Response(
                         status: .unauthorized,
-                        headers: HTTP.Headers([try .init(name: "X-Requires-Reauth", value: "true")]),
+                        headers: HTTP.Headers([try .init(name: "X-Requires-Reauth", value: "true")]
+                        ),
                         body: Array("Reauthorization required".utf8)
                     )
                 }

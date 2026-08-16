@@ -83,7 +83,7 @@ private struct BackupCodeItem: HTML.View {
             // Spelled out: the lowercase `code` element alias is shadowed by this type's
             // `let code: String` property, so the bare `code { … }` would parse as a call on
             // the String. (The pre-port source reached the element as `HTMLElementTypes.Code`.)
-            HTML_Standard.Code { formatCode(self.code) }
+            HTML_Standard.Code { formatCode(code) }
                 .css
                 .fontFamily(.monospace)
                 .fontSize(.rem(1.125))

@@ -202,7 +202,7 @@ extension Identity.Audit {
     /// let oldIdentity: Identity.Record? = try audit.decodeOldData()
     /// ```
     public func decodeOldData<T: Decodable>() throws -> T? {
-        guard let oldData = oldData,
+        guard let oldData,
             let data = oldData.data(using: .utf8)
         else {
             return nil
@@ -218,7 +218,7 @@ extension Identity.Audit {
     /// let newIdentity: Identity.Record? = try audit.decodeNewData()
     /// ```
     public func decodeNewData<T: Decodable>() throws -> T? {
-        guard let newData = newData,
+        guard let newData,
             let data = newData.data(using: .utf8)
         else {
             return nil

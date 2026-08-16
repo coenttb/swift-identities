@@ -283,6 +283,7 @@ extension Identity.Consumer.Configuration.Branding {
                     english: "Sign In"
                 )
             }
+
         case .create(let create):
             switch create {
             case .request:
@@ -290,22 +291,26 @@ extension Identity.Consumer.Configuration.Branding {
                     dutch: "Account Aanmaken",
                     english: "Create Account"
                 )
+
             case .verify:
                 return .init(
                     dutch: "Account Verifiëren",
                     english: "Verify Account"
                 )
             }
+
         case .delete:
             return .init(
                 dutch: "Account Verwijderen",
                 english: "Delete Account"
             )
+
         case .logout:
             return .init(
                 dutch: "Uitloggen",
                 english: "Sign Out"
             )
+
         case .email(let email):
             switch email {
             case .change(let change):
@@ -315,11 +320,13 @@ extension Identity.Consumer.Configuration.Branding {
                         dutch: "E-mailadres Wijzigen",
                         english: "Change Email Address"
                     )
+
                 case .reauthorization:
                     return .init(
                         dutch: "Bevestig Identiteit",
                         english: "Confirm Identity"
                     )
+
                 case .confirm:
                     return .init(
                         dutch: "E-mail Bevestigen",
@@ -327,6 +334,7 @@ extension Identity.Consumer.Configuration.Branding {
                     )
                 }
             }
+
         case .password(let password):
             switch password {
             case .reset(let reset):
@@ -336,12 +344,14 @@ extension Identity.Consumer.Configuration.Branding {
                         dutch: "Wachtwoord Herstellen",
                         english: "Reset Password"
                     )
+
                 case .confirm:
                     return .init(
                         dutch: "Nieuw Wachtwoord Instellen",
                         english: "Set New Password"
                     )
                 }
+
             case .change(let change):
                 switch change {
                 case .request:
@@ -351,6 +361,7 @@ extension Identity.Consumer.Configuration.Branding {
                     )
                 }
             }
+
         case .mfa(let mfa):
             switch mfa {
             case .verify:
@@ -358,11 +369,13 @@ extension Identity.Consumer.Configuration.Branding {
                     dutch: "Twee-factor Authenticatie",
                     english: "Two-Factor Authentication"
                 )
+
             case .manage:
                 return .init(
                     dutch: "Authenticatie Beheren",
                     english: "Manage Authentication"
                 )
+
             case .totp(let totp):
                 switch totp {
                 case .setup:
@@ -370,17 +383,20 @@ extension Identity.Consumer.Configuration.Branding {
                         dutch: "Authenticatie App Instellen",
                         english: "Set Up Authenticator App"
                     )
+
                 case .confirmSetup:
                     return .init(
                         dutch: "Authenticatie App Bevestigen",
                         english: "Confirm Authenticator App"
                     )
+
                 case .manage:
                     return .init(
                         dutch: "Authenticatie App Beheren",
                         english: "Manage Authenticator App"
                     )
                 }
+
             case .backupCodes(let codes):
                 switch codes {
                 case .display:
@@ -388,6 +404,7 @@ extension Identity.Consumer.Configuration.Branding {
                         dutch: "Back-up Codes",
                         english: "Backup Codes"
                     )
+
                 case .verify:
                     return .init(
                         dutch: "Back-up Code Verificatie",
@@ -395,6 +412,7 @@ extension Identity.Consumer.Configuration.Branding {
                     )
                 }
             }
+
         case .oauth:
             return .init(
                 dutch: "OAuth Authenticatie",
@@ -416,6 +434,7 @@ extension Identity.Consumer.Configuration.Branding {
                     english: "Enter your email address and password to access your account."
                 )
             }
+
         case .create(let create):
             switch create {
             case .request:
@@ -423,23 +442,27 @@ extension Identity.Consumer.Configuration.Branding {
                     dutch: "Maak een nieuw account aan om van alle functies gebruik te maken.",
                     english: "Create a new account to access all features."
                 )
+
             case .verify:
                 return .init(
                     dutch: "Voer de verificatiecode in die we naar je e-mailadres hebben gestuurd.",
                     english: "Enter the verification code we've sent to your email address."
                 )
             }
+
         case .delete:
             return .init(
                 dutch:
                     "Je staat op het punt je account en alle bijbehorende gegevens permanent te verwijderen.",
                 english: "You're about to permanently delete your account and all associated data."
             )
+
         case .logout:
             return .init(
                 dutch: "Je wordt uitgelogd van je huidige sessie.",
                 english: "You'll be signed out of your current session."
             )
+
         case .email(let email):
             switch email {
             case .change(let change):
@@ -451,12 +474,14 @@ extension Identity.Consumer.Configuration.Branding {
                         english:
                             "Enter the new email address you want to associate with your account."
                     )
+
                 case .reauthorization:
                     return .init(
                         dutch:
                             "Voor je veiligheid, bevestig je identiteit om wijzigingen aan te brengen.",
                         english: "For your security, please confirm your identity to make changes."
                     )
+
                 case .confirm:
                     return .init(
                         dutch:
@@ -465,6 +490,7 @@ extension Identity.Consumer.Configuration.Branding {
                     )
                 }
             }
+
         case .password(let password):
             switch password {
             case .reset(let reset):
@@ -476,12 +502,14 @@ extension Identity.Consumer.Configuration.Branding {
                         english:
                             "Enter your email address to receive a link to reset your password."
                     )
+
                 case .confirm:
                     return .init(
                         dutch: "Stel een nieuw wachtwoord in voor je account.",
                         english: "Set a new password for your account."
                     )
                 }
+
             case .change(let change):
                 switch change {
                 case .request:
@@ -492,6 +520,7 @@ extension Identity.Consumer.Configuration.Branding {
                     )
                 }
             }
+
         case .mfa(let mfa):
             switch mfa {
             case .verify:
@@ -499,11 +528,13 @@ extension Identity.Consumer.Configuration.Branding {
                     dutch: "Voer je verificatiecode in om door te gaan.",
                     english: "Enter your verification code to continue."
                 )
+
             case .manage:
                 return .init(
                     dutch: "Beheer je twee-factor authenticatiemethoden.",
                     english: "Manage your two-factor authentication methods."
                 )
+
             case .totp(let totp):
                 switch totp {
                 case .setup:
@@ -511,18 +542,21 @@ extension Identity.Consumer.Configuration.Branding {
                         dutch: "Scan de QR-code met je authenticatie app.",
                         english: "Scan the QR code with your authenticator app."
                     )
+
                 case .confirmSetup:
                     return .init(
                         dutch:
                             "Voer de code uit je authenticatie app in om de instelling te voltooien.",
                         english: "Enter the code from your authenticator app to complete setup."
                     )
+
                 case .manage:
                     return .init(
                         dutch: "Beheer je authenticatie app instellingen.",
                         english: "Manage your authenticator app settings."
                     )
                 }
+
             case .backupCodes(let codes):
                 switch codes {
                 case .display:
@@ -530,6 +564,7 @@ extension Identity.Consumer.Configuration.Branding {
                         dutch: "Bewaar deze back-up codes op een veilige plek.",
                         english: "Keep these backup codes in a safe place."
                     )
+
                 case .verify:
                     return .init(
                         dutch: "Voer een van je back-up codes in.",
@@ -537,6 +572,7 @@ extension Identity.Consumer.Configuration.Branding {
                     )
                 }
             }
+
         case .oauth:
             return .init(
                 dutch: "Log in met een externe dienst.",

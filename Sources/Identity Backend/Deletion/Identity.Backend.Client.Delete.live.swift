@@ -30,7 +30,9 @@ extension Identity.Deletion.Client {
             request: { reauthToken throws(Identity.Deletion.Client.Error) in
                 do {
                     // Verify reauthorization token
-                    let reauthorizationToken = try await tokenClient.verifyReauthorization(reauthToken)
+                    let reauthorizationToken = try await tokenClient.verifyReauthorization(
+                        reauthToken
+                    )
 
                     let identity = try await Identity.Record.get(by: .auth)
 
@@ -47,7 +49,7 @@ extension Identity.Deletion.Client {
                             .findByIdentity(identity.id)
                             .fetchOne(db)
 
-                        if let existingDeletion = existingDeletion {
+                        if let existingDeletion {
                             if existingDeletion.status == .pending {
                                 throw Identity.Backend.Error.alreadyPendingDeletion
                             } else if existingDeletion.status == .cancelled {

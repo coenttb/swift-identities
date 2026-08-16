@@ -77,7 +77,7 @@ extension Identity.Creation.Client {
                             .returning { $0 }
                             .fetchOne(db)
 
-                        guard let identity = identity else {
+                        guard let identity else {
                             throw Identity.Backend.Error.failedToCreateIdentity
                         }
 
@@ -194,7 +194,9 @@ extension Identity.Creation.Client {
                         ]
                     )
                     // Wrap unexpected errors
-                    throw .verify(reason: "\(Identity.Backend.Error.unexpected("Verification failed"))")
+                    throw .verify(
+                        reason: "\(Identity.Backend.Error.unexpected("Verification failed"))"
+                    )
                 }
             }
         )

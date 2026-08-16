@@ -146,7 +146,7 @@ extension Identity.Authentication.Client {
                             .fetchOne(db)
 
                         // Update last used atomically in same transaction
-                        if let result = result {
+                        if let result {
                             // Update API key last used
                             try await Identity.Authentication.ApiKey.Record
                                 .where { $0.id.eq(result.apiKey.id) }
@@ -168,7 +168,7 @@ extension Identity.Authentication.Client {
                         return result
                     }
 
-                    guard let authData = authData else {
+                    guard let authData else {
                         logger.warning(
                             "API key authentication failed",
                             metadata: [
@@ -224,7 +224,10 @@ extension Identity.Authentication.Client {
                             "error": "\(error)",
                         ]
                     )
-                    throw .apiKey(reason: "\(Identity.Backend.Error.unexpected("API key verification failed"))")
+                    throw .apiKey(
+                        reason:
+                            "\(Identity.Backend.Error.unexpected("API key verification failed"))"
+                    )
                 }
             }
         )

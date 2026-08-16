@@ -38,6 +38,7 @@ extension Identity.Password.API {
                     throw Abort(.internalServerError, reason: "Failed to confirm password reset")
                 }
             }
+
         case .change(let change):
             switch change {
             case .request(let request):

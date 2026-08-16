@@ -180,7 +180,7 @@ extension Identity.Authentication.ApiKey.Record {
                 .fetchOne(db)
 
             // Update last used timestamp atomically if found
-            if let result = result {
+            if let result {
                 try await Identity.Authentication.ApiKey.Record
                     .where { $0.id.eq(result.apiKey.id) }
                     .update { apiKey in

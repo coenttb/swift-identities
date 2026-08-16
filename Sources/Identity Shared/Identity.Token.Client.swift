@@ -69,7 +69,8 @@ extension Identity.Token {
             ) async throws -> String
 
         /// Parse and verify a reauthorization token
-        public var verifyReauthorization: (_ token: String) async throws -> Identity.Token.Reauthorization
+        public var verifyReauthorization:
+            (_ token: String) async throws -> Identity.Token.Reauthorization
 
         // MARK: - Token Pair Operations
 

@@ -16,7 +16,8 @@ extension Identity.Email.Change.Request.Record {
 // MARK: - Query Helpers
 
 extension Identity.Email.Change.Request.Record {
-    package static func findByToken(_ token: String) -> Where<Identity.Email.Change.Request.Record> {
+    package static func findByToken(_ token: String) -> Where<Identity.Email.Change.Request.Record>
+    {
         Self.where { $0.verificationToken.eq(token) }
     }
 

@@ -24,6 +24,7 @@ extension Identity.Creation {
         switch view {
         case .request:
             return try await handleCreateRequest()
+
         case .verify(let verify):
             @Dependency(\.identityFrontendConfiguration) var configuration
             @Dependency(\.identity.router) var router

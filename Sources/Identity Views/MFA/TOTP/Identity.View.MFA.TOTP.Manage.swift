@@ -93,7 +93,7 @@ private struct BackupCodesSection: HTML.View {
                 .gap(.rem(0.25))
                 .marginBottom(.rem(0.75))
 
-                if let regenerateAction = regenerateAction {
+                if let regenerateAction {
                     form(
                         action: .init(regenerateAction.relativePath),
                         method: .post
@@ -295,12 +295,12 @@ extension Identity.MFA.TOTP.Manage {
                             }
 
                             // Disable option
-                            if let disableAction = disableAction {
+                            if let disableAction {
                                 DisableSection(disableAction: disableAction)
                             }
                         } else {
                             // Enable option
-                            if let enableAction = enableAction {
+                            if let enableAction {
                                 EnableSection(enableAction: enableAction)
                             }
                         }

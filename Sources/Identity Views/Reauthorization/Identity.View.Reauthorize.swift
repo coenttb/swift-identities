@@ -60,7 +60,7 @@ extension Identity.Reauthorization {
                             VStack {
 
                                 Input(
-                                    codingKey: self.codingKey,
+                                    codingKey: codingKey,
                                     type: .password(
                                         .init(
                                             placeholder: .init(

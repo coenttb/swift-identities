@@ -114,53 +114,76 @@ extension Identity.Backend.Error: CustomStringConvertible {
         switch self {
         case .invalidCredentials:
             return "Invalid credentials"
+
         case .emailNotVerified:
             return "Email not verified"
+
         case .notAuthenticated:
             return "Not authenticated"
+
         case .invalidToken(let type):
             return "Invalid or expired \(type.rawValue) token"
+
         case .invalidReauthorizationToken:
             return "Invalid reauthorization token"
+
         case .sessionInvalidated:
             return "Session has been invalidated"
+
         case .identityDetailsChanged:
             return "Identity details have changed"
+
         case .tokenRevoked:
             return "Token has been revoked"
+
         case .invalidAPIKey:
             return "Invalid API key"
+
         case .apiKeyExpired:
             return "API key has expired"
+
         case .identityNotFound(let identifier):
             switch identifier {
             case .id(let id):
                 return "Identity not found: \(id)"
+
             case .email(let email):
                 return "Identity not found: \(email)"
+
             case .auth:
                 return "Identity not found from authentication context"
             }
+
         case .emailAlreadyInUse:
             return "Email already in use"
+
         case .emailMismatch:
             return "Email mismatch"
+
         case .invalidInput(let message):
             return "Invalid input: \(message)"
+
         case .alreadyPendingDeletion:
             return "Already pending deletion"
+
         case .notPendingDeletion:
             return "Not pending deletion"
+
         case .deletionGracePeriodNotExpired:
             return "Deletion grace period has not expired"
+
         case .failedToCreateIdentity:
             return "Failed to create identity"
+
         case .failedToCreateToken(let type):
             return "Failed to create \(type.rawValue) token"
+
         case .requestUnavailable:
             return "Request context unavailable"
+
         case .configurationError(let message):
             return "Configuration error: \(message)"
+
         case .unexpected(let message):
             return "Unexpected error: \(message)"
         }

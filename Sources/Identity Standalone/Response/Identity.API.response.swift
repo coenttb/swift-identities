@@ -36,6 +36,7 @@ extension Identity.API {
                     .password(.reset(.request)),
                     .password(.reset(.confirm)):
                     true
+
                 default:
                     false
                 }
@@ -267,9 +268,11 @@ extension Identity.API {
                     case .unauthorized:
                         errorCode = "INVALID_CREDENTIALS"
                         userMessage = "Invalid email or password"
+
                     case .tooManyRequests:
                         errorCode = "RATE_LIMIT"
                         userMessage = "Too many attempts. Please try again later."
+
                     default:
                         errorCode = "AUTH_ERROR"
                         userMessage = "Authentication failed"

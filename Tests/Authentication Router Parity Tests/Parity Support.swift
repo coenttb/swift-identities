@@ -9,6 +9,7 @@
 import Foundation
 import IdentitiesTypes
 import Testing
+
 /// Compares a corpus against its canonical Swift entry.
 func assertParity(
     _ corpus: String,

@@ -40,7 +40,10 @@ extension Identity.Password.Change.Client {
                     @Dependency(\.passwordHasher) var passwordHasher
 
                     // Hash the new password
-                    let passwordHash = try await passwordHasher.hash(newPassword, envVars.bcryptCost)
+                    let passwordHash = try await passwordHasher.hash(
+                        newPassword,
+                        envVars.bcryptCost
+                    )
 
                     // Update password and increment session version atomically
                     try await db.write { db in

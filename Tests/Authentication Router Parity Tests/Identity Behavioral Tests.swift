@@ -101,7 +101,8 @@ struct IdentityBehavioralTests {
     }
 
     @Test
-    func `High-level token cookie encoding failures propagate from the refresh token cookie path`() {
+    func `High-level token cookie encoding failures propagate from the refresh token cookie path`()
+    {
         withDependencies {
             $0[Identity.Frontend.Configuration.self] = .testValue
         } operation: {

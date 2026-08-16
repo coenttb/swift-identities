@@ -44,7 +44,7 @@ extension ParserPrinter where Input == URLRequestData {
     /// - Returns: Modified parser-printer with Reauthorization header
     public func setReauthorizationToken(_ token: String?) -> HeaderTransform<Self> {
         return transform { urlRequestData in
-            if let token = token {
+            if let token {
                 var data = urlRequestData
                 data.headers["authorization"] =
                     ["Bearer \(token)"][...].map { Substring($0) }[...]
@@ -61,7 +61,7 @@ extension ParserPrinter where Input == URLRequestData {
     /// - Returns: Modified parser-printer with Authorization header set
     public func setBearerAuth(_ token: String?) -> HeaderTransform<Self> {
         transform { urlRequestData in
-            if let token = token {
+            if let token {
                 var data = urlRequestData
                 data.headers["authorization"] = ["Bearer \(token)"][...].map { Substring($0) }[...]
                 return data

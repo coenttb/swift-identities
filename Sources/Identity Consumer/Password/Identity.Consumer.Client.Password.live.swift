@@ -46,7 +46,9 @@ extension Identity.Password.Client {
                 }
             ),
             change: .init(
-                request: { currentPassword, newPassword throws(Identity.Password.Change.Client.Error) in
+                request: {
+                    currentPassword,
+                    newPassword throws(Identity.Password.Change.Client.Error) in
                     do {
                         try await handleRequest(
                             for: makeRequest(
