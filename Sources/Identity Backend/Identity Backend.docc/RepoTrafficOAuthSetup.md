@@ -1,4 +1,4 @@
-# RepoTraffic OAuth Setup Guide
+# Configuring RepoTraffic OAuth
 
 This guide demonstrates how RepoTraffic configures OAuth with token storage for GitHub API access.
 
