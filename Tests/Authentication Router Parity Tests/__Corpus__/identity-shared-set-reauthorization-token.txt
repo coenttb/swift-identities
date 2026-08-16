@@ -1,6 +1,0 @@
-== reauthorize+token ==
-method: POST
-path: /reauthorize
-header: content-type: application/x-www-form-urlencoded
-header: authorization: Bearer fixed-reauth-token
-body(utf8): password=correct+horse+battery+staple

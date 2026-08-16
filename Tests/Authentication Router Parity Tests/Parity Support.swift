@@ -9,22 +9,17 @@
 import Foundation
 import IdentitiesTypes
 import Testing
-import URL_Routing_Test_Support
-
-/// Compares a corpus against `__Corpus__/<name>.txt`, recording on first run.
+/// Compares a corpus against its canonical Swift entry.
 func assertParity(
     _ corpus: String,
     fixture name: String,
-    filePath: String = #filePath
+    sourceLocation: SourceLocation = #_sourceLocation
 ) throws {
-    let url = URL(fileURLWithPath: filePath)
-        .deletingLastPathComponent()
-        .appendingPathComponent("__Corpus__")
-        .appendingPathComponent("\(name).txt")
-    let outcome = try Parity.fixture(normalizeJSONBodies(corpus), at: url)
-    if case .mismatched(let diff) = outcome {
-        Issue.record("Parity mismatch for \(name):\n\(diff)")
-    }
+    Corpus.compare(
+        normalizeJSONBodies(corpus),
+        named: name,
+        sourceLocation: sourceLocation
+    )
 }
 
 /// JSON bodies print with unordered keys (the `.json` body conversion does not
@@ -51,28 +46,60 @@ func normalizeJSONBodies(_ corpus: String) -> String {
         .joined(separator: "\n")
 }
 
-/// Round-trip failures are captured, unfixed, as Batch-0 evidence
-/// (`__Corpus__/KNOWN-NON-ROUNDTRIP-<name>.txt`, record-when-absent). A clean
-/// suite records nothing; a drift from the recorded set fails.
+/// Round-trip failures are captured, unfixed, as Batch-0 evidence. A clean
+/// suite records nothing; a drift from the canonical Swift entry fails.
 func recordNonRoundTrips(
     _ failures: [String],
     fixture name: String,
-    filePath: String = #filePath
+    sourceLocation: SourceLocation = #_sourceLocation
 ) throws {
-    let url = URL(fileURLWithPath: filePath)
-        .deletingLastPathComponent()
-        .appendingPathComponent("__Corpus__")
-        .appendingPathComponent("KNOWN-NON-ROUNDTRIP-\(name).txt")
-    let exists = FileManager.default.fileExists(atPath: url.path)
+    let expectedName = "KNOWN-NON-ROUNDTRIP-\(name)"
     if failures.isEmpty {
-        if exists {
-            Issue.record("Round-trips now clean for \(name); stale KNOWN-NON-ROUNDTRIP fixture")
+        if Corpus.expected[expectedName] != nil {
+            Issue.record(
+                "Round-trips now clean for \(name); stale KNOWN-NON-ROUNDTRIP entry",
+                sourceLocation: sourceLocation
+            )
         }
         return
     }
-    let outcome = try Parity.fixture(failures.joined(separator: "\n") + "\n", at: url)
-    if case .mismatched(let diff) = outcome {
-        Issue.record("Known-non-round-trip drift for \(name):\n\(diff)")
+    Corpus.compare(
+        failures.joined(separator: "\n") + "\n",
+        named: expectedName,
+        sourceLocation: sourceLocation
+    )
+}
+
+// The checked-in Swift table is the canonical parity corpus. Keeping the
+// expected bytes in the test target preserves exact comparisons without a
+// second, non-Swift fixture tree beside the tests.
+enum Corpus {
+    static func compare(
+        _ produced: String,
+        named name: String,
+        sourceLocation: SourceLocation = #_sourceLocation
+    ) {
+        let producedData = Foundation.Data(produced.utf8)
+        guard let expectedData = expected[name] else {
+            Issue.record(
+                "Canonical corpus has no entry named \(name)",
+                sourceLocation: sourceLocation
+            )
+            return
+        }
+        if expectedData != producedData {
+            let expected = String(decoding: expectedData, as: UTF8.self)
+            Issue.record(
+                """
+                Corpus mismatch for \(name)
+                --- expected ---
+                \(expected)
+                --- actual ---
+                \(produced)
+                """,
+                sourceLocation: sourceLocation
+            )
+        }
     }
 }
 
