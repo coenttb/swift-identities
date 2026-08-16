@@ -55,7 +55,7 @@ extension Identity.Token {
             case .emailVerification, .passwordReset, .emailChange, .accountDeletion:
                 // Generate a URL-safe token for email-based verifications
                 return SymmetricKey(size: .bits256)
-                    .withUnsafeBytes { Data($0) }
+                    .withUnsafeBytes { Foundation.Data($0) }
                     .base64EncodedString()
                     .replacingOccurrences(of: "+", with: "-")
                     .replacingOccurrences(of: "/", with: "_")
@@ -68,7 +68,7 @@ extension Identity.Token {
             default:
                 // Generate standard token
                 return SymmetricKey(size: .bits256)
-                    .withUnsafeBytes { Data($0) }
+                    .withUnsafeBytes { Foundation.Data($0) }
                     .base64EncodedString()
             }
         }

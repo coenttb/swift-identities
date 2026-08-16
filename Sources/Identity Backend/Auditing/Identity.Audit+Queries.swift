@@ -191,7 +191,7 @@ extension Identity.Audit {
     }
 }
 
-// MARK: - Decoded Audit Data
+// MARK: - Decoded Audit Foundation.Data
 
 extension Identity.Audit {
     /// Decode the old data JSONB field to a specific type

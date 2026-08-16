@@ -27,7 +27,7 @@ extension Identity.Frontend.Configuration.Cookies {
             let dummyToken: JWT = .init(
                 header: .init(alg: ""),
                 payload: .init(),
-                signature: Data()
+                signature: Foundation.Data()
             )
             return router.url(
                 for: .api(.authenticate(.token(.refresh(dummyToken))))
@@ -76,7 +76,7 @@ extension Identity.Frontend.Configuration.Cookies {
             let dummyToken: JWT = .init(
                 header: .init(alg: ""),
                 payload: .init(),
-                signature: Data()
+                signature: Foundation.Data()
             )
             return router.url(
                 for: .api(.authenticate(.token(.refresh(dummyToken))))

@@ -41,7 +41,7 @@ extension Identity.Email.Change.Request {
 
         private static func generateVerificationToken() -> String {
             SymmetricKey(size: .bits256)
-                .withUnsafeBytes { Data($0) }
+                .withUnsafeBytes { Foundation.Data($0) }
                 .base64EncodedString()
                 .replacingOccurrences(of: "+", with: "-")
                 .replacingOccurrences(of: "/", with: "_")

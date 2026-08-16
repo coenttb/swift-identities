@@ -109,7 +109,7 @@ extension Identity.OAuth.State.Record {
     /// Generate secure random state
     public static func generateState() -> String {
         let bytes = (0..<32).map { _ in UInt8.random(in: 0...255) }
-        return Data(bytes).base64EncodedString()
+        return Foundation.Data(bytes).base64EncodedString()
             .replacingOccurrences(of: "+", with: "-")
             .replacingOccurrences(of: "/", with: "_")
             .replacingOccurrences(of: "=", with: "")

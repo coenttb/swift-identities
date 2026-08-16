@@ -35,9 +35,9 @@ extension Identity.OAuth {
             }
 
             // Use proper AES-GCM encryption
-            let keyData = SHA256.hash(data: Data(encryptionKey.utf8))
+            let keyData = SHA256.hash(data: Foundation.Data(encryptionKey.utf8))
             let key = SymmetricKey(data: keyData)
-            let data = Data(token.utf8)
+            let data = Foundation.Data(token.utf8)
             let sealedBox = try AES.GCM.seal(data, using: key)
 
             // Prefix with "v1:" for version tracking
@@ -82,7 +82,7 @@ extension Identity.OAuth {
 
             // Remove version prefix and decrypt
             let encryptedData = String(encrypted.dropFirst(3))
-            guard let data = Data(base64Encoded: encryptedData) else {
+            guard let data = Foundation.Data(base64Encoded: encryptedData) else {
                 logger.error(
                     "Failed to decode base64 token data",
                     metadata: [
@@ -92,7 +92,7 @@ extension Identity.OAuth {
                 throw OAuthTokenError.invalidTokenFormat
             }
 
-            let keyData = SHA256.hash(data: Data(encryptionKey.utf8))
+            let keyData = SHA256.hash(data: Foundation.Data(encryptionKey.utf8))
             let key = SymmetricKey(data: keyData)
 
             do {

@@ -28,9 +28,9 @@ extension Identity.MFA.TOTP.Record {
         }
 
         // Use proper AES-GCM encryption (same pattern as OAuth)
-        let keyData = SHA256.hash(data: Data(encryptionKey.utf8))
+        let keyData = SHA256.hash(data: Foundation.Data(encryptionKey.utf8))
         let key = SymmetricKey(data: keyData)
-        let data = Data(secret.utf8)
+        let data = Foundation.Data(secret.utf8)
         let sealedBox = try AES.GCM.seal(data, using: key)
 
         // Prefix with "v1:" for version tracking
@@ -68,7 +68,7 @@ extension Identity.MFA.TOTP.Record {
         if self.secret.hasPrefix("v1:") {
             // Remove version prefix and decrypt
             let encryptedData = String(self.secret.dropFirst(3))
-            guard let data = Data(base64Encoded: encryptedData) else {
+            guard let data = Foundation.Data(base64Encoded: encryptedData) else {
                 logger.error(
                     "Failed to decode base64 TOTP secret data",
                     metadata: [
@@ -78,7 +78,7 @@ extension Identity.MFA.TOTP.Record {
                 throw TOTPError.invalidFormat
             }
 
-            let keyData = SHA256.hash(data: Data(encryptionKey.utf8))
+            let keyData = SHA256.hash(data: Foundation.Data(encryptionKey.utf8))
             let key = SymmetricKey(data: keyData)
 
             do {
@@ -104,7 +104,7 @@ extension Identity.MFA.TOTP.Record {
 
         // Handle legacy Base64-encoded format (migration path)
         // Check if it has old encryption prefix
-        if let data = Data(base64Encoded: self.secret),
+        if let data = Foundation.Data(base64Encoded: self.secret),
             let decoded = String(data: data, encoding: .utf8)
         {
             if decoded.hasPrefix("\(encryptionKey):") {

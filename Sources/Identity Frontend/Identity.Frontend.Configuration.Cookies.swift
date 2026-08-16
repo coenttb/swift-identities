@@ -99,7 +99,7 @@ extension Identity.Frontend.Configuration.Cookies {
                                 .init(
                                     header: .init(alg: ""),
                                     payload: .init(),
-                                    signature: Data()
+                                    signature: Foundation.Data()
                                 )
                             )
                         )

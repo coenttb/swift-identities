@@ -41,7 +41,7 @@ extension Identity.OAuth.Connection {
         public var scopes: [String]?
 
         @Column("user_info")
-        public var userInfo: Data?  // JSON encoded provider-specific data
+        public var userInfo: Foundation.Data?  // JSON encoded provider-specific data
 
         @Column("created_at")
         public var createdAt: Date
@@ -62,7 +62,7 @@ extension Identity.OAuth.Connection {
             tokenType: String? = "Bearer",
             expiresAt: Date? = nil,
             scopes: [String]? = nil,
-            userInfo: Data? = nil,
+            userInfo: Foundation.Data? = nil,
             createdAt: Date = Date(),
             updatedAt: Date = Date(),
             lastUsedAt: Date? = nil

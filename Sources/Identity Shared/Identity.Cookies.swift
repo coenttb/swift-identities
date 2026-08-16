@@ -50,7 +50,7 @@ extension Identity {
                         jti: UUID().uuidString,
                         additionalClaims: ["type": "refresh", "sev": 0]
                     ),
-                    signature: Data()
+                    signature: Foundation.Data()
                 )
 
                 return router.url(
@@ -71,7 +71,7 @@ extension Identity {
                         jti: UUID().uuidString,
                         additionalClaims: ["type": "refresh", "sev": 0]
                     ),
-                    signature: Data()
+                    signature: Foundation.Data()
                 )
 
                 return router.url(
