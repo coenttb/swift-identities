@@ -196,8 +196,7 @@ let package = Package(
                 .httpCookies,
                 .product(name: "URL Routing Test Support", package: "swift-url-routing")
             ],
-            path: "Tests/Authentication Router Parity Tests",
-            exclude: ["__Corpus__"]
+            path: "Tests/Authentication Router Parity Tests"
         ),
         .testTarget(
             name: .identityShared.tests,

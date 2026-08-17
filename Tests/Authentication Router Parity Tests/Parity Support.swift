@@ -9,22 +9,20 @@
 import Foundation
 import IdentitiesTypes
 import Testing
-import URL_Routing_Test_Support
 
-/// Compares a corpus against `__Corpus__/<name>.txt`, recording on first run.
+/// Compares a corpus against its Swift-embedded reference document.
 func assertParity(
     _ corpus: String,
-    fixture name: String,
-    filePath: String = #filePath
+    fixture name: String
 ) throws {
-    let url = URL(fileURLWithPath: filePath)
-        .deletingLastPathComponent()
-        .appendingPathComponent("__Corpus__")
-        .appendingPathComponent("\(name).txt")
-    let outcome = try Parity.fixture(normalizeJSONBodies(corpus), at: url)
-    if case .mismatched(let diff) = outcome {
-        Issue.record("Parity mismatch for \(name):\n\(diff)")
+    let actual = normalizeJSONBodies(corpus)
+    guard let expected = Corpus[name] else {
+        Issue.record(Comment(rawValue: "No embedded parity corpus named \(name)"))
+        return
     }
+    guard actual != expected else { return }
+    let report = difference(expected: expected, actual: actual)
+    Issue.record(Comment(rawValue: "Parity mismatch for \(name):\n\(report)"))
 }
 
 /// JSON bodies print with unordered keys (the `.json` body conversion does not
@@ -52,28 +50,53 @@ func normalizeJSONBodies(_ corpus: String) -> String {
 }
 
 /// Round-trip failures are captured, unfixed, as Batch-0 evidence
-/// (`__Corpus__/KNOWN-NON-ROUNDTRIP-<name>.txt`, record-when-absent). A clean
-/// suite records nothing; a drift from the recorded set fails.
+/// (the embedded `KNOWN-NON-ROUNDTRIP-<name>` document). A clean suite
+/// expects no such document; a drift from the recorded set fails.
 func recordNonRoundTrips(
     _ failures: [String],
-    fixture name: String,
-    filePath: String = #filePath
+    fixture name: String
 ) throws {
-    let url = URL(fileURLWithPath: filePath)
-        .deletingLastPathComponent()
-        .appendingPathComponent("__Corpus__")
-        .appendingPathComponent("KNOWN-NON-ROUNDTRIP-\(name).txt")
-    let exists = FileManager.default.fileExists(atPath: url.path)
+    let expected = Corpus["KNOWN-NON-ROUNDTRIP-\(name)"]
     if failures.isEmpty {
-        if exists {
-            Issue.record("Round-trips now clean for \(name); stale KNOWN-NON-ROUNDTRIP fixture")
+        if expected != nil {
+            Issue.record(
+                Comment(
+                    rawValue: "Round-trips now clean for \(name); "
+                        + "stale KNOWN-NON-ROUNDTRIP document"
+                )
+            )
         }
         return
     }
-    let outcome = try Parity.fixture(failures.joined(separator: "\n") + "\n", at: url)
-    if case .mismatched(let diff) = outcome {
-        Issue.record("Known-non-round-trip drift for \(name):\n\(diff)")
+    let actual = failures.joined(separator: "\n") + "\n"
+    guard let expected else {
+        Issue.record(
+            Comment(rawValue: "No embedded KNOWN-NON-ROUNDTRIP document for \(name)")
+        )
+        return
     }
+    guard actual != expected else { return }
+    let report = difference(expected: expected, actual: actual)
+    Issue.record(Comment(rawValue: "Known-non-round-trip drift for \(name):\n\(report)"))
+}
+
+/// Renders the first differing lines of two corpora, for a readable failure.
+private func difference(expected: String, actual: String) -> String {
+    let expectedLines = expected.split(separator: "\n", omittingEmptySubsequences: false)
+    let actualLines = actual.split(separator: "\n", omittingEmptySubsequences: false)
+    var differences: [String] = []
+    for index in 0..<max(expectedLines.count, actualLines.count) {
+        let expected = index < expectedLines.count ? expectedLines[index] : "<absent>"
+        let actual = index < actualLines.count ? actualLines[index] : "<absent>"
+        if expected != actual {
+            differences.append("line \(index + 1):\n  - \(expected)\n  + \(actual)")
+        }
+        if differences.count >= 40 {
+            differences.append("… (further differences truncated)")
+            break
+        }
+    }
+    return differences.joined(separator: "\n")
 }
 
 /// Deterministic fixed values only — no Date()/UUID() anywhere in the corpus.

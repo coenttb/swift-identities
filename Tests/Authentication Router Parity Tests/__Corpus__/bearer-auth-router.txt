@@ -1,5 +1,0 @@
-== bearer.fixed-token ==
-method: <nil>
-path: /
-header: authorization: Bearer fixed-token-0123456789abcdef
-body: <nil>
