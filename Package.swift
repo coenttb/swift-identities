@@ -69,8 +69,8 @@ extension Target.Dependency {
 let package = Package(
     name: "swift-authentication",
     platforms: [
-        .macOS(.v26),
-        .iOS(.v26)
+        .macOS("27"),
+        .iOS("27")
     ],
     products: [
         // ACTIVE (buildable against institute-only packages this wave):
