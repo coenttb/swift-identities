@@ -89,7 +89,7 @@ extension Identity.OAuth.Login {
 // MARK: - Concrete list-item type
 //
 // `Render.Builder.buildArray(_:) -> [V]`
-// (swift-render-primitives/Sources/Render Primitive/Render.Builder.swift:43) must reify a
+// (swift-render/Sources/Render Primitive/Render.Builder.swift:43) must reify a
 // concrete element type `V`. The loop body here used to be the inline `a(href:) { … }.css.…`
 // chain, whose type is OPAQUE — `a`/`div` are `callAsFunction`s returning `some HTML.View`
 // (swift-html-render/Sources/HTML Elements Rendering/div Content Division.swift:12-14) and the

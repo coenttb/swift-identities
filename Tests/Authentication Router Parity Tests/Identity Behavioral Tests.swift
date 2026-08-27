@@ -7,7 +7,7 @@
 //  and `expiringIdentityCookies()` actually put on the wire, plus the
 //  `Identity.Consumer.Configuration.Consumer.live(...)` public spelling
 //  contract. Recovered from the closed `#13` branch and revalidated against
-//  current `main` for `swift-foundations/swift-authentication#20`.
+//  current `main` for `swift-compositions/swift-authentication#20`.
 //
 //  Revalidation note: on the branch, `setting(cookie:token:configuration:)`
 //  threw on an encoding failure. On current `main` it converts an encoding

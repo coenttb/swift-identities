@@ -46,11 +46,13 @@ extension Target.Dependency {
     static var totp: Self { .product(name: "TOTP", package: "swift-time-based-one-time-password") }
     static var dependenciesTestSupport: Self { .product(name: "Dependencies Test Support", package: "swift-dependencies") }
 
-    static var dateExtensions: Self { .product(name: "DateExtensions", package: "swift-foundation-extensions") }
+    static var dateExtensions: Self {
+        .product(name: "Foundation Date Extensions", package: "swift-foundation-extensions")
+    }
     static var records: Self { .product(name: "Records", package: "swift-records") }
     // Identity Backend's MFA configuration files use `Tagged` directly (re-pointed off the
     // dissolving TypesFoundation umbrella, decomposition W2 2026-07-13):
-    static var tagged: Self { .product(name: "Tagged Primitives", package: "swift-tagged-primitives") }
+    static var tagged: Self { .product(name: "Tagged", package: "swift-tagged") }
     // Needed by the still-red Frontend/Consumer/Standalone (declared ready for the HTML-tower arc;
     // Language EXISTS: swift-translating/Package.swift:45):
     static var language: Self { .product(name: "Language", package: "swift-translating") }
@@ -121,31 +123,31 @@ let package = Package(
         ),
     ],
     dependencies: [
-        .package(url: "https://github.com/swift-foundations/swift-server.git", branch: "main"),
-        .package(url: "https://github.com/swift-foundations/swift-environment-dependencies.git", branch: "main"),
-        .package(url: "https://github.com/swift-foundations/swift-server-vapor.git", branch: "main"),
-        .package(url: "https://github.com/swift-foundations/swift-password.git", branch: "main"),
+        .package(url: "https://github.com/swift-compositions/swift-server.git", branch: "main"),
+        .package(url: "https://github.com/swift-compositions/swift-environment-dependencies.git", branch: "main"),
+        .package(url: "https://github.com/swift-compositions/swift-server-vapor.git", branch: "main"),
+        .package(url: "https://github.com/swift-compositions/swift-password.git", branch: "main"),
         .package(url: "https://github.com/vapor/vapor.git", from: "4.102.1"),
-        .package(url: "https://github.com/swift-foundations/swift-http-cookies.git", branch: "main"),
-        .package(url: "https://github.com/swift-foundations/swift-http-redirect.git", branch: "main"),
-        .package(url: "https://github.com/swift-foundations/swift-http-host.git", branch: "main"),
-        .package(url: "https://github.com/swift-foundations/swift-http-session.git", branch: "main"),
-        .package(url: "https://github.com/swift-foundations/swift-throttling.git", branch: "main"),
-        .package(url: "https://github.com/swift-foundations/swift-uri.git", branch: "main"),
-        .package(url: "https://github.com/swift-foundations/swift-urlrequest-handler.git", branch: "main"),
-        .package(url: "https://github.com/swift-foundations/swift-identities-types.git", branch: "main"),
+        .package(url: "https://github.com/swift-compositions/swift-http-cookies.git", branch: "main"),
+        .package(url: "https://github.com/swift-compositions/swift-http-redirect.git", branch: "main"),
+        .package(url: "https://github.com/swift-compositions/swift-http-host.git", branch: "main"),
+        .package(url: "https://github.com/swift-compositions/swift-http-session.git", branch: "main"),
+        .package(url: "https://github.com/swift-compositions/swift-throttling.git", branch: "main"),
+        .package(url: "https://github.com/swift-compositions/swift-uri.git", branch: "main"),
+        .package(url: "https://github.com/swift-compositions/swift-urlrequest-handler.git", branch: "main"),
+        .package(url: "https://github.com/swift-compositions/swift-identities-types.git", branch: "main"),
         // Batch-0 parity corpus: test-support product only (Authentication Router Parity Tests).
-        .package(url: "https://github.com/swift-foundations/swift-url-routing.git", branch: "main"),
-        .package(url: "https://github.com/swift-foundations/swift-time-based-one-time-password.git", branch: "main"),
-        .package(url: "https://github.com/swift-foundations/swift-dependencies.git", branch: "main"),
-        .package(url: "https://github.com/swift-foundations/swift-logger-dependencies.git", branch: "main"),
+        .package(url: "https://github.com/swift-compositions/swift-url-routing.git", branch: "main"),
+        .package(url: "https://github.com/swift-compositions/swift-time-based-one-time-password.git", branch: "main"),
+        .package(url: "https://github.com/swift-compositions/swift-dependencies.git", branch: "main"),
+        .package(url: "https://github.com/swift-compositions/swift-logger-dependencies.git", branch: "main"),
         .package(url: "https://github.com/apple/swift-log.git", from: "1.0.0"),
 
         .package(url: "https://github.com/swift-standards/swift-postgresql-standard.git", branch: "main"),
-        .package(url: "https://github.com/swift-foundations/swift-foundation-extensions.git", branch: "main"),
-        .package(url: "https://github.com/swift-foundations/swift-records.git", branch: "main"),
-        .package(url: "https://github.com/swift-primitives/swift-tagged-primitives.git", branch: "main"),
-        .package(url: "https://github.com/swift-foundations/swift-translating.git", branch: "main"),
+        .package(url: "https://github.com/swift-molecules/swift-foundation-extensions.git", branch: "main"),
+        .package(url: "https://github.com/swift-compositions/swift-records.git", branch: "main"),
+        .package(url: "https://github.com/swift-molecules/swift-tagged.git", branch: "main"),
+        .package(url: "https://github.com/swift-compositions/swift-translating.git", branch: "main"),
 
         // Presentation stack (HTML-tower arc, W-V wave). The `Translating` trait must be requested
         // on BOTH deps: swift-webpage passes NO traits to its own swift-html dependency, so the
@@ -153,11 +155,11 @@ let package = Package(
         // `TranslatedString.swift` (`#if TRANSLATING`) vends the ~115 `String.xxx` translation
         // constants these views read, and swift-html's `TranslatedString+HTML.swift` supplies the
         // `Translated<String>: HTML.View` conformance that lets them appear in builder blocks.
-        .package(url: "https://github.com/swift-foundations/swift-html.git", branch: "main", traits: ["Translating"]),
-        .package(url: "https://github.com/swift-foundations/swift-webpage.git", branch: "main", traits: ["Translating"]),
+        .package(url: "https://github.com/swift-compositions/swift-html.git", branch: "main", traits: ["Translating"]),
+        .package(url: "https://github.com/swift-compositions/swift-webpage.git", branch: "main", traits: ["Translating"]),
 
         // Still-red targets' deps (later HTML-tower waves re-enable):
-        // .package(url: "https://github.com/swift-foundations/swift-structured-queries-postgres.git", branch: "main"),
+        // .package(url: "https://github.com/swift-compositions/swift-structured-queries-postgres.git", branch: "main"),
     ],
     targets: [
         // ================= ACTIVE =================

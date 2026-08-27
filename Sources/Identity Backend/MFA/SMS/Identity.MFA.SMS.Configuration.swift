@@ -7,7 +7,7 @@
 
 import Foundation
 import IdentitiesTypes
-import Tagged_Primitives
+import Tagged
 
 extension Identity.MFA.SMS {
     public typealias PhoneNumber = Tagged<Identity.MFA.SMS, String>

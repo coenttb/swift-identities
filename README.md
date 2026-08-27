@@ -1,6 +1,6 @@
 # swift-authentication
 
-[![CI](https://github.com/swift-foundations/swift-authentication/workflows/CI/badge.svg)](https://github.com/swift-foundations/swift-authentication/actions/workflows/ci.yml)
+[![CI](https://github.com/swift-compositions/swift-authentication/workflows/CI/badge.svg)](https://github.com/swift-compositions/swift-authentication/actions/workflows/ci.yml)
 ![Development Status](https://img.shields.io/badge/status-active--development-blue.svg)
 
 An identity authentication and management system for Swift server applications. Email/password
@@ -16,7 +16,7 @@ implemented verification logic — see the Multi-Factor Authentication section b
 - **Email Workflows**: Verification, password reset, email change with proper confirmation flows
 - **Multi-Factor Authentication**: TOTP (Google Authenticator) and backup codes - production ready. SMS, Email, WebAuthn in development.
 - **Token Management**: Secure token generation, validation, and lifecycle management
-- **Database Integration**: Ready-to-use PostgreSQL implementation (via [swift-records](https://github.com/swift-foundations/swift-records))
+- **Database Integration**: Ready-to-use PostgreSQL implementation (via [swift-records](https://github.com/swift-compositions/swift-records))
 - **Email Integration**: A closure-based `Identity.Backend.Configuration.Email` you wire to any provider
 - **API & Web Support**: Both JSON API and HTML form handling
 
@@ -26,7 +26,7 @@ implemented verification logic — see the Multi-Factor Authentication section b
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/swift-foundations/swift-authentication.git", branch: "main")
+    .package(url: "https://github.com/swift-compositions/swift-authentication.git", branch: "main")
 ]
 ```
 
@@ -121,7 +121,7 @@ The package is organized into modular products:
 - **Identity Consumer** (`Identity_Consumer`): Client-side integration for apps that authenticate against a remote Identity Provider.
 
 Foundational types (`Identity`, `Identity.ID`, and related protocols) come from
-[swift-identities-types](https://github.com/swift-foundations/swift-identities-types), imported as
+[swift-identities-types](https://github.com/swift-compositions/swift-identities-types), imported as
 `IdentitiesTypes`.
 
 ## Database Schema
@@ -159,7 +159,7 @@ way, via `withDependencies`.
 
 ### With Dependencies
 
-Uses [swift-dependencies](https://github.com/swift-foundations/swift-dependencies) (the
+Uses [swift-dependencies](https://github.com/swift-compositions/swift-dependencies) (the
 institute's fork of [pointfreeco/swift-dependencies](https://github.com/pointfreeco/swift-dependencies))
 for dependency injection, as shown in the Quick Start above.
 
@@ -188,12 +188,12 @@ func testProviderConfiguration() async throws {
 
 ### Institute Dependencies
 
-- [swift-identities-types](https://github.com/swift-foundations/swift-identities-types): Type-safe identity authentication and management types with dependency injection and URL routing for Swift.
-- [swift-time-based-one-time-password](https://github.com/swift-foundations/swift-time-based-one-time-password): TOTP and HOTP one-time password generation per RFC 6238 and RFC 4226 for Swift.
-- [swift-records](https://github.com/swift-foundations/swift-records): Type-safe, high-level PostgreSQL database abstraction built on StructuredQueries and PostgresNIO for Swift.
-- [swift-html](https://github.com/swift-foundations/swift-html): Type-safe HTML generation grounded in WHATWG and W3C specifications for Swift.
-- [swift-dependencies](https://github.com/swift-foundations/swift-dependencies): Type-safe dependency injection via a property wrapper with live, preview, and test resolution and scoped overrides for Swift.
-- [swift-server](https://github.com/swift-foundations/swift-server): External-engine membrane for the Swift Institute server runtime — wraps Vapor, PostgresNIO, vapor/queues, and AsyncHTTPClient behind a Foundation-free institute surface.
+- [swift-identities-types](https://github.com/swift-compositions/swift-identities-types): Type-safe identity authentication and management types with dependency injection and URL routing for Swift.
+- [swift-time-based-one-time-password](https://github.com/swift-compositions/swift-time-based-one-time-password): TOTP and HOTP one-time password generation per RFC 6238 and RFC 4226 for Swift.
+- [swift-records](https://github.com/swift-compositions/swift-records): Type-safe, high-level PostgreSQL database abstraction built on StructuredQueries and PostgresNIO for Swift.
+- [swift-html](https://github.com/swift-compositions/swift-html): Type-safe HTML generation grounded in WHATWG and W3C specifications for Swift.
+- [swift-dependencies](https://github.com/swift-compositions/swift-dependencies): Type-safe dependency injection via a property wrapper with live, preview, and test resolution and scoped overrides for Swift.
+- [swift-server](https://github.com/swift-compositions/swift-server): External-engine membrane for the Swift Institute server runtime — wraps Vapor, PostgresNIO, vapor/queues, and AsyncHTTPClient behind a Foundation-free institute surface.
 
 ### Third-Party Dependencies
 
@@ -215,4 +215,4 @@ For commercial licensing options, please contact the maintainer.
 ## Support
 
 For issues, questions, or contributions, please visit the
-[GitHub repository](https://github.com/swift-foundations/swift-authentication).
+[GitHub repository](https://github.com/swift-compositions/swift-authentication).

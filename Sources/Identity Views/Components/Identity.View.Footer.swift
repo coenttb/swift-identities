@@ -43,7 +43,7 @@ extension Identity.View {
 // MARK: - Concrete list-item type
 //
 // `Render.Builder.buildArray(_:) -> [V]`
-// (swift-render-primitives/Sources/Render Primitive/Render.Builder.swift:43) must reify a
+// (swift-render/Sources/Render Primitive/Render.Builder.swift:43) must reify a
 // concrete element type `V`. The loop body here used to be the inline separator + `Link` pair,
 // whose type is OPAQUE (the `.css` chains return `HTML.CSS<some HTML.View>`), and an opaque
 // element cannot be reified inside `buildArray` while the enclosing `body`'s own opaque type is

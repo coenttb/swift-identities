@@ -5,7 +5,7 @@
 //  Created by Coen ten Thije Boonkkamp on 01/02/2025.
 //
 
-import DateExtensions
+import Foundation_Date_Extensions
 import Dependencies
 import EmailAddress
 import Foundation

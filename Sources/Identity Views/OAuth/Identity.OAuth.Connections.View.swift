@@ -149,7 +149,7 @@ extension Identity.OAuth.Connections {
 // MARK: - Concrete list-item types
 //
 // `Render.Builder.buildArray(_:) -> [V]`
-// (swift-render-primitives/Sources/Render Primitive/Render.Builder.swift:43) must reify a
+// (swift-render/Sources/Render Primitive/Render.Builder.swift:43) must reify a
 // concrete element type `V`. These two were previously
 // `@HTML.Builder private func …(for:) -> some HTML.View` helpers: an OPAQUE element type,
 // which cannot be reified inside `buildArray` while the enclosing `body`'s own opaque type is
